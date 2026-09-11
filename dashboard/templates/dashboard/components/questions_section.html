@@ -1,0 +1,151 @@
+<div class="content-card">
+    <div class="content-card-header">
+        <h3 class="content-card-title">
+            <i class="bi bi-question-circle-fill"></i>
+            آمار پاسخ به سوالات
+        </h3>
+
+        <span class="header-badge">
+            <i class="bi bi-collection"></i>
+            {{ total_questions|default:0 }} سوال
+        </span>
+    </div>
+
+    <div class="content-card-body">
+        <div class="summary-box success">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+                <strong>خلاصه عملکرد:</strong>
+                معلم شما در کلاس‌های برگزارشده مجموعاً <strong>{{ total_questions|default:0 }}</strong> سوال پرسیده است.
+                شما به <strong>{{ answered_questions|default:0 }}</strong> سوال پاسخ داده‌اید که
+                <strong class="text-success">{{ correct_answers|default:0 }}</strong> پاسخ صحیح و
+                <strong class="text-danger">{{ wrong_answers|default:0 }}</strong> پاسخ غلط بوده است.
+                همچنین <strong>{{ unanswered_questions|default:0 }}</strong> سوال بدون پاسخ مانده است.
+                میانگین پاسخ صحیح شما <strong>{{ answer_percentage|default:0 }}٪</strong> است.
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start h-100">
+                        <div>
+                            <div class="stat-card-title">کل سوالات</div>
+                            <div class="stat-card-value">{{ total_questions|default:0 }}</div>
+                            <span class="stat-card-trend">
+                                <i class="bi bi-question-circle"></i>
+                                در {{ total_sessions|default:0 }} جلسه
+                            </span>
+                        </div>
+
+                        <div class="stat-card-icon">
+                            <i class="bi bi-question-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card success">
+                    <div class="d-flex justify-content-between align-items-start h-100">
+                        <div>
+                            <div class="stat-card-title">پاسخ صحیح</div>
+                            <div class="stat-card-value">{{ correct_answers|default:0 }}</div>
+                            <span class="stat-card-trend">
+                                <i class="bi bi-check-circle"></i>
+                                از {{ answered_questions|default:0 }} پاسخ
+                            </span>
+                        </div>
+
+                        <div class="stat-card-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card danger">
+                    <div class="d-flex justify-content-between align-items-start h-100">
+                        <div>
+                            <div class="stat-card-title">پاسخ غلط</div>
+                            <div class="stat-card-value">{{ wrong_answers|default:0 }}</div>
+                            <span class="stat-card-trend down">
+                                <i class="bi bi-x-circle"></i>
+                                از {{ answered_questions|default:0 }} پاسخ
+                            </span>
+                        </div>
+
+                        <div class="stat-card-icon">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card info">
+                    <div class="d-flex justify-content-between align-items-start h-100">
+                        <div>
+                            <div class="stat-card-title">درصد پاسخ صحیح</div>
+                            <div class="stat-card-value">{{ answer_percentage|default:0 }}٪</div>
+                            <span class="stat-card-trend">
+                                <i class="bi bi-graph-up"></i>
+                                میانگین عملکرد
+                            </span>
+                        </div>
+
+                        <div class="stat-card-icon">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="progress-title">
+                <span>درصد پاسخ صحیح از پاسخ‌های داده‌شده</span>
+                <strong>{{ answer_percentage|default:0 }}٪</strong>
+            </div>
+
+            <div class="sd-progress">
+                <div class="sd-progress-bar info" style="width: {{ answer_percentage|default:0 }}%"></div>
+            </div>
+        </div>
+
+        {% if total_questions > 0 %}
+            <div class="row g-3 mt-2">
+                <div class="col-lg-5">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-pie-chart-fill"></i>
+                            وضعیت پاسخ به سوالات
+                        </div>
+
+                        <div class="chart-wrapper">
+                            <canvas id="answerPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            عملکرد کلی
+                        </div>
+
+                        <div class="chart-wrapper">
+                            <canvas id="answerBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="mt-4">
+                {% include 'dashboard/components/empty_state.html' %}
+            </div>
+        {% endif %}
+    </div>
+</div>

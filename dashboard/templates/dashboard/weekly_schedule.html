@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+
+{% block title %}برنامه هفتگی - سامانه پایش هوشمند{% endblock %}
+
+{% block content %}
+<style>
+    .ws-container {
+        --ws-primary: #1a237e;
+        --ws-secondary: #ffc107;
+        --ws-bg: #ffffff;
+        --ws-border: #e8edf6;
+        --ws-muted: #6c757d;
+    }
+
+    .ws-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2);
+    }
+
+    .ws-hero::before {
+        content: '';
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -100px;
+        right: -80px;
+    }
+
+    .ws-hero::after {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        bottom: -80px;
+        left: -60px;
+    }
+
+    .ws-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .ws-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .ws-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--ws-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--ws-primary);
+        box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
+    }
+
+    .ws-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.7rem;
+        font-weight: 800;
+    }
+
+    .ws-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .ws-hero-stats {
+        display: flex;
+        gap: 25px;
+        flex-wrap: wrap;
+    }
+
+    .ws-stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 15px;
+        padding: 14px 22px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+    }
+
+    .ws-stat-value {
+        font-size: 1.8rem;
+        font-weight: 900;
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .ws-stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    .ws-day-card {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+        margin-bottom: 24px;
+        overflow: hidden;
+        border: 1px solid var(--ws-border);
+    }
+
+    .ws-day-header {
+        background: linear-gradient(90deg, #1a237e 0%, #303f9f 100%);
+        color: white;
+        padding: 18px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ws-day-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .ws-day-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--ws-secondary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ws-primary);
+        font-size: 1.3rem;
+    }
+
+    .ws-day-count {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .ws-day-body {
+        padding: 20px;
+    }
+
+    .ws-class-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+
+    .ws-class-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border: 1px solid #edf1f8;
+        border-radius: 16px;
+        padding: 18px;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ws-class-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--ws-primary), var(--ws-secondary));
+    }
+
+    .ws-class-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(26, 35, 126, 0.12);
+        border-color: #c7d2fe;
+    }
+
+    .ws-class-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--ws-primary);
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .ws-class-time i {
+        color: var(--ws-secondary);
+    }
+
+    .ws-class-subject {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 6px 0;
+        line-height: 1.4;
+    }
+
+    .ws-class-name {
+        font-size: 0.85rem;
+        color: var(--ws-muted);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ws-class-teacher {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f3f8;
+    }
+
+    .ws-teacher-avatar {
+        width: 38px;
+        height: 38px;
+        background: var(--ws-secondary);
+        color: var(--ws-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .ws-teacher-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ws-teacher-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ws-teacher-role {
+        font-size: 0.75rem;
+        color: var(--ws-muted);
+        margin: 0;
+    }
+
+    .ws-room-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 193, 7, 0.12);
+        color: #b45309;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .ws-empty-day {
+        text-align: center;
+        padding: 35px 20px;
+        color: #94a3b8;
+    }
+
+    .ws-empty-icon {
+        font-size: 2.5rem;
+        opacity: 0.4;
+        margin-bottom: 10px;
+    }
+
+    .ws-empty-text {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .ws-empty-all {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #dbe3ef;
+    }
+
+    .ws-empty-all-icon {
+        width: 90px;
+        height: 90px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .ws-empty-all h4 {
+        color: #17224a;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .ws-empty-all p {
+        color: #8a94a6;
+        margin: 0;
+    }
+
+    @media (max-width: 576px) {
+        .ws-hero {
+            padding: 20px;
+        }
+        .ws-hero-text h2 {
+            font-size: 1.3rem;
+        }
+        .ws-class-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="ws-container">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-calendar-week-fill"></i>
+            برنامه هفتگی
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>برنامه هفتگی</span>
+        </div>
+    </div>
+
+    {% if total_classes > 0 %}
+        <!-- Hero Section -->
+        <div class="ws-hero">
+            <div class="ws-hero-content">
+                <div class="ws-hero-title">
+                    <div class="ws-hero-icon">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                    <div class="ws-hero-text">
+                        <h2>برنامه کلاس‌های شما</h2>
+                        <p>مشاهده زمان برگزاری کلاس‌ها در طول هفته به همراه اطلاعات معلم</p>
+                    </div>
+                </div>
+
+                <div class="ws-hero-stats">
+                    <div class="ws-stat-box">
+                        <span class="ws-stat-value">{{ total_classes }}</span>
+                        <span class="ws-stat-label">جلسه هفتگی</span>
+                    </div>
+                    <div class="ws-stat-box">
+                        <span class="ws-stat-value">۵</span>
+                        <span class="ws-stat-label">روز در هفته</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- روزهای هفته -->
+        {% for day in schedule_days %}
+            <div class="ws-day-card">
+                <div class="ws-day-header">
+                    <h3 class="ws-day-title">
+                        <div class="ws-day-icon">
+                            <i class="bi bi-calendar-day-fill"></i>
+                        </div>
+                        {{ day.name }}
+                    </h3>
+                    <span class="ws-day-count">
+                        {{ day.count }} کلاس
+                    </span>
+                </div>
+
+                <div class="ws-day-body">
+                    {% if day.classes %}
+                        <div class="ws-class-grid">
+                            {% for schedule in day.classes %}
+                                <div class="ws-class-card">
+                                    <div class="ws-class-time">
+                                        <i class="bi bi-clock-fill"></i>
+                                        {{ schedule.start_time|time:"H:i" }} تا {{ schedule.end_time|time:"H:i" }}
+                                    </div>
+
+                                    <h4 class="ws-class-subject">{{ schedule.classroom.subject }}</h4>
+                                    <div class="ws-class-name">
+                                        <i class="bi bi-bookmark-fill"></i>
+                                        {{ schedule.classroom.name }}
+                                    </div>
+
+                                    <div class="ws-class-teacher">
+                                        <div class="ws-teacher-avatar">
+                                            {{ schedule.classroom.teacher.username|first|upper }}
+                                        </div>
+                                        <div class="ws-teacher-info">
+                                            <p class="ws-teacher-name">
+                                                {{ schedule.classroom.teacher.get_full_name|default:schedule.classroom.teacher.username }}
+                                            </p>
+                                            <p class="ws-teacher-role">معلم درس</p>
+                                        </div>
+
+                                        {% if schedule.room %}
+                                            <span class="ws-room-badge">
+                                                <i class="bi bi-door-open-fill"></i>
+                                                {{ schedule.room }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="ws-empty-day">
+                            <div class="ws-empty-icon">
+                                <i class="bi bi-moon-stars-fill"></i>
+                            </div>
+                            <p class="ws-empty-text">کلاسی در این روز برنامه‌ریزی نشده است</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <!-- حالت خالی -->
+        <div class="ws-empty-all">
+            <div class="ws-empty-all-icon">
+                <i class="bi bi-calendar-x-fill"></i>
+            </div>
+            <h4>هنوز برنامه هفتگی ثبت نشده است</h4>
+            <p>در حال حاضر هیچ کلاسی برای شما در برنامه هفتگی تعریف نشده است.</p>
+            <p style="margin-top: 10px; font-size: 0.85rem;">
+                لطفاً با مدیر مدرسه یا معلم خود هماهنگ کنید.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

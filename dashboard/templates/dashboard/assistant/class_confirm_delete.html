@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}حذف کلاس - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .cd-card {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        border: 1px solid #fee2e2;
+        box-shadow: 0 10px 28px rgba(220, 38, 38, 0.08);
+        max-width: 550px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .cd-icon {
+        width: 90px;
+        height: 90px;
+        background: #fef2f2;
+        color: #dc2626;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .cd-title {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #17224a;
+        margin-bottom: 12px;
+    }
+
+    .cd-message {
+        color: #667085;
+        margin-bottom: 25px;
+        line-height: 1.7;
+    }
+
+    .cd-class-info {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+    }
+
+    .cd-class-name {
+        font-weight: 800;
+        color: #b91c1c;
+        font-size: 1.1rem;
+    }
+
+    .cd-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .cd-btn {
+        padding: 12px 25px;
+        border-radius: 12px;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .cd-btn.danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .cd-btn.danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(220, 38, 38, 0.3);
+    }
+
+    .cd-btn.cancel {
+        background: #f2f5fa;
+        color: #2c3e50;
+    }
+
+    .cd-btn.cancel:hover {
+        background: #e8edf6;
+    }
+</style>
+
+<div class="cd-page">
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            تایید حذف
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:assistant_class_list' %}">کلاس‌ها</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>حذف</span>
+        </div>
+    </div>
+
+    <div class="cd-card">
+        <div class="cd-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+
+        <h2 class="cd-title">آیا مطمئن هستید؟</h2>
+        <p class="cd-message">
+            شما در حال حذف کلاس زیر هستید. این عملیات قابل بازگشت نیست و تمام
+            اطلاعات مربوط به این کلاس (جلسات، حضور و غیاب، برنامه هفتگی و...) حذف خواهد شد.
+        </p>
+
+        <div class="cd-class-info">
+            <div class="cd-class-name">{{ classroom.name }} - {{ classroom.subject }}</div>
+            <small class="text-muted">
+                پایه {{ classroom.get_grade_display }} - رشته {{ classroom.get_field_display }}
+            </small>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="cd-actions">
+                <button type="submit" class="cd-btn danger">
+                    <i class="bi bi-trash-fill"></i>
+                    بله، حذف کن
+                </button>
+                <a href="{% url 'dashboard:assistant_class_list' %}" class="cd-btn cancel">
+                    <i class="bi bi-x-circle"></i>
+                    انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

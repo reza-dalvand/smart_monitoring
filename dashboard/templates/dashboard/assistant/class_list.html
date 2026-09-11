@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+
+{% block title %}لیست کلاس‌ها - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .cl-page {
+        --cl-primary: #1a237e;
+        --cl-secondary: #ffc107;
+    }
+
+    .cl-header {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(26, 35, 126, 0.2);
+    }
+
+    .cl-header::before {
+        content: '';
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -80px;
+        right: -60px;
+    }
+
+    .cl-header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cl-header-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .cl-header-icon {
+        width: 65px;
+        height: 65px;
+        background: var(--cl-secondary);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+        color: var(--cl-primary);
+    }
+
+    .cl-header-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .cl-header-text p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .cl-add-btn {
+        background: var(--cl-secondary);
+        color: var(--cl-primary);
+        padding: 11px 22px;
+        border-radius: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .cl-add-btn:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(255, 193, 7, 0.4);
+    }
+
+    .cl-filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 20px;
+        border: 1px solid #edf1f8;
+    }
+
+    .cl-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 18px;
+    }
+
+    .cl-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cl-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--cl-primary), var(--cl-secondary));
+    }
+
+    .cl-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(26, 35, 126, 0.1);
+    }
+
+    .cl-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .cl-card-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 4px 0;
+    }
+
+    .cl-card-subject {
+        font-size: 0.85rem;
+        color: #7b8494;
+    }
+
+    .cl-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .cl-badge {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--cl-primary);
+    }
+
+    .cl-badge.field {
+        background: rgba(255, 193, 7, 0.15);
+        color: #b45309;
+    }
+
+    .cl-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #f2f5fa;
+    }
+
+    .cl-info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #5b6472;
+    }
+
+    .cl-info-item i {
+        color: var(--cl-secondary);
+        width: 18px;
+    }
+
+    .cl-card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .cl-action-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #dfe6f2;
+        background: white;
+        color: var(--cl-primary);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+    .cl-action-btn:hover {
+        background: var(--cl-primary);
+        color: white;
+        border-color: var(--cl-primary);
+    }
+
+    .cl-action-btn.danger {
+        color: #dc2626;
+    }
+
+    .cl-action-btn.danger:hover {
+        background: #dc2626;
+        color: white;
+        border-color: #dc2626;
+    }
+
+    .cl-empty {
+        text-align: center;
+        padding: 50px 20px;
+        background: white;
+        border-radius: 18px;
+        border: 2px dashed #dbe3ef;
+    }
+
+    .cl-empty-icon {
+        width: 85px;
+        height: 85px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+    }
+</style>
+
+<div class="cl-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            مدیریت کلاس‌ها
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:assistant_dashboard' %}">پنل معاون</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>کلاس‌ها</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="cl-header">
+        <div class="cl-header-content">
+            <div class="cl-header-title">
+                <div class="cl-header-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div class="cl-header-text">
+                    <h2>کلاس‌های فعال</h2>
+                    <p>مدیریت و مشاهده تمام کلاس‌های مدرسه</p>
+                </div>
+            </div>
+            <a href="{% url 'dashboard:assistant_class_create' %}" class="cl-add-btn">
+                <i class="bi bi-plus-circle-fill"></i>
+                ایجاد کلاس جدید
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="cl-filter-card">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold mb-1">پایه تحصیلی</label>
+                <select name="grade" class="form-select form-select-sm">
+                    <option value="">همه پایه‌ها</option>
+                    {% for value, label in grades %}
+                        <option value="{{ value }}" {% if grade_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold mb-1">رشته</label>
+                <select name="field" class="form-select form-select-sm">
+                    <option value="">همه رشته‌ها</option>
+                    {% for value, label in fields %}
+                        <option value="{{ value }}" {% if field_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill"></i>
+                    فیلتر
+                </button>
+                <a href="{% url 'dashboard:assistant_class_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Classes Grid -->
+    {% if classrooms %}
+        <div class="cl-grid">
+            {% for classroom in classrooms %}
+                <div class="cl-card">
+                    <div class="cl-card-header">
+                        <div>
+                            <h4 class="cl-card-title">{{ classroom.name }}</h4>
+                            <div class="cl-card-subject">{{ classroom.subject }}</div>
+                        </div>
+                    </div>
+
+                    <div class="cl-card-badges">
+                        <span class="cl-badge">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            پایه {{ classroom.get_grade_display }}
+                        </span>
+                        <span class="cl-badge field">
+                            <i class="bi bi-bookmark-fill"></i>
+                            {{ classroom.get_field_display }}
+                        </span>
+                    </div>
+
+                    <div class="cl-card-info">
+                        <div class="cl-info-item">
+                            <i class="bi bi-person-workspace"></i>
+                            <span>معلم: <strong>{{ classroom.teacher_name }}</strong></span>
+                        </div>
+                        <div class="cl-info-item">
+                            <i class="bi bi-people-fill"></i>
+                            <span>{{ classroom.students.count }} دانش‌آموز</span>
+                        </div>
+                        <div class="cl-info-item">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <span>{{ classroom.sessions.count }} جلسه برگزار شده</span>
+                        </div>
+                        <div class="cl-info-item">
+                            <i class="bi bi-calendar-week-fill"></i>
+                            <span>{{ classroom.schedules.count }} برنامه هفتگی</span>
+                        </div>
+                    </div>
+
+                    <div class="cl-card-actions">
+                        <a href="{% url 'dashboard:assistant_class_edit' classroom.id %}" class="cl-action-btn">
+                            <i class="bi bi-pencil-fill"></i>
+                            ویرایش
+                        </a>
+                        <a href="{% url 'dashboard:assistant_schedule' %}?classroom={{ classroom.id }}" class="cl-action-btn">
+                            <i class="bi bi-calendar-week"></i>
+                            برنامه
+                        </a>
+                        <a href="{% url 'dashboard:assistant_class_delete' classroom.id %}" class="cl-action-btn danger">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="cl-empty">
+            <div class="cl-empty-icon">
+                <i class="bi bi-journal-x"></i>
+            </div>
+            <h5 style="color: #17224a; font-weight: 800;">هنوز کلاسی ثبت نشده است</h5>
+            <p class="text-muted">برای شروع، اولین کلاس خود را ایجاد کنید.</p>
+            <a href="{% url 'dashboard:assistant_class_create' %}" class="btn btn-primary mt-2">
+                <i class="bi bi-plus-circle-fill"></i>
+                ایجاد کلاس جدید
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

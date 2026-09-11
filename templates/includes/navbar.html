@@ -1,0 +1,24 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded mb-4 px-3">
+    <div class="container-fluid">
+        <button class="navbar-toggler d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-graph-up-arrow me-2"></i>سامانه پایش مشارکت
+        </a>
+        
+        <div class="ms-auto d-flex align-items-center">
+            <div class="dropdown">
+                <a class="btn btn-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle me-1"></i>
+                    {{ user.get_full_name|default:user.username }} ({{ user.get_role_display }})
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>تنظیمات پروفایل</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>خروج</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

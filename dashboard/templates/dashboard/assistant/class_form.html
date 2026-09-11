@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .cf-page {
+        --cf-primary: #1a237e;
+        --cf-secondary: #ffc107;
+    }
+
+    .cf-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .cf-card-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 22px;
+        border-bottom: 2px solid #f2f5fa;
+    }
+
+    .cf-card-icon {
+        width: 75px;
+        height: 75px;
+        background: linear-gradient(135deg, var(--cf-primary), #303f9f);
+        border-radius: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--cf-secondary);
+        margin-bottom: 16px;
+        box-shadow: 0 10px 22px rgba(26, 35, 126, 0.2);
+    }
+
+    .cf-card-title {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #17224a;
+        margin: 0 0 6px 0;
+    }
+
+    .cf-card-subtitle {
+        color: #7b8494;
+        margin: 0;
+    }
+
+    .cf-form-group {
+        margin-bottom: 22px;
+    }
+
+    .cf-form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .cf-form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e8edf6;
+        border-radius: 12px;
+        font-family: inherit;
+        transition: all 0.25s ease;
+        background: #fbfcfe;
+    }
+
+    .cf-form-control:focus {
+        outline: none;
+        border-color: var(--cf-primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.08);
+    }
+
+    .cf-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .cf-form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    .cf-btn {
+        flex: 1;
+        padding: 13px 20px;
+        border-radius: 12px;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .cf-btn.primary {
+        background: linear-gradient(135deg, var(--cf-primary), #303f9f);
+        color: white;
+    }
+
+    .cf-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(26, 35, 126, 0.3);
+    }
+
+    .cf-btn.secondary {
+        background: #f2f5fa;
+        color: #2c3e50;
+    }
+
+    .cf-btn.secondary:hover {
+        background: #e8edf6;
+    }
+
+    .cf-form-error {
+        background: #fef2f2;
+        color: #b91c1c;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        margin-top: 6px;
+        border: 1px solid #fee2e2;
+    }
+
+    @media (max-width: 576px) {
+        .cf-form-row {
+            grid-template-columns: 1fr;
+        }
+        .cf-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="cf-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-journal-plus"></i>
+            {{ title }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:assistant_class_list' %}">کلاس‌ها</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{% if classroom %}ویرایش{% else %}ایجاد{% endif %}</span>
+        </div>
+    </div>
+
+    <div class="cf-card">
+        <div class="cf-card-header">
+            <div class="cf-card-icon">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <h2 class="cf-card-title">{{ title }}</h2>
+            <p class="cf-card-subtitle">اطلاعات کلاس را با دقت وارد کنید</p>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="cf-form-error mb-3">
+                    {% for error in form.non_field_errors %}
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="cf-form-row">
+                <div class="cf-form-group">
+                    <label class="cf-form-label">
+                        <i class="bi bi-bookmark-fill"></i>
+                        نام کلاس *
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="cf-form-error">
+                            {% for error in form.name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="cf-form-group">
+                    <label class="cf-form-label">
+                        <i class="bi bi-book-fill"></i>
+                        نام درس *
+                    </label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                        <div class="cf-form-error">
+                            {% for error in form.subject.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="cf-form-row">
+                <div class="cf-form-group">
+                    <label class="cf-form-label">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        پایه تحصیلی *
+                    </label>
+                    {{ form.grade }}
+                    {% if form.grade.errors %}
+                        <div class="cf-form-error">
+                            {% for error in form.grade.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="cf-form-group">
+                    <label class="cf-form-label">
+                        <i class="bi bi-collection-fill"></i>
+                        رشته تحصیلی *
+                    </label>
+                    {{ form.field }}
+                    {% if form.field.errors %}
+                        <div class="cf-form-error">
+                            {% for error in form.field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="cf-form-group">
+                <label class="cf-form-label">
+                    <i class="bi bi-person-workspace"></i>
+                    نام معلم *
+                </label>
+                {{ form.teacher_name }}
+                {% if form.teacher_name.errors %}
+                    <div class="cf-form-error">
+                        {% for error in form.teacher_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="cf-form-actions">
+                <button type="submit" class="cf-btn primary">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {% if classroom %}ذخیره تغییرات{% else %}ایجاد کلاس{% endif %}
+                </button>
+                <a href="{% url 'dashboard:assistant_class_list' %}" class="cf-btn secondary">
+                    <i class="bi bi-x-circle"></i>
+                    انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

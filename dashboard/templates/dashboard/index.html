@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}داشبورد - سامانه پایش هوشمند{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="page-breadcrumb">
+    <h1 class="breadcrumb-title">داشبورد مدیریت</h1>
+    <div class="breadcrumb-nav">
+        <a href="#">خانه</a>
+        <i class="bi bi-chevron-left"></i>
+        <span>داشبورد</span>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-title">کلاس‌های فعال</div>
+                    <div class="stat-card-value">۱۲</div>
+                    <div class="stat-card-trend">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>۱۲٪ نسبت به ماه قبل</span>
+                    </div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-door-open-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card success">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-title">حاضرین امروز</div>
+                    <div class="stat-card-value">۳۴۵</div>
+                    <div class="stat-card-trend">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>۸٪ نسبت به دیروز</span>
+                    </div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card warning">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-title">سوالات تولید شده</div>
+                    <div class="stat-card-value">۸۹</div>
+                    <div class="stat-card-trend">
+                        <i class="bi bi-arrow-up"></i>
+                        <span>۲۳ سوال جدید</span>
+                    </div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-question-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card info">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-title">میانگین مشارکت</div>
+                    <div class="stat-card-value">۸۷٪</div>
+                    <div class="stat-card-trend down">
+                        <i class="bi bi-arrow-down"></i>
+                        <span>۳٪ نسبت به هفته قبل</span>
+                    </div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Row -->
+<div class="row">
+    <!-- Recent Sessions -->
+    <div class="col-lg-8 mb-4">
+        <div class="content-card">
+            <div class="content-card-header">
+                <h3 class="content-card-title">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    آخرین جلسات برگزار شده
+                </h3>
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                    مشاهده همه
+                </button>
+            </div>
+            <div class="content-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>نام کلاس</th>
+                                <th>تاریخ</th>
+                                <th>وضعیت حضور</th>
+                                <th>میانگین نمره</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>ریاضی پایه دهم</strong>
+                                    <br>
+                                    <small class="text-muted">کلاس ۱۰۱</small>
+                                </td>
+                                <td>۱۴۰۴/۰۲/۱۵</td>
+                                <td>
+                                    <span class="badge-status badge-success">۹۵٪ حاضر</span>
+                                </td>
+                                <td>
+                                    <strong>۱۶.۵</strong>
+                                    <small class="text-muted">از ۲۰</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>فیزیک پایه یازدهم</strong>
+                                    <br>
+                                    <small class="text-muted">کلاس ۲۰۵</small>
+                                </td>
+                                <td>۱۴۰۴/۰۲/۱۴</td>
+                                <td>
+                                    <span class="badge-status badge-warning">۷۰٪ حاضر</span>
+                                </td>
+                                <td>
+                                    <strong>۱۴.۲</strong>
+                                    <small class="text-muted">از ۲۰</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>شیمی پایه دوازدهم</strong>
+                                    <br>
+                                    <small class="text-muted">کلاس ۳۰۸</small>
+                                </td>
+                                <td>۱۴۰۴/۰۲/۱۳</td>
+                                <td>
+                                    <span class="badge-status badge-success">۸۸٪ حاضر</span>
+                                </td>
+                                <td>
+                                    <strong>۱۷.۸</strong>
+                                    <small class="text-muted">از ۲۰</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="content-card">
+            <div class="content-card-header">
+                <h3 class="content-card-title">
+                    <i class="bi bi-lightning-fill"></i>
+                    اقدامات سریع
+                </h3>
+            </div>
+            <div class="content-card-body">
+                <div class="d-grid gap-3">
+                    <button class="btn btn-primary btn-lg text-right">
+                        <i class="bi bi-camera-video-fill me-2"></i>
+                        شروع کلاس جدید
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg text-right">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>
+                        آپلود PDF کتاب (AI)
+                    </button>
+                    <button class="btn btn-outline-success btn-lg text-right">
+                        <i class="bi bi-clipboard-check-fill me-2"></i>
+                        ثبت حضور و غیاب
+                    </button>
+                    <button class="btn btn-outline-info btn-lg text-right">
+                        <i class="bi bi-question-circle-fill me-2"></i>
+                        ایجاد آزمون جدید
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notifications -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h3 class="content-card-title">
+                    <i class="bi bi-bell-fill"></i>
+                    اعلان‌های اخیر
+                </h3>
+            </div>
+            <div class="content-card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-info-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="mb-1 small"><strong>کلاس جدید</strong></p>
+                                <small class="text-muted">۵ دقیقه پیش</small>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="mb-1 small"><strong>آزمون تکمیل شد</strong></p>
+                                <small class="text-muted">۲ ساعت پیش</small>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <p class="mb-1 small"><strong>هشدار غیبت</strong></p>
+                                <small class="text-muted">دیروز</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

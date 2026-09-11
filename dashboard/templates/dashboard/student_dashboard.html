@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}داشبورد دانش‌آموز - سامانه پایش هوشمند{% endblock %}
+
+{% block content %}
+<style>
+    .student-dashboard {
+        --sd-primary: #1a237e;
+        --sd-primary-2: #283593;
+        --sd-secondary: #ffc107;
+        --sd-dark: #17224a;
+        --sd-body: #667085;
+        --sd-border: #eef2f8;
+        --sd-success: #16a34a;
+        --sd-danger: #dc2626;
+        --sd-warning: #d97706;
+        --sd-info: #0284c7;
+        --sd-white: #ffffff;
+        --sd-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+    }
+
+    .student-dashboard .content-card {
+        background: #fff;
+        border: 1px solid var(--sd-border);
+        border-radius: 22px;
+        box-shadow: var(--sd-shadow);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .student-dashboard .content-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .student-dashboard .content-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--sd-dark);
+    }
+
+    .student-dashboard .content-card-title i {
+        color: var(--sd-secondary);
+        font-size: 1.15rem;
+    }
+
+    .student-dashboard .content-card-body {
+        padding: 22px;
+    }
+
+    .student-dashboard .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #f7f9fd;
+        border: 1px solid #e8edf6;
+        color: #5b6472;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .student-dashboard .sd-breadcrumb {
+        background: linear-gradient(135deg, rgba(26, 35, 126, 0.06), rgba(255, 193, 7, 0.08));
+        border: 1px solid #edf1f8;
+        margin-bottom: 24px;
+        padding: 20px 22px;
+    }
+
+    .student-dashboard .breadcrumb-title {
+        font-size: 1.35rem;
+        color: var(--sd-primary);
+    }
+
+    .student-dashboard .hero-card {
+        border: none;
+        background: linear-gradient(135deg, #1a237e 0%, #303f9f 55%, #1a237e 100%);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .student-dashboard .hero-card:before {
+        content: '';
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        top: -100px;
+        left: -80px;
+    }
+
+    .student-dashboard .hero-card:after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        bottom: -90px;
+        right: -60px;
+    }
+
+    .student-dashboard .hero-body {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        padding: 28px;
+    }
+
+    .student-dashboard .hero-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .student-dashboard .hero-avatar {
+        width: 86px;
+        height: 86px;
+        border-radius: 24px;
+        background: var(--sd-secondary);
+        color: #202a5e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 900;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.18);
+        flex: 0 0 auto;
+    }
+
+    .student-dashboard .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: #ffe9a8;
+        font-size: 0.78rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .student-dashboard .hero-info h3 {
+        margin: 0 0 7px;
+        font-size: 1.55rem;
+        font-weight: 900;
+    }
+
+    .student-dashboard .hero-info p {
+        margin: 0 0 14px;
+        color: rgba(255, 255, 255, 0.78);
+        max-width: 580px;
+    }
+
+    .student-dashboard .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+    }
+
+    .student-dashboard .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .student-dashboard .hero-chip i {
+        color: var(--sd-secondary);
+    }
+
+    .student-dashboard .hero-side {
+        width: 330px;
+        flex: 0 0 auto;
+    }
+
+    .student-dashboard .hero-progress-card {
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 20px;
+        padding: 18px;
+        backdrop-filter: blur(6px);
+    }
+
+    .student-dashboard .hero-progress-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.83rem;
+        font-weight: 700;
+    }
+
+    .student-dashboard .hero-progress-title strong {
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    .student-dashboard .sd-progress {
+        height: 10px;
+        border-radius: 999px;
+        background: #edf1f7;
+        overflow: hidden;
+    }
+
+    .student-dashboard .sd-progress.light {
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    .student-dashboard .sd-progress-bar {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--sd-primary), var(--sd-primary-2));
+    }
+
+    .student-dashboard .sd-progress-bar.success {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+    }
+
+    .student-dashboard .sd-progress-bar.warning {
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    .student-dashboard .sd-progress-bar.danger {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .student-dashboard .sd-progress-bar.info {
+        background: linear-gradient(90deg, #38bdf8, #0284c7);
+    }
+
+    .student-dashboard .summary-box {
+        border-radius: 18px;
+        padding: 15px 17px;
+        line-height: 2;
+        font-size: 0.92rem;
+        border: 1px solid transparent;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .student-dashboard .summary-box i {
+        font-size: 1.15rem;
+        margin-top: 4px;
+    }
+
+    .student-dashboard .summary-box.info {
+        color: #364152;
+        background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(14, 165, 233, 0.06));
+        border-color: #e4ebf6;
+    }
+
+    .student-dashboard .summary-box.success {
+        color: #364152;
+        background: linear-gradient(135deg, rgba(22, 163, 74, 0.06), rgba(255, 193, 7, 0.06));
+        border-color: #e4efe8;
+    }
+
+    .student-dashboard .summary-box strong {
+        color: var(--sd-dark);
+    }
+
+    .student-dashboard .stat-card {
+        position: relative;
+        height: 100%;
+        background: #fff;
+        border: 1px solid #edf1f8;
+        border-radius: 20px;
+        padding: 18px;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .student-dashboard .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .student-dashboard .stat-card:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--sd-primary), var(--sd-primary-2));
+    }
+
+    .student-dashboard .stat-card.success:before {
+        background: linear-gradient(180deg, #22c55e, #16a34a);
+    }
+
+    .student-dashboard .stat-card.danger:before {
+        background: linear-gradient(180deg, #ef4444, #dc2626);
+    }
+
+    .student-dashboard .stat-card.warning:before {
+        background: linear-gradient(180deg, #f59e0b, #d97706);
+    }
+
+    .student-dashboard .stat-card.info:before {
+        background: linear-gradient(180deg, #38bdf8, #0284c7);
+    }
+
+    .student-dashboard .stat-card-title {
+        color: #7b8494;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .student-dashboard .stat-card-value {
+        color: #17224a;
+        font-size: 1.85rem;
+        font-weight: 950;
+        line-height: 1.15;
+        margin-bottom: 10px;
+    }
+
+    .student-dashboard .stat-card-trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: #f7f9fd;
+        border: 1px solid #e9eef7;
+        color: #667085;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .student-dashboard .stat-card-trend.down {
+        color: #dc2626;
+        background: #fff3f3;
+        border-color: #ffd7d7;
+    }
+
+    .student-dashboard .stat-card-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        background: rgba(26, 35, 126, 0.09);
+        color: var(--sd-primary);
+        flex: 0 0 auto;
+    }
+
+    .student-dashboard .stat-card.success .stat-card-icon {
+        background: rgba(22, 163, 74, 0.10);
+        color: var(--sd-success);
+    }
+
+    .student-dashboard .stat-card.danger .stat-card-icon {
+        background: rgba(220, 38, 38, 0.10);
+        color: var(--sd-danger);
+    }
+
+    .student-dashboard .stat-card.warning .stat-card-icon {
+        background: rgba(217, 119, 6, 0.12);
+        color: var(--sd-warning);
+    }
+
+    .student-dashboard .stat-card.info .stat-card-icon {
+        background: rgba(2, 132, 199, 0.10);
+        color: var(--sd-info);
+    }
+
+    .student-dashboard .progress-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 9px;
+        font-size: 0.87rem;
+        font-weight: 800;
+        color: #4d5866;
+    }
+
+    .student-dashboard .chart-card {
+        height: 100%;
+        background: #fff;
+        border: 1px solid #edf1f8;
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .student-dashboard .chart-title {
+        margin-bottom: 14px;
+        color: #22304f;
+        font-weight: 800;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 11px;
+        border-bottom: 1px solid #f2f5fa;
+    }
+
+    .student-dashboard .chart-title i {
+        color: var(--sd-secondary);
+        font-size: 1.05rem;
+    }
+
+    .student-dashboard .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 320px;
+    }
+
+    .student-dashboard .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .student-dashboard .data-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 13px 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .student-dashboard .data-table tbody td {
+        padding: 14px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.9rem;
+    }
+
+    .student-dashboard .data-table tbody tr {
+        transition: background 0.18s ease;
+    }
+
+    .student-dashboard .data-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .student-dashboard .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .student-dashboard .badge-success {
+        background: rgba(22, 163, 74, 0.11);
+        color: #15803d;
+    }
+
+    .student-dashboard .badge-warning {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .student-dashboard .badge-info {
+        background: rgba(2, 132, 199, 0.11);
+        color: #0369a1;
+    }
+
+    .student-dashboard .badge-danger {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .student-dashboard .btn-soft {
+        border: 1px solid #dfe6f2;
+        background: #fff;
+        color: var(--sd-primary);
+        border-radius: 11px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s ease;
+    }
+
+    .student-dashboard .btn-soft:hover {
+        background: var(--sd-primary);
+        border-color: var(--sd-primary);
+        color: #fff;
+    }
+
+    .student-dashboard .empty-state {
+        text-align: center;
+        padding: 46px 20px;
+        background: #fbfcfe;
+        border: 1px dashed #dbe3ef;
+        border-radius: 20px;
+    }
+
+    .student-dashboard .empty-icon {
+        width: 74px;
+        height: 74px;
+        border-radius: 24px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 14px;
+    }
+
+    .student-dashboard .empty-state h5 {
+        font-weight: 900;
+        color: #364152;
+        margin-bottom: 7px;
+    }
+
+    .student-dashboard .empty-state p {
+        color: #8a94a6;
+        margin: 0;
+    }
+
+    @media (max-width: 1199px) {
+        .student-dashboard .hero-body {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .student-dashboard .hero-side {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .student-dashboard .content-card-body {
+            padding: 16px;
+        }
+
+        .student-dashboard .hero-body {
+            padding: 18px;
+        }
+
+        .student-dashboard .hero-avatar {
+            width: 66px;
+            height: 66px;
+            font-size: 1.7rem;
+            border-radius: 20px;
+        }
+
+        .student-dashboard .hero-info h3 {
+            font-size: 1.2rem;
+        }
+
+        .student-dashboard .stat-card-value {
+            font-size: 1.5rem;
+        }
+
+        .student-dashboard .chart-wrapper {
+            height: 260px;
+        }
+    }
+</style>
+
+<div class="student-dashboard">
+    <div class="page-breadcrumb sd-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-mortarboard-fill"></i>
+            داشبورد دانش‌آموز
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>داشبورد من</span>
+        </div>
+    </div>
+
+    {% include 'dashboard/components/student_profile_card.html' %}
+    {% include 'dashboard/components/attendance_section.html' %}
+    {% include 'dashboard/components/questions_section.html' %}
+    {% include 'dashboard/components/classes_table.html' %}
+
+    {{ attendance_chart_data|json_script:"attendanceChartData" }}
+    {{ answer_chart_data|json_script:"answerChartData" }}
+
+    {% include 'dashboard/components/chart_scripts.html' %}
+</div>
+{% endblock %}

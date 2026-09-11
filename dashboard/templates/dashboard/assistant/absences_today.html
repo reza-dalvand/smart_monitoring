@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+
+{% block title %}غیبت‌های امروز - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .abs-page {
+        --ab-primary: #1a237e;
+        --ab-secondary: #ffc107;
+        --ab-danger: #dc2626;
+    }
+
+    .abs-hero {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 25px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(220, 38, 38, 0.25);
+    }
+
+    .abs-hero::before {
+        content: '';
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        top: -90px;
+        right: -80px;
+    }
+
+    .abs-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .abs-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .abs-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--ab-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--ab-primary);
+    }
+
+    .abs-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.6rem;
+        font-weight: 900;
+    }
+
+    .abs-hero-text p {
+        margin: 0;
+        opacity: 0.95;
+    }
+
+    .abs-hero-stat {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 15px 25px;
+        border-radius: 15px;
+        text-align: center;
+        backdrop-filter: blur(6px);
+    }
+
+    .abs-hero-stat-value {
+        font-size: 2rem;
+        font-weight: 950;
+        display: block;
+    }
+
+    .abs-hero-stat-label {
+        font-size: 0.85rem;
+        opacity: 0.95;
+    }
+
+    .abs-filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+
+    .abs-filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        align-items: end;
+    }
+
+    .abs-table-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .abs-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .abs-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .abs-table tbody td {
+        padding: 14px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+    }
+
+    .abs-table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .abs-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .abs-student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .abs-student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--ab-secondary);
+        color: var(--ab-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .abs-student-name {
+        font-weight: 700;
+        color: #17224a;
+        margin: 0;
+    }
+
+    .abs-student-id {
+        font-size: 0.78rem;
+        color: #8a94a6;
+        margin: 0;
+    }
+
+    .abs-phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+        font-size: 0.85rem;
+        font-weight: 700;
+        direction: ltr;
+    }
+
+    .abs-phone-badge.empty {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .abs-parent-name {
+        font-size: 0.8rem;
+        color: #7b8494;
+        margin-top: 3px;
+    }
+
+    .abs-badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 11px;
+        border-radius: 8px;
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .abs-empty {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .abs-empty-icon {
+        width: 90px;
+        height: 90px;
+        background: #f0fdf4;
+        color: #16a34a;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 18px;
+    }
+
+    @media (max-width: 576px) {
+        .abs-hero {
+            padding: 20px;
+        }
+        .abs-hero-text h2 {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+
+<div class="abs-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-person-x-fill"></i>
+            غیبت‌های امروز
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:assistant_dashboard' %}">پنل معاون</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>غیبت‌ها</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="abs-hero">
+        <div class="abs-hero-content">
+            <div class="abs-hero-title">
+                <div class="abs-hero-icon">
+                    <i class="bi bi-person-x-fill"></i>
+                </div>
+                <div class="abs-hero-text">
+                    <h2>گزارش غیبت‌های {{ today|date:"Y/m/d" }}</h2>
+                    <p>لیست دانش‌آموزان غایب به همراه شماره تماس والدین</p>
+                </div>
+            </div>
+            <div class="abs-hero-stat">
+                <span class="abs-hero-stat-value">{{ total_absences }}</span>
+                <span class="abs-hero-stat-label">غیبت امروز</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="abs-filter-card">
+        <form method="get" class="abs-filter-form">
+            <div>
+                <label class="form-label small fw-bold mb-1">پایه تحصیلی</label>
+                <select name="grade" class="form-select form-select-sm">
+                    <option value="">همه پایه‌ها</option>
+                    {% for value, label in grades %}
+                        <option value="{{ value }}" {% if grade_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label small fw-bold mb-1">رشته</label>
+                <select name="field" class="form-select form-select-sm">
+                    <option value="">همه رشته‌ها</option>
+                    {% for value, label in fields %}
+                        <option value="{{ value }}" {% if field_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label small fw-bold mb-1">کلاس</label>
+                <select name="classroom" class="form-select form-select-sm">
+                    <option value="">همه کلاس‌ها</option>
+                    {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}" {% if class_filter == classroom.id|stringformat:"s" %}selected{% endif %}>
+                            {{ classroom.name }} - {{ classroom.get_grade_display }} {{ classroom.get_field_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill"></i>
+                    اعمال فیلتر
+                </button>
+                <a href="{% url 'dashboard:assistant_absences' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="abs-table-card">
+        {% if absences_with_parent %}
+            <div class="table-responsive">
+                <table class="abs-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>دانش‌آموز</th>
+                            <th>کلاس</th>
+                            <th>درس</th>
+                            <th>زمان</th>
+                            <th>شماره والدین</th>
+                            <th>وضعیت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in absences_with_parent %}
+                            <tr>
+                                <td><strong>{{ forloop.counter }}</strong></td>
+                                <td>
+                                    <div class="abs-student-info">
+                                        <div class="abs-student-avatar">
+                                            {{ item.record.student.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <p class="abs-student-name">
+                                                {{ item.record.student.get_full_name|default:item.record.student.username }}
+                                            </p>
+                                            {% if item.record.student.national_id %}
+                                                <p class="abs-student-id">
+                                                    کد ملی: {{ item.record.student.national_id }}
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ item.record.attendance_check.session.classroom.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ item.record.attendance_check.session.classroom.get_grade_display }} - 
+                                        {{ item.record.attendance_check.session.classroom.get_field_display }}
+                                    </small>
+                                </td>
+                                <td>{{ item.record.attendance_check.session.classroom.subject }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ item.record.attendance_check.check_time|time:"H:i" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if item.parent_phone %}
+                                        <div class="abs-phone-badge">
+                                            <i class="bi bi-telephone-fill"></i>
+                                            {{ item.parent_phone }}
+                                        </div>
+                                        {% if item.parent_name %}
+                                            <div class="abs-parent-name">
+                                                <i class="bi bi-person-fill"></i>
+                                                {{ item.parent_name }}
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="abs-phone-badge empty">
+                                            <i class="bi bi-exclamation-circle-fill"></i>
+                                            ثبت نشده
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="abs-badge-status">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                        غایب
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="abs-empty">
+                <div class="abs-empty-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h5 style="color: #17224a; font-weight: 800;">هیچ غیبتی ثبت نشده است</h5>
+                <p class="text-muted">امروز تمام دانش‌آموزان حاضر بوده‌اند یا هیچ حضور و غیابی ثبت نشده است.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

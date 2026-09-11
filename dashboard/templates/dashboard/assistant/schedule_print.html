@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}چاپ برنامه هفتگی - {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .print-container {
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    }
+
+    .print-header {
+        text-align: center;
+        border-bottom: 3px solid #1a237e;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .print-header h1 {
+        color: #1a237e;
+        font-weight: 900;
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+
+    .print-header h3 {
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .print-info {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+
+    .print-info-item {
+        color: #667085;
+        font-size: 0.9rem;
+    }
+
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .print-table th {
+        background: #1a237e;
+        color: white;
+        padding: 14px;
+        font-weight: 800;
+        border: 1px solid #1a237e;
+    }
+
+    .print-table td {
+        padding: 14px;
+        border: 1px solid #e0e0e0;
+        text-align: center;
+        vertical-align: top;
+        min-height: 70px;
+    }
+
+    .print-class-box {
+        background: #f8fafc;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    .print-class-time {
+        font-weight: 800;
+        color: #1a237e;
+        margin-bottom: 4px;
+    }
+
+    .print-class-subject {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .print-class-room {
+        font-size: 0.75rem;
+        color: #7b8494;
+        margin-top: 2px;
+    }
+
+    .print-footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        text-align: center;
+        color: #7b8494;
+        font-size: 0.85rem;
+    }
+
+    .print-actions {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .print-container,
+        .print-container * {
+            visibility: visible;
+        }
+        .print-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: none;
+        }
+        .print-actions,
+        .page-breadcrumb,
+        .main-header,
+        .sidebar {
+            display: none !important;
+        }
+        .main-content {
+            margin: 0;
+            padding: 0;
+        }
+    }
+</style>
+
+<div class="print-actions">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="bi bi-printer-fill"></i>
+        چاپ
+    </button>
+    <a href="{% url 'dashboard:assistant_schedule' %}?classroom={{ classroom.id }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right"></i>
+        بازگشت
+    </a>
+</div>
+
+<div class="print-container">
+    <div class="print-header">
+        <h1>برنامه هفتگی کلاس</h1>
+        <h3>{{ classroom.name }} - {{ classroom.subject }}</h3>
+        <div class="print-info">
+            <div class="print-info-item">
+                <i class="bi bi-mortarboard-fill"></i>
+                پایه {{ classroom.get_grade_display }}
+            </div>
+            <div class="print-info-item">
+                <i class="bi bi-collection-fill"></i>
+                رشته {{ classroom.get_field_display }}
+            </div>
+            <div class="print-info-item">
+                <i class="bi bi-person-workspace"></i>
+                معلم: {{ classroom.teacher_name }}
+            </div>
+        </div>
+    </div>
+
+    <table class="print-table">
+        <thead>
+            <tr>
+                <th>روز / زنگ</th>
+                <th>زنگ اول</th>
+                <th>زنگ دوم</th>
+                <th>زنگ سوم</th>
+                <th>زنگ چهارم</th>
+                <th>زنگ پنجم</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in schedule_days %}
+                <tr>
+                    <td style="background: #f8fafc; font-weight: 800; color: #1a237e;">
+                        {{ day.name }}
+                    </td>
+                    {% for slot in "12345" %}
+                        <td>
+                            {% with forloop.counter0 as slot_index %}
+                                {% for class in day.classes %}
+                                    {% if forloop.counter0 == slot_index %}
+                                        <div class="print-class-box">
+                                            <div class="print-class-time">
+                                                {{ class.start_time|time:"H:i" }}
+                                            </div>
+                                            <div class="print-class-subject">
+                                                {{ class.classroom.subject }}
+                                            </div>
+                                            {% if class.room %}
+                                                <div class="print-class-room">
+                                                    اتاق {{ class.room }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="print-footer">
+        <p>سامانه پایش هوشمند - تاریخ چاپ: {% now "Y/m/d" %}</p>
+    </div>
+</div>
+{% endblock %}

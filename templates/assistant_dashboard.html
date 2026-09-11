@@ -1,0 +1,578 @@
+{% extends 'base.html' %}
+
+{% block title %}پنل معاون - سامانه پایش هوشمند{% endblock %}
+
+{% block content %}
+<style>
+    .assistant-dashboard {
+        --ad-primary: #1a237e;
+        --ad-secondary: #ffc107;
+        --ad-success: #16a34a;
+        --ad-danger: #dc2626;
+        --ad-warning: #d97706;
+        --ad-info: #0284c7;
+    }
+
+    .ad-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.2);
+    }
+
+    .ad-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .ad-hero::after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        bottom: -80px;
+        left: -60px;
+    }
+
+    .ad-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+
+    .ad-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .ad-hero-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--ad-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.3rem;
+        color: var(--ad-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .ad-hero-text h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.8rem;
+        font-weight: 900;
+    }
+
+    .ad-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .ad-hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .ad-hero-btn {
+        padding: 12px 22px;
+        border-radius: 13px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        border: 2px solid transparent;
+    }
+
+    .ad-hero-btn.primary {
+        background: var(--ad-secondary);
+        color: var(--ad-primary);
+    }
+
+    .ad-hero-btn.primary:hover {
+        background: white;
+        color: var(--ad-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+    }
+
+    .ad-hero-btn.outline {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .ad-hero-btn.outline:hover {
+        background: white;
+        color: var(--ad-primary);
+    }
+
+    .ad-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .ad-stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .ad-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .ad-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--ad-primary), var(--ad-secondary));
+    }
+
+    .ad-stat-card.success::before { background: linear-gradient(180deg, #22c55e, #16a34a); }
+    .ad-stat-card.warning::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
+    .ad-stat-card.danger::before { background: linear-gradient(180deg, #ef4444, #dc2626); }
+    .ad-stat-card.info::before { background: linear-gradient(180deg, #38bdf8, #0284c7); }
+
+    .ad-stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .ad-stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        background: rgba(26, 35, 126, 0.09);
+        color: var(--ad-primary);
+    }
+
+    .ad-stat-card.success .ad-stat-icon {
+        background: rgba(22, 163, 74, 0.10);
+        color: var(--ad-success);
+    }
+
+    .ad-stat-card.warning .ad-stat-icon {
+        background: rgba(217, 119, 6, 0.12);
+        color: var(--ad-warning);
+    }
+
+    .ad-stat-card.danger .ad-stat-icon {
+        background: rgba(220, 38, 38, 0.10);
+        color: var(--ad-danger);
+    }
+
+    .ad-stat-card.info .ad-stat-icon {
+        background: rgba(2, 132, 199, 0.10);
+        color: var(--ad-info);
+    }
+
+    .ad-stat-title {
+        color: #7b8494;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .ad-stat-value {
+        color: #17224a;
+        font-size: 2rem;
+        font-weight: 950;
+        line-height: 1.15;
+        margin-bottom: 8px;
+    }
+
+    .ad-stat-trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f7f9fd;
+        border: 1px solid #e9eef7;
+        color: #667085;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .ad-content-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .ad-content-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .ad-content-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .ad-content-title i {
+        color: var(--ad-secondary);
+        font-size: 1.2rem;
+    }
+
+    .ad-content-body {
+        padding: 24px;
+    }
+
+    .ad-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+    }
+
+    .ad-quick-action {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border: 1px solid #edf1f8;
+        text-decoration: none;
+        color: #2c3e50;
+        transition: all 0.25s ease;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .ad-quick-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 22px rgba(26, 35, 126, 0.1);
+        border-color: #c7d2fe;
+        color: var(--ad-primary);
+    }
+
+    .ad-quick-action-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: rgba(26, 35, 126, 0.09);
+        color: var(--ad-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .ad-quick-action.success .ad-quick-action-icon {
+        background: rgba(22, 163, 74, 0.10);
+        color: var(--ad-success);
+    }
+
+    .ad-quick-action.warning .ad-quick-action-icon {
+        background: rgba(217, 119, 6, 0.12);
+        color: var(--ad-warning);
+    }
+
+    .ad-quick-action.info .ad-quick-action-icon {
+        background: rgba(2, 132, 199, 0.10);
+        color: var(--ad-info);
+    }
+
+    .ad-empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    .ad-empty-icon {
+        font-size: 3rem;
+        opacity: 0.4;
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 576px) {
+        .ad-hero {
+            padding: 22px;
+        }
+        .ad-hero-text h2 {
+            font-size: 1.35rem;
+        }
+        .ad-stat-value {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+
+<div class="assistant-dashboard">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-person-badge-fill"></i>
+            پنل معاون آموزشی
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>داشبورد معاون</span>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="ad-hero">
+        <div class="ad-hero-content">
+            <div class="ad-hero-title">
+                <div class="ad-hero-icon">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div class="ad-hero-text">
+                    <h2>خوش آمدید، {{ user.get_full_name|default:user.username }}</h2>
+                    <p>مدیریت کلاس‌ها، برنامه هفتگی و نظارت بر حضور و غیاب دانش‌آموزان</p>
+                </div>
+            </div>
+
+            <div class="ad-hero-actions">
+                <a href="{% url 'dashboard:assistant_class_create' %}" class="ad-hero-btn primary">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    کلاس جدید
+                </a>
+                <a href="{% url 'dashboard:assistant_schedule' %}" class="ad-hero-btn outline">
+                    <i class="bi bi-calendar-week-fill"></i>
+                    برنامه هفتگی
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="ad-stats-grid">
+        <div class="ad-stat-card">
+            <div class="ad-stat-header">
+                <div>
+                    <div class="ad-stat-title">کل کلاس‌ها</div>
+                    <div class="ad-stat-value">{{ total_classes }}</div>
+                </div>
+                <div class="ad-stat-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+            </div>
+            <span class="ad-stat-trend">
+                <i class="bi bi-graph-up"></i>
+                فعال در سیستم
+            </span>
+        </div>
+
+        <div class="ad-stat-card success">
+            <div class="ad-stat-header">
+                <div>
+                    <div class="ad-stat-title">دانش‌آموزان</div>
+                    <div class="ad-stat-value">{{ total_students }}</div>
+                </div>
+                <div class="ad-stat-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <span class="ad-stat-trend">
+                <i class="bi bi-mortarboard-fill"></i>
+                ثبت‌نام شده
+            </span>
+        </div>
+
+        <div class="ad-stat-card info">
+            <div class="ad-stat-header">
+                <div>
+                    <div class="ad-stat-title">معلم‌ها</div>
+                    <div class="ad-stat-value">{{ total_teachers }}</div>
+                </div>
+                <div class="ad-stat-icon">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+            </div>
+            <span class="ad-stat-trend">
+                <i class="bi bi-briefcase-fill"></i>
+                در حال تدریس
+            </span>
+        </div>
+
+        <div class="ad-stat-card danger">
+            <div class="ad-stat-header">
+                <div>
+                    <div class="ad-stat-title">غیبت‌های امروز</div>
+                    <div class="ad-stat-value">{{ today_absent_count }}</div>
+                </div>
+                <div class="ad-stat-icon">
+                    <i class="bi bi-person-x-fill"></i>
+                </div>
+            </div>
+            <a href="{% url 'dashboard:assistant_absences' %}" class="ad-stat-trend" style="text-decoration: none;">
+                <i class="bi bi-eye-fill"></i>
+                مشاهده جزئیات
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="ad-content-card">
+        <div class="ad-content-header">
+            <h3 class="ad-content-title">
+                <i class="bi bi-lightning-fill"></i>
+                دسترسی سریع
+            </h3>
+        </div>
+        <div class="ad-content-body">
+            <div class="ad-quick-actions">
+                <a href="{% url 'dashboard:assistant_absences' %}" class="ad-quick-action">
+                    <div class="ad-quick-action-icon">
+                        <i class="bi bi-person-x-fill"></i>
+                    </div>
+                    <div>
+                        <div>غیبت‌های امروز</div>
+                        <small class="text-muted d-block mt-1">با شماره والدین</small>
+                    </div>
+                </a>
+
+                <a href="{% url 'dashboard:assistant_class_list' %}" class="ad-quick-action success">
+                    <div class="ad-quick-action-icon">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
+                    <div>
+                        <div>لیست کلاس‌ها</div>
+                        <small class="text-muted d-block mt-1">مدیریت کلاس‌ها</small>
+                    </div>
+                </a>
+
+                <a href="{% url 'dashboard:assistant_schedule' %}" class="ad-quick-action info">
+                    <div class="ad-quick-action-icon">
+                        <i class="bi bi-calendar-week-fill"></i>
+                    </div>
+                    <div>
+                        <div>برنامه هفتگی</div>
+                        <small class="text-muted d-block mt-1">ساخت و ویرایش</small>
+                    </div>
+                </a>
+
+                <a href="{% url 'dashboard:assistant_students' %}" class="ad-quick-action warning">
+                    <div class="ad-quick-action-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <div>دانش‌آموزان</div>
+                        <small class="text-muted d-block mt-1">اطلاعات تماس</small>
+                    </div>
+                </a>
+
+                <a href="{% url 'dashboard:assistant_schedule_copy' %}" class="ad-quick-action">
+                    <div class="ad-quick-action-icon">
+                        <i class="bi bi-clipboard-check-fill"></i>
+                    </div>
+                    <div>
+                        <div>کپی برنامه</div>
+                        <small class="text-muted d-block mt-1">بین کلاس‌ها</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Absences -->
+    <div class="ad-content-card">
+        <div class="ad-content-header">
+            <h3 class="ad-content-title">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                آخرین غیبت‌های ثبت شده
+            </h3>
+            <a href="{% url 'dashboard:assistant_absences' %}" class="btn btn-sm btn-outline-primary">
+                مشاهده همه
+                <i class="bi bi-arrow-left ms-1"></i>
+            </a>
+        </div>
+        <div class="ad-content-body">
+            {% if recent_absences %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>نام دانش‌آموز</th>
+                                <th>کلاس</th>
+                                <th>درس</th>
+                                <th>زمان</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_absences %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ record.student.get_full_name|default:record.student.username }}</strong>
+                                    </td>
+                                    <td>{{ record.attendance_check.session.classroom.name }}</td>
+                                    <td>{{ record.attendance_check.session.classroom.subject }}</td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ record.attendance_check.check_time|timesince }} پیش
+                                        </small>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="ad-empty-state">
+                    <div class="ad-empty-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <p>امروز هیچ غیبتی ثبت نشده است</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

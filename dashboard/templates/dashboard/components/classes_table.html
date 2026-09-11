@@ -1,0 +1,71 @@
+<div class="content-card">
+    <div class="content-card-header">
+        <h3 class="content-card-title">
+            <i class="bi bi-journal-check"></i>
+            کلاس‌های من
+        </h3>
+
+        <span class="header-badge">
+            <i class="bi bi-collection"></i>
+            {{ classrooms.count }} کلاس
+        </span>
+    </div>
+
+    <div class="content-card-body">
+        {% if classrooms %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>نام کلاس</th>
+                            <th>درس</th>
+                            <th>معلم</th>
+                            <th>تعداد جلسات</th>
+                            <th>درصد حضور</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for classroom in classrooms %}
+                            <tr>
+                                <td>
+                                    <strong>{{ classroom.name }}</strong>
+                                </td>
+
+                                <td>
+                                    {{ classroom.subject }}
+                                </td>
+
+                                <td>
+                                    {{ classroom.teacher.get_full_name|default:classroom.teacher.username }}
+                                </td>
+
+                                <td>
+                                    <span class="badge-status badge-info">
+                                        {{ classroom.sessions.count }} جلسه
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="badge-status badge-success">
+                                        {{ attendance_percentage|default:0 }}٪
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button class="btn-soft" type="button">
+                                        <i class="bi bi-eye"></i>
+                                        مشاهده
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% include 'dashboard/components/empty_state.html' %}
+        {% endif %}
+    </div>
+</div>

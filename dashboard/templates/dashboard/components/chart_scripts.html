@@ -1,0 +1,291 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    (function () {
+        function initStudentCharts() {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js لود نشده است.');
+                return;
+            }
+
+            const attendanceElement = document.getElementById('attendanceChartData');
+            const answerElement = document.getElementById('answerChartData');
+
+            if (!attendanceElement || !answerElement) {
+                return;
+            }
+
+            let attendanceData = {};
+            let answerData = {};
+
+            try {
+                attendanceData = JSON.parse(attendanceElement.textContent);
+                answerData = JSON.parse(answerElement.textContent);
+            } catch (error) {
+                console.error('خطا در خواندن داده‌های نمودار:', error);
+                return;
+            }
+
+            const presentTotal = parseInt('{{ present_count|default:0|escapejs }}', 10) || 0;
+            const absentTotal = parseInt('{{ absent_count|default:0|escapejs }}', 10) || 0;
+
+            Chart.defaults.font.family = "'Vazirmatn', Tahoma, sans-serif";
+            Chart.defaults.color = '#2c3e50';
+
+            const tooltipStyle = {
+                rtl: true,
+                textDirection: 'rtl',
+                backgroundColor: '#111a3d',
+                padding: 12,
+                cornerRadius: 12,
+                boxPadding: 6,
+                titleFont: {
+                    weight: '700'
+                }
+            };
+
+            function createChart(canvasId, config) {
+                const canvas = document.getElementById(canvasId);
+
+                if (!canvas) {
+                    return;
+                }
+
+                const existingChart = Chart.getChart(canvas);
+
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+
+                new Chart(canvas.getContext('2d'), config);
+            }
+
+            createChart('attendanceChart', {
+                type: 'bar',
+                data: {
+                    labels: attendanceData.labels || [],
+                    datasets: [
+                        {
+                            label: 'حضور',
+                            data: attendanceData.present || [],
+                            backgroundColor: 'rgba(22, 163, 74, 0.82)',
+                            borderColor: 'rgba(22, 163, 74, 1)',
+                            borderWidth: 1.5,
+                            borderRadius: 8,
+                            maxBarThickness: 26
+                        },
+                        {
+                            label: 'غیبت',
+                            data: attendanceData.absent || [],
+                            backgroundColor: 'rgba(220, 38, 38, 0.75)',
+                            borderColor: 'rgba(220, 38, 38, 1)',
+                            borderWidth: 1.5,
+                            borderRadius: 8,
+                            maxBarThickness: 26
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true,
+                            align: 'end',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 16,
+                                font: {
+                                    size: 12,
+                                    weight: '700'
+                                }
+                            }
+                        },
+                        tooltip: tooltipStyle
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0,
+                                color: '#8a94a6',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: '#f0f3f8'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#667085',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            createChart('attendancePieChart', {
+                type: 'doughnut',
+                data: {
+                    labels: ['حاضر', 'غایب'],
+                    datasets: [
+                        {
+                            data: [presentTotal, absentTotal],
+                            backgroundColor: [
+                                'rgba(22, 163, 74, 0.85)',
+                                'rgba(220, 38, 38, 0.80)'
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                            hoverOffset: 8,
+                            spacing: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 18,
+                                font: {
+                                    size: 12,
+                                    weight: '700'
+                                }
+                            }
+                        },
+                        tooltip: tooltipStyle
+                    }
+                }
+            });
+
+            createChart('answerPieChart', {
+                type: 'doughnut',
+                data: {
+                    labels: answerData.labels || [],
+                    datasets: [
+                        {
+                            data: answerData.values || [],
+                            backgroundColor: [
+                                'rgba(22, 163, 74, 0.85)',
+                                'rgba(220, 38, 38, 0.75)',
+                                'rgba(148, 163, 184, 0.75)'
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                            hoverOffset: 8,
+                            spacing: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 18,
+                                font: {
+                                    size: 12,
+                                    weight: '700'
+                                }
+                            }
+                        },
+                        tooltip: tooltipStyle
+                    }
+                }
+            });
+
+            createChart('answerBarChart', {
+                type: 'bar',
+                data: {
+                    labels: answerData.labels || [],
+                    datasets: [
+                        {
+                            label: 'تعداد',
+                            data: answerData.values || [],
+                            backgroundColor: [
+                                'rgba(22, 163, 74, 0.82)',
+                                'rgba(220, 38, 38, 0.75)',
+                                'rgba(148, 163, 184, 0.72)'
+                            ],
+                            borderColor: [
+                                'rgba(22, 163, 74, 1)',
+                                'rgba(220, 38, 38, 1)',
+                                'rgba(148, 163, 184, 1)'
+                            ],
+                            borderWidth: 1.5,
+                            borderRadius: 8,
+                            maxBarThickness: 42
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: tooltipStyle
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0,
+                                color: '#8a94a6',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: '#f0f3f8'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#667085',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initStudentCharts);
+        } else {
+            initStudentCharts();
+        }
+    })();
+</script>

@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+
+{% block title %}ساخت برنامه هفتگی - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .sb-page {
+        --sb-primary: #1a237e;
+        --sb-secondary: #ffc107;
+    }
+
+    .sb-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(26, 35, 126, 0.2);
+    }
+
+    .sb-hero::before {
+        content: '';
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -80px;
+        right: -60px;
+    }
+
+    .sb-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .sb-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .sb-hero-icon {
+        width: 65px;
+        height: 65px;
+        background: var(--sb-secondary);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+        color: var(--sb-primary);
+    }
+
+    .sb-hero-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .sb-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .sb-card-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sb-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .sb-card-title i {
+        color: var(--sb-secondary);
+    }
+
+    .sb-card-body {
+        padding: 22px;
+    }
+
+    .sb-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+    }
+
+    .sb-form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sb-form-label {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+    }
+
+    .sb-form-control {
+        padding: 10px 14px;
+        border: 2px solid #e8edf6;
+        border-radius: 10px;
+        background: #fbfcfe;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .sb-form-control:focus {
+        outline: none;
+        border-color: var(--sb-primary);
+        background: white;
+    }
+
+    .sb-day-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        margin-bottom: 22px;
+        overflow: hidden;
+    }
+
+    .sb-day-header {
+        background: linear-gradient(90deg, #1a237e 0%, #303f9f 100%);
+        color: white;
+        padding: 16px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sb-day-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.1rem;
+    }
+
+    .sb-day-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--sb-secondary);
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--sb-primary);
+        font-size: 1.25rem;
+    }
+
+    .sb-day-count {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .sb-day-body {
+        padding: 20px;
+    }
+
+    .sb-class-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+    }
+
+    .sb-class-item {
+        background: #f8fafc;
+        border: 1px solid #edf1f8;
+        border-radius: 12px;
+        padding: 14px;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .sb-class-item:hover {
+        background: #f1f5f9;
+        transform: translateY(-2px);
+    }
+
+    .sb-class-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--sb-primary);
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .sb-class-subject {
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 4px 0;
+        font-size: 1rem;
+    }
+
+    .sb-class-room {
+        font-size: 0.82rem;
+        color: #7b8494;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .sb-delete-btn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(220, 38, 38, 0.08);
+        color: #dc2626;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .sb-delete-btn:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    .sb-empty-day {
+        text-align: center;
+        padding: 30px;
+        color: #94a3b8;
+    }
+
+    .sb-class-info-box {
+        background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(255, 193, 7, 0.08));
+        border: 1px solid #edf1f8;
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .sb-class-info-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--sb-primary);
+        color: var(--sb-secondary);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .sb-class-info-text h5 {
+        margin: 0 0 4px 0;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .sb-class-info-text p {
+        margin: 0;
+        color: #667085;
+        font-size: 0.88rem;
+    }
+
+    .sb-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .sb-action-btn {
+        padding: 9px 16px;
+        border-radius: 11px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+    }
+
+    .sb-action-btn.primary {
+        background: var(--sb-primary);
+        color: white;
+    }
+
+    .sb-action-btn.primary:hover {
+        background: #303f9f;
+    }
+
+    .sb-action-btn.success {
+        background: #16a34a;
+        color: white;
+    }
+
+    .sb-action-btn.success:hover {
+        background: #15803d;
+    }
+
+    .sb-btn-submit {
+        background: linear-gradient(135deg, var(--sb-primary), #303f9f);
+        color: white;
+        padding: 12px 22px;
+        border-radius: 12px;
+        border: none;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+        margin-top: 15px;
+    }
+
+    .sb-btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(26, 35, 126, 0.3);
+    }
+</style>
+
+<div class="sb-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-calendar-week-fill"></i>
+            ساخت برنامه هفتگی
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:assistant_dashboard' %}">پنل معاون</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>برنامه هفتگی</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="sb-hero">
+        <div class="sb-hero-content">
+            <div class="sb-hero-title">
+                <div class="sb-hero-icon">
+                    <i class="bi bi-calendar-week-fill"></i>
+                </div>
+                <div class="sb-hero-text">
+                    <h2>برنامه هفتگی کلاس‌ها</h2>
+                    <p>انتخاب کلاس و تنظیم جلسات هفتگی</p>
+                </div>
+            </div>
+
+            <div class="sb-actions">
+                <a href="{% url 'dashboard:assistant_schedule_copy' %}" class="sb-action-btn primary">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                    کپی برنامه
+                </a>
+                {% if selected_classroom %}
+                    <a href="{% url 'dashboard:assistant_schedule_print' selected_classroom.id %}" class="sb-action-btn success" target="_blank">
+                        <i class="bi bi-printer-fill"></i>
+                        چاپ
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Selector -->
+    <div class="sb-card">
+        <div class="sb-card-header">
+            <h3 class="sb-card-title">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                انتخاب کلاس
+            </h3>
+        </div>
+        <div class="sb-card-body">
+            <form method="get" class="sb-form-grid">
+                <div class="sb-form-group" style="grid-column: 1 / -1;">
+                    <label class="sb-form-label">کلاس مورد نظر را انتخاب کنید:</label>
+                    <select name="classroom" class="sb-form-control" onchange="this.form.submit()">
+                        <option value="">-- یک کلاس انتخاب کنید --</option>
+                        {% for classroom in classrooms %}
+                            <option value="{{ classroom.id }}" {% if selected_classroom and selected_classroom.id == classroom.id %}selected{% endif %}>
+                                {{ classroom.name }} - {{ classroom.subject }} ({{ classroom.get_grade_display }} - {{ classroom.get_field_display }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_classroom %}
+        <!-- Class Info -->
+        <div class="sb-class-info-box">
+            <div class="sb-class-info-icon">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <div class="sb-class-info-text">
+                <h5>{{ selected_classroom.name }} - {{ selected_classroom.subject }}</h5>
+                <p>
+                    پایه {{ selected_classroom.get_grade_display }} - 
+                    رشته {{ selected_classroom.get_field_display }} - 
+                    معلم: {{ selected_classroom.teacher_name }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Add New Schedule -->
+        <div class="sb-card">
+            <div class="sb-card-header">
+                <h3 class="sb-card-title">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    افزودن جلسه جدید
+                </h3>
+            </div>
+            <div class="sb-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="sb-form-grid">
+                        <div class="sb-form-group">
+                            <label class="sb-form-label">روز هفته</label>
+                            {{ form.day_of_week }}
+                        </div>
+                        <div class="sb-form-group">
+                            <label class="sb-form-label">ساعت شروع</label>
+                            {{ form.start_time }}
+                        </div>
+                        <div class="sb-form-group">
+                            <label class="sb-form-label">ساعت پایان</label>
+                            {{ form.end_time }}
+                        </div>
+                        <div class="sb-form-group">
+                            <label class="sb-form-label">اتاق (اختیاری)</label>
+                            {{ form.room }}
+                        </div>
+                    </div>
+                    <button type="submit" class="sb-btn-submit">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        افزودن به برنامه
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Schedule by Day -->
+        {% for day in schedule_days %}
+            <div class="sb-day-card">
+                <div class="sb-day-header">
+                    <h3 class="sb-day-title">
+                        <div class="sb-day-icon">
+                            <i class="bi bi-calendar-day-fill"></i>
+                        </div>
+                        {{ day.name }}
+                    </h3>
+                    <span class="sb-day-count">
+                        {{ day.count }} جلسه
+                    </span>
+                </div>
+                <div class="sb-day-body">
+                    {% if day.classes %}
+                        <div class="sb-class-list">
+                            {% for schedule in day.classes %}
+                                <div class="sb-class-item">
+                                    <form method="post" action="{% url 'dashboard:assistant_schedule_delete' schedule.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="sb-delete-btn" onclick="return confirm('حذف این جلسه؟')">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+
+                                    <div class="sb-class-time">
+                                        <i class="bi bi-clock-fill"></i>
+                                        {{ schedule.start_time|time:"H:i" }} تا {{ schedule.end_time|time:"H:i" }}
+                                    </div>
+
+                                    <h4 class="sb-class-subject">{{ schedule.classroom.subject }}</h4>
+
+                                    {% if schedule.room %}
+                                        <div class="sb-class-room">
+                                            <i class="bi bi-door-open-fill"></i>
+                                            اتاق {{ schedule.room }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="sb-empty-day">
+                            <i class="bi bi-moon-stars" style="font-size: 2rem; opacity: 0.4;"></i>
+                            <p class="mt-2 mb-0">جلسه‌ای ثبت نشده است</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="sb-card">
+            <div class="sb-card-body text-center py-5">
+                <i class="bi bi-hand-index-thumb-fill" style="font-size: 3rem; color: #94a3b8; opacity: 0.4;"></i>
+                <h5 class="mt-3" style="color: #17224a; font-weight: 800;">یک کلاس را انتخاب کنید</h5>
+                <p class="text-muted">برای مدیریت برنامه هفتگی، ابتدا یک کلاس را از لیست بالا انتخاب کنید.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

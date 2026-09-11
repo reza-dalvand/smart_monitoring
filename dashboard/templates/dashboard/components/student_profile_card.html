@@ -1,0 +1,64 @@
+<div class="content-card hero-card">
+    <div class="content-card-body hero-body">
+        <div class="hero-content">
+            <div class="hero-avatar">
+                {{ student.username|first|upper }}
+            </div>
+
+            <div class="hero-info">
+                <span class="hero-badge">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    {{ student.get_role_display }}
+                </span>
+
+                <h3>{{ student.get_full_name|default:student.username }}</h3>
+
+                <p>
+                    در این داشبورد خلاصه وضعیت حضور، مشارکت و پاسخ‌های شما در کلاس‌های فعال نمایش داده می‌شود.
+                </p>
+
+                <div class="hero-chips">
+                    <div class="hero-chip">
+                        <i class="bi bi-journal-check"></i>
+                        <span>{{ classrooms.count }} کلاس فعال</span>
+                    </div>
+
+                    <div class="hero-chip">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>{{ total_sessions|default:0 }} جلسه برگزارشده</span>
+                    </div>
+
+                    <div class="hero-chip">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>{{ attendance_percentage|default:0 }}٪ حضور</span>
+                    </div>
+
+                    <div class="hero-chip">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>{{ answer_percentage|default:0 }}٪ پاسخ صحیح</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-side">
+            <div class="hero-progress-card">
+                <div class="hero-progress-title">
+                    <span>نرخ حضور</span>
+                    <strong>{{ attendance_percentage|default:0 }}٪</strong>
+                </div>
+                <div class="sd-progress light">
+                    <div class="sd-progress-bar success" style="width: {{ attendance_percentage|default:0 }}%"></div>
+                </div>
+
+                <div class="hero-progress-title mt-3">
+                    <span>نرخ پاسخ صحیح</span>
+                    <strong>{{ answer_percentage|default:0 }}٪</strong>
+                </div>
+                <div class="sd-progress light">
+                    <div class="sd-progress-bar warning" style="width: {{ answer_percentage|default:0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

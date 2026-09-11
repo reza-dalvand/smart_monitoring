@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}لیست دانش‌آموزان - پنل معاون{% endblock %}
+
+{% block content %}
+<style>
+    .sl-page {
+        --sl-primary: #1a237e;
+        --sl-secondary: #ffc107;
+    }
+
+    .sl-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(26, 35, 126, 0.2);
+    }
+
+    .sl-hero::before {
+        content: '';
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -80px;
+        right: -60px;
+    }
+
+    .sl-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .sl-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .sl-hero-icon {
+        width: 65px;
+        height: 65px;
+        background: var(--sl-secondary);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+        color: var(--sl-primary);
+    }
+
+    .sl-hero-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .sl-hero-stat {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 14px 22px;
+        border-radius: 14px;
+        text-align: center;
+        backdrop-filter: blur(6px);
+    }
+
+    .sl-hero-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        display: block;
+    }
+
+    .sl-hero-stat-label {
+        font-size: 0.82rem;
+        opacity: 0.95;
+    }
+
+    .sl-filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 20px;
+        border: 1px solid #edf1f8;
+    }
+
+    .sl-table-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .sl-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .sl-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+    }
+
+    .sl-table tbody td {
+        padding: 14px;
+        border-bottom: 1px solid #f3f6fa;
+        color: #3f4a5a;
+    }
+
+    .sl-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .sl-student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sl-student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--sl-secondary);
+        color: var(--sl-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .sl-phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+        font-size: 0.85rem;
+        font-weight: 700;
+        direction: ltr;
+    }
+
+    .sl-phone-badge.empty {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .sl-empty {
+        text-align: center;
+        padding: 50px 20px;
+    }
+</style>
+
+<div class="sl-page">
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-people-fill"></i>
+            لیست دانش‌آموزان
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:assistant_dashboard' %}">پنل معاون</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>دانش‌آموزان</span>
+        </div>
+    </div>
+
+    <div class="sl-hero">
+        <div class="sl-hero-content">
+            <div class="sl-hero-title">
+                <div class="sl-hero-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="sl-hero-text">
+                    <h2>دانش‌آموزان مدرسه</h2>
+                    <p>لیست کامل دانش‌آموزان با اطلاعات تماس والدین</p>
+                </div>
+            </div>
+            <div class="sl-hero-stat">
+                <span class="sl-hero-stat-value">{{ total_students }}</span>
+                <span class="sl-hero-stat-label">دانش‌آموز</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sl-filter-card">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-1">فیلتر بر اساس کلاس</label>
+                <select name="classroom" class="form-select form-select-sm">
+                    <option value="">همه کلاس‌ها</option>
+                    {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}" {% if class_filter == classroom.id|stringformat:"s" %}selected{% endif %}>
+                            {{ classroom.name }} - {{ classroom.get_grade_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill"></i>
+                    اعمال فیلتر
+                </button>
+                <a href="{% url 'dashboard:assistant_students' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="sl-table-card">
+        {% if students_with_parent %}
+            <div class="table-responsive">
+                <table class="sl-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>نام دانش‌آموز</th>
+                            <th>کد ملی</th>
+                            <th>نام والد</th>
+                            <th>شماره تماس</th>
+                            <th>کلاس‌ها</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_with_parent %}
+                            <tr>
+                                <td><strong>{{ forloop.counter }}</strong></td>
+                                <td>
+                                    <div class="sl-student-info">
+                                        <div class="sl-student-avatar">
+                                            {{ item.student.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ item.student.get_full_name|default:item.student.username }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.student.national_id %}
+                                        {{ item.student.national_id }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.parent_name %}
+                                        {{ item.parent_name }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.parent_phone %}
+                                        <span class="sl-phone-badge">
+                                            <i class="bi bi-telephone-fill"></i>
+                                            {{ item.parent_phone }}
+                                        </span>
+                                    {% else %}
+                                        <span class="sl-phone-badge empty">
+                                            <i class="bi bi-exclamation-circle-fill"></i>
+                                            ثبت نشده
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ item.student.enrolled_classes.count }} کلاس
+                                    </small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="sl-empty">
+                <i class="bi bi-people" style="font-size: 3rem; color: #94a3b8; opacity: 0.4;"></i>
+                <h5 class="mt-3" style="color: #17224a;">دانش‌آموزی یافت نشد</h5>
+                <p class="text-muted">در حال حاضر هیچ دانش‌آموزی در سیستم ثبت نشده است.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
