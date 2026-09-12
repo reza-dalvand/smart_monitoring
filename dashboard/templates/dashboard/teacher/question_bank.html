@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}بانک سوالات - پنل معلم{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <h1 class="breadcrumb-title">
+        <i class="bi bi-journal-bookmark-fill"></i>
+        بانک سوالات
+    </h1>
+    <div class="breadcrumb-nav">
+        <a href="{% url 'dashboard:home' %}">خانه</a>
+        <i class="bi bi-chevron-left"></i>
+        <span>بانک سوالات</span>
+    </div>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h4 class="mb-1">سوالات کلاس‌های شما</h4>
+        <small class="text-muted">
+            تعداد کل: {{ total_count }} سوال
+        </small>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:teacher_ai_new' %}" class="btn btn-primary">
+            <i class="bi bi-robot me-1"></i>
+            تولید سوال با هوش مصنوعی
+        </a>
+
+        <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i>
+            سوال دستی جدید
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">کلاس</label>
+                <select name="classroom" class="form-select form-select-sm">
+                    <option value="">همه کلاس‌ها</option>
+                    {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}" {% if classroom_filter == classroom.id|stringformat:"s" %}selected{% endif %}>
+                            {{ classroom.name }} - {{ classroom.subject }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold">منبع</label>
+                <select name="source" class="form-select form-select-sm">
+                    <option value="">همه</option>
+                    <option value="ai" {% if source_filter == 'ai' %}selected{% endif %}>هوش مصنوعی</option>
+                    <option value="manual" {% if source_filter == 'manual' %}selected{% endif %}>دستی</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold">وضعیت</label>
+                <select name="review_status" class="form-select form-select-sm">
+                    <option value="">همه</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>در انتظار بررسی</option>
+                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>تایید شده</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>رد شده</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold">جستجو</label>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="متن سوال یا مبحث">
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-funnel-fill me-1"></i>
+                    فیلتر
+                </button>
+
+                <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>کلاس</th>
+                    <th>سوال</th>
+                    <th>منبع</th>
+                    <th>وضعیت</th>
+                    <th>زمان</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for question in questions %}
+                    <tr>
+                        <td>{{ question.id }}</td>
+
+                        <td>
+                            <strong>{{ question.classroom.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ question.classroom.subject }}</small>
+                        </td>
+
+                        <td style="min-width: 280px;">
+                            {{ question.text|truncatechars:90 }}
+
+                            {% if question.topic %}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-tag me-1"></i>
+                                    {{ question.topic }}
+                                </small>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if question.source == 'ai' %}
+                                <span class="badge bg-info text-dark">هوش مصنوعی</span>
+                            {% else %}
+                                <span class="badge bg-secondary">دستی</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if question.review_status == 'approved' %}
+                                <span class="badge bg-success">تایید شده</span>
+                            {% elif question.review_status == 'rejected' %}
+                                <span class="badge bg-danger">رد شده</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">در انتظار</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ question.timer_seconds }} ثانیه
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <a href="{% url 'dashboard:teacher_question_delete' question.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                            <br>
+                            هنوز سوالی ثبت نشده است.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

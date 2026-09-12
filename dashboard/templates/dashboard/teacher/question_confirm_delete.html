@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}حذف سوال - پنل معلم{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <h1 class="breadcrumb-title">
+        <i class="bi bi-trash-fill"></i>
+        حذف سوال
+    </h1>
+    <div class="breadcrumb-nav">
+        <a href="{% url 'dashboard:home' %}">خانه</a>
+        <i class="bi bi-chevron-left"></i>
+        <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
+        <i class="bi bi-chevron-left"></i>
+        <span>حذف سوال</span>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-danger rounded-4">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
+                </div>
+
+                <h5 class="fw-bold mb-3">
+                    آیا از حذف این سوال مطمئن هستید؟
+                </h5>
+
+                <div class="alert alert-light border">
+                    {{ question.text|truncatechars:200 }}
+                </div>
+
+                <p class="text-muted">
+                    این عملیات قابل بازگشت نیست.
+                    اگر این سوال قبلاً در آزمون یا درخواستی استفاده شده باشد، ممکن است رکوردهای مرتبط نیز تحت تاثیر قرار بگیرند.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>
+                            بله، حذف شود
+                        </button>
+
+                        <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            انصراف
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

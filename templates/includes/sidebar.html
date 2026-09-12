@@ -2,6 +2,7 @@
     <div class="sidebar-user-avatar">
         {{ user.username|first|upper }}
     </div>
+
     <div class="sidebar-user-info">
         <h6>{{ user.get_full_name|default:user.username }}</h6>
         <span class="role-badge">{{ user.get_role_display }}</span>
@@ -11,6 +12,7 @@
 <nav class="sidebar-menu">
     <div class="menu-section">
         <div class="menu-section-title">منوی اصلی</div>
+
         <a href="{% url 'dashboard:home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <div class="menu-item-icon">
                 <i class="bi bi-speedometer2"></i>
@@ -18,140 +20,167 @@
             <span class="menu-item-text">داشبورد</span>
         </a>
     </div>
-    
+
     {% if user.role == 'teacher' %}
-    <div class="menu-section">
-        <div class="menu-section-title">مدیریت کلاس</div>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-journal-check"></i>
-            </div>
-            <span class="menu-item-text">کلاس‌های من</span>
-            <span class="menu-badge">۵</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-person-check-fill"></i>
-            </div>
-            <span class="menu-item-text">حضور و غیاب</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-robot"></i>
-            </div>
-            <span class="menu-item-text">تولید سوال (AI)</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-question-circle-fill"></i>
-            </div>
-            <span class="menu-item-text">بانک سوالات</span>
-        </a>
-    </div>
-    
-    <div class="menu-section">
-        <div class="menu-section-title">گزارشات</div>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-graph-up"></i>
-            </div>
-            <span class="menu-item-text">آمار مشارکت</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-            </div>
-            <span class="menu-item-text">کارنامه دانش‌آموزان</span>
-        </a>
-    </div>
-    
+        <div class="menu-section">
+            <div class="menu-section-title">مدیریت کلاس</div>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+                <span class="menu-item-text">کلاس‌های من</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+                <span class="menu-item-text">حضور و غیاب</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">سوالات</div>
+
+            <a href="{% url 'dashboard:teacher_ai_new' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_ai_new' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <span class="menu-item-text">تولید سوال با هوش مصنوعی</span>
+            </a>
+
+            <a href="{% url 'dashboard:teacher_question_bank' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_bank' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <span class="menu-item-text">بانک سوالات</span>
+            </a>
+
+            <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_manual_create' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span class="menu-item-text">ساخت سوال دستی</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">گزارشات</div>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <span class="menu-item-text">آمار مشارکت</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                </div>
+                <span class="menu-item-text">کارنامه دانش‌آموزان</span>
+            </a>
+        </div>
+
     {% elif user.role == 'student' %}
-    <div class="menu-section">
-        <div class="menu-section-title">فعالیت‌های من</div>
-        <a href="{% url 'dashboard:weekly_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'weekly_schedule' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-calendar-week-fill"></i>
-            </div>
-            <span class="menu-item-text">برنامه هفتگی</span>
-        </a>
-    </div>
-    
+        <div class="menu-section">
+            <div class="menu-section-title">فعالیت‌های من</div>
+
+            <a href="{% url 'dashboard:weekly_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'weekly_schedule' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-calendar-week-fill"></i>
+                </div>
+                <span class="menu-item-text">برنامه هفتگی</span>
+            </a>
+        </div>
+
     {% elif user.role == 'assistant' %}
-    <div class="menu-section">
-        <div class="menu-section-title">نظارت و گزارش</div>
-        <a href="{% url 'dashboard:assistant_absences' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_absences' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-person-x-fill"></i>
-            </div>
-            <span class="menu-item-text">غیبت‌های امروز</span>
-        </a>
-        <a href="{% url 'dashboard:assistant_students' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_students' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-people-fill"></i>
-            </div>
-            <span class="menu-item-text">دانش‌آموزان</span>
-        </a>
-    </div>
-    
-    <div class="menu-section">
-        <div class="menu-section-title">مدیریت کلاس‌ها</div>
-        <a href="{% url 'dashboard:assistant_class_list' %}" class="menu-item {% if 'class' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-journal-bookmark-fill"></i>
-            </div>
-            <span class="menu-item-text">لیست کلاس‌ها</span>
-        </a>
-        <a href="{% url 'dashboard:assistant_class_create' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_class_create' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-plus-circle-fill"></i>
-            </div>
-            <span class="menu-item-text">ایجاد کلاس جدید</span>
-        </a>
-    </div>
-    
-    <div class="menu-section">
-        <div class="menu-section-title">برنامه هفتگی</div>
-        <a href="{% url 'dashboard:assistant_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_schedule' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-calendar-week-fill"></i>
-            </div>
-            <span class="menu-item-text">ساخت برنامه هفتگی</span>
-        </a>
-        <a href="{% url 'dashboard:assistant_schedule_copy' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_schedule_copy' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-clipboard-check-fill"></i>
-            </div>
-            <span class="menu-item-text">کپی برنامه</span>
-        </a>
-    </div>
-    
+        <div class="menu-section">
+            <div class="menu-section-title">نظارت و گزارش</div>
+
+            <a href="{% url 'dashboard:assistant_absences' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_absences' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-person-x-fill"></i>
+                </div>
+                <span class="menu-item-text">غیبت‌های امروز</span>
+            </a>
+
+            <a href="{% url 'dashboard:assistant_students' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_students' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <span class="menu-item-text">دانش‌آموزان</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">مدیریت کلاس‌ها</div>
+
+            <a href="{% url 'dashboard:assistant_class_list' %}" class="menu-item {% if 'class' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <span class="menu-item-text">لیست کلاس‌ها</span>
+            </a>
+
+            <a href="{% url 'dashboard:assistant_class_create' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_class_create' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span class="menu-item-text">ایجاد کلاس جدید</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-section-title">برنامه هفتگی</div>
+
+            <a href="{% url 'dashboard:assistant_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_schedule' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-calendar-week-fill"></i>
+                </div>
+                <span class="menu-item-text">ساخت برنامه هفتگی</span>
+            </a>
+
+            <a href="{% url 'dashboard:assistant_schedule_copy' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_schedule_copy' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-clipboard-check-fill"></i>
+                </div>
+                <span class="menu-item-text">کپی برنامه</span>
+            </a>
+        </div>
+
     {% else %}
-    <div class="menu-section">
-        <div class="menu-section-title">مدیریت سیستم</div>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-people-fill"></i>
-            </div>
-            <span class="menu-item-text">مدیریت کاربران</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-building"></i>
-            </div>
-            <span class="menu-item-text">مدیریت مدارس</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-bar-chart-line-fill"></i>
-            </div>
-            <span class="menu-item-text">گزارشات جامع</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-gear-fill"></i>
-            </div>
-            <span class="menu-item-text">تنظیمات سیستم</span>
-        </a>
-    </div>
+        <div class="menu-section">
+            <div class="menu-section-title">مدیریت سیستم</div>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <span class="menu-item-text">مدیریت کاربران</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                <span class="menu-item-text">مدیریت مدارس</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                </div>
+                <span class="menu-item-text">گزارشات جامع</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <div class="menu-item-icon">
+                    <i class="bi bi-gear-fill"></i>
+                </div>
+                <span class="menu-item-text">تنظیمات سیستم</span>
+            </a>
+        </div>
     {% endif %}
 </nav>

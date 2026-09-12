@@ -1,3 +1,5 @@
+from functools import wraps
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,13 +8,54 @@ from django.utils import timezone
 from datetime import timedelta
 
 from .models import (
-    Classroom, ClassSession, AttendanceCheck,
-    AttendanceRecord, Question, StudentAnswer,
-    WeeklySchedule
+    Classroom,
+    ClassSession,
+    AttendanceCheck,
+    AttendanceRecord,
+    Question,
+    StudentAnswer,
+    WeeklySchedule,
+    AIGenerationJob,
 )
 from accounts.models import User, StudentProfile
-from .forms import ClassroomForm, WeeklyScheduleForm, CopyScheduleForm
+from .forms import (
+    ClassroomForm,
+    WeeklyScheduleForm,
+    CopyScheduleForm,
+    AIGenerationForm,
+    QuestionForm,
+)
+from .services import (
+    generate_questions_for_job,
+    regenerate_rejected_questions,
+)
 
+
+def teacher_required(view_func):
+    """
+    فقط کاربرانی که نقش معلم دارند اجازه ورود به صفحات معلم را دارند.
+    """
+
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+
+        if request.user.role != 'teacher':
+            messages.error(request, 'دسترسی فقط برای معلم مجاز است.')
+            return redirect('dashboard:home')
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+def get_teacher_classrooms(user):
+    """
+    فقط کلاس‌هایی را برمی‌گرداند که معلم آن‌ها خود کاربر است.
+    """
+
+    return Classroom.objects.filter(teacher=user).order_by('name')
 
 @login_required
 def dashboard_home(request):
@@ -564,3 +607,312 @@ def student_list_view(request):
     }
     
     return render(request, 'dashboard/assistant/student_list.html', context)
+
+
+# ========== فاز ۲: تولید سوال با هوش مصنوعی ==========
+
+@teacher_required
+def teacher_ai_new(request):
+    """
+    صفحه ساخت درخواست تولید سوال با هوش مصنوعی
+    """
+
+    classrooms = get_teacher_classrooms(request.user)
+
+    if not classrooms.exists():
+        messages.warning(
+            request,
+            'هیچ کلاسی برای شما ثبت نشده است. لطفاً با معاون مدرسه هماهنگ کنید.'
+        )
+
+    if request.method == 'POST':
+        form = AIGenerationForm(request.POST, request.FILES, teacher=request.user)
+
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.teacher = request.user
+            job.status = 'pending'
+            job.save()
+
+            generate_questions_for_job(job)
+            job.refresh_from_db()
+
+            if job.status == 'completed':
+                generated_count = job.generated_questions.count()
+                messages.success(
+                    request,
+                    f'{generated_count} سوال پیش‌نویس توسط هوش مصنوعی ماک تولید شد. '
+                    f'حالا می‌توانید آن‌ها را بررسی، تایید یا رد کنید.'
+                )
+            else:
+                messages.error(
+                    request,
+                    f'خطا در تولید سوال: {job.error_message}'
+                )
+
+            return redirect('dashboard:teacher_ai_review', job_id=job.id)
+    else:
+        form = AIGenerationForm(teacher=request.user)
+
+    context = {
+        'form': form,
+        'classrooms_count': classrooms.count(),
+        'title': 'تولید سوال با هوش مصنوعی',
+    }
+
+    return render(request, 'dashboard/teacher/ai_generate_form.html', context)
+
+
+@teacher_required
+def teacher_ai_review(request, job_id):
+    """
+    صفحه بررسی سوال‌های تولیدشده توسط هوش مصنوعی
+    """
+
+    job = get_object_or_404(
+        AIGenerationJob,
+        id=job_id,
+        teacher=request.user
+    )
+
+    questions = job.generated_questions.all().order_by('id')
+
+    pending_count = questions.filter(review_status='pending').count()
+    approved_count = questions.filter(review_status='approved').count()
+    rejected_count = questions.filter(review_status='rejected').count()
+
+    context = {
+        'job': job,
+        'questions': questions,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'title': 'بررسی سوال‌های تولیدشده',
+    }
+
+    return render(request, 'dashboard/teacher/ai_review.html', context)
+
+
+@teacher_required
+def teacher_ai_question_approve(request, pk):
+    """
+    تایید یک سوال تولیدشده توسط هوش مصنوعی
+    """
+
+    question = get_object_or_404(
+        Question,
+        pk=pk,
+        ai_job__teacher=request.user
+    )
+
+    if request.method == 'POST':
+        question.review_status = 'approved'
+        question.is_approved = True
+        question.save()
+
+        messages.success(request, 'سوال تایید شد و به بانک سوال اضافه شد.')
+
+    return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
+
+
+@teacher_required
+def teacher_ai_question_reject(request, pk):
+    """
+    رد یک سوال تولیدشده توسط هوش مصنوعی
+    """
+
+    question = get_object_or_404(
+        Question,
+        pk=pk,
+        ai_job__teacher=request.user
+    )
+
+    if request.method == 'POST':
+        question.review_status = 'rejected'
+        question.is_approved = False
+        question.save()
+
+        messages.warning(request, 'سوال رد شد. می‌توانید برای سوال‌های ردشده درخواست تولید مجدد بدهید.')
+
+    return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
+
+
+@teacher_required
+def teacher_ai_regenerate_rejected(request, job_id):
+    """
+    تولید مجدد سوال‌های ردشده
+    """
+
+    job = get_object_or_404(
+        AIGenerationJob,
+        id=job_id,
+        teacher=request.user
+    )
+
+    if request.method == 'POST':
+        regenerated_count = regenerate_rejected_questions(job)
+
+        if regenerated_count > 0:
+            messages.success(
+                request,
+                f'{regenerated_count} سوال ردشده دوباره تولید شد.'
+            )
+        else:
+            messages.info(request, 'سوال ردشده‌ای برای تولید مجدد وجود ندارد.')
+
+    return redirect('dashboard:teacher_ai_review', job_id=job.id)
+
+
+# ========== فاز ۲: بانک سوال و سوال دستی ==========
+
+@teacher_required
+def teacher_question_bank(request):
+    """
+    بانک سوال معلم
+
+    معلم فقط سوال‌های کلاس‌های خودش را می‌بیند.
+    """
+
+    questions = Question.objects.filter(
+        classroom__teacher=request.user
+    ).select_related(
+        'classroom',
+        'session',
+        'ai_job',
+        'created_by'
+    ).order_by('-created_at')
+
+    classrooms = get_teacher_classrooms(request.user)
+
+    classroom_filter = request.GET.get('classroom', '')
+    source_filter = request.GET.get('source', '')
+    status_filter = request.GET.get('review_status', '')
+    search_query = request.GET.get('q', '')
+
+    if classroom_filter:
+        questions = questions.filter(classroom_id=classroom_filter)
+
+    if source_filter:
+        questions = questions.filter(source=source_filter)
+
+    if status_filter:
+        questions = questions.filter(review_status=status_filter)
+
+    if search_query:
+        questions = questions.filter(
+            Q(text__icontains=search_query) |
+            Q(topic__icontains=search_query)
+        )
+
+    context = {
+        'questions': questions,
+        'classrooms': classrooms,
+        'classroom_filter': classroom_filter,
+        'source_filter': source_filter,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'total_count': questions.count(),
+        'title': 'بانک سوالات',
+    }
+
+    return render(request, 'dashboard/teacher/question_bank.html', context)
+
+
+@teacher_required
+def teacher_question_manual_create(request):
+    """
+    ساخت سوال دستی توسط معلم
+    """
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, teacher=request.user)
+
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.created_by = request.user
+            question.source = 'manual'
+            question.is_approved = True
+            question.review_status = 'approved'
+            question.save()
+
+            messages.success(request, 'سوال دستی با موفقیت در بانک سوال ذخیره شد.')
+            return redirect('dashboard:teacher_question_bank')
+    else:
+        form = QuestionForm(teacher=request.user)
+
+    context = {
+        'form': form,
+        'title': 'ساخت سوال دستی',
+    }
+
+    return render(request, 'dashboard/teacher/question_form.html', context)
+
+
+@teacher_required
+def teacher_question_edit(request, pk):
+    """
+    ویرایش سوال توسط معلم
+
+    معلم فقط سوال‌های کلاس‌های خودش را می‌تواند ویرایش کند.
+    """
+
+    question = get_object_or_404(
+        Question,
+        pk=pk,
+        classroom__teacher=request.user
+    )
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question, teacher=request.user)
+
+        if form.is_valid():
+            question = form.save(commit=False)
+
+            if question.source == 'manual':
+                question.review_status = 'approved'
+                question.is_approved = True
+            elif question.review_status == 'rejected':
+                # اگر سوال هوش مصنوعی قبلاً رد شده و حالا معلم آن را ویرایش کرد،
+                # دوباره به حالت در انتظار بررسی برمی‌گردد.
+                question.review_status = 'pending'
+                question.is_approved = False
+
+            question.save()
+
+            messages.success(request, 'سوال با موفقیت ویرایش شد.')
+            return redirect('dashboard:teacher_question_bank')
+    else:
+        form = QuestionForm(instance=question, teacher=request.user)
+
+    context = {
+        'form': form,
+        'question': question,
+        'title': 'ویرایش سوال',
+    }
+
+    return render(request, 'dashboard/teacher/question_form.html', context)
+
+
+@teacher_required
+def teacher_question_delete(request, pk):
+    """
+    حذف سوال توسط معلم
+    """
+
+    question = get_object_or_404(
+        Question,
+        pk=pk,
+        classroom__teacher=request.user
+    )
+
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'سوال حذف شد.')
+        return redirect('dashboard:teacher_question_bank')
+
+    context = {
+        'question': question,
+        'title': 'حذف سوال',
+    }
+
+    return render(request, 'dashboard/teacher/question_confirm_delete.html', context)
