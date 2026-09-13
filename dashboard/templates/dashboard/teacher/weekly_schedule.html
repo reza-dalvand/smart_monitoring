@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% block title %}برنامه هفتگی من - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .tws-page {
+        --tws-primary: #1a237e;
+        --tws-secondary: #ffc107;
+        --tws-purple: #7c3aed;
+        --tws-success: #16a34a;
+        --tws-info: #0284c7;
+    }
+
+    .tws-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .tws-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .tws-hero::after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        bottom: -80px;
+        left: -60px;
+    }
+
+    .tws-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .tws-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .tws-hero-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--tws-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--tws-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .tws-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.75rem;
+        font-weight: 900;
+    }
+
+    .tws-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .tws-hero-stats {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .tws-stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 15px;
+        padding: 14px 22px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+    }
+
+    .tws-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .tws-stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    /* Day Cards */
+    .tws-day-card {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        margin-bottom: 22px;
+        overflow: hidden;
+        border: 1px solid #edf1f8;
+    }
+
+    .tws-day-header {
+        background: linear-gradient(90deg, #1a237e 0%, #303f9f 100%);
+        color: white;
+        padding: 16px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tws-day-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .tws-day-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--tws-secondary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--tws-primary);
+        font-size: 1.25rem;
+    }
+
+    .tws-day-count {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .tws-day-body {
+        padding: 20px;
+    }
+
+    .tws-class-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+
+    .tws-class-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border: 1px solid #edf1f8;
+        border-radius: 16px;
+        padding: 18px;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tws-class-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--tws-primary), var(--tws-secondary));
+    }
+
+    .tws-class-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(26, 35, 126, 0.12);
+        border-color: #c7d2fe;
+    }
+
+    .tws-class-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--tws-primary);
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .tws-class-time i {
+        color: var(--tws-secondary);
+    }
+
+    .tws-class-subject {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 6px 0;
+        line-height: 1.4;
+    }
+
+    .tws-class-name {
+        font-size: 0.85rem;
+        color: #7b8494;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tws-class-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid #f0f3f8;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tws-class-grade {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(124, 58, 237, 0.08);
+        color: #7c3aed;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tws-room-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 193, 7, 0.12);
+        color: #b45309;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tws-students-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(2, 132, 199, 0.08);
+        color: #0369a1;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tws-empty-day {
+        text-align: center;
+        padding: 35px 20px;
+        color: #94a3b8;
+    }
+
+    .tws-empty-icon {
+        font-size: 2.5rem;
+        opacity: 0.4;
+        margin-bottom: 10px;
+    }
+
+    .tws-empty-text {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .tws-empty-all {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #dbe3ef;
+    }
+
+    .tws-empty-all-icon {
+        width: 90px;
+        height: 90px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .tws-empty-all h4 {
+        color: #17224a;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .tws-empty-all p {
+        color: #8a94a6;
+        margin: 0;
+    }
+
+    @media (max-width: 767px) {
+        .tws-hero {
+            padding: 22px;
+        }
+
+        .tws-hero-text h2 {
+            font-size: 1.35rem;
+        }
+
+        .tws-class-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tws-hero-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .tws-hero-title {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="tws-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-calendar-week-fill"></i>
+            برنامه هفتگی من
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>برنامه هفتگی معلم</span>
+        </div>
+    </div>
+
+    {% if total_sessions > 0 %}
+    <!-- Hero -->
+    <div class="tws-hero">
+        <div class="tws-hero-content">
+            <div class="tws-hero-title">
+                <div class="tws-hero-icon">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
+                <div class="tws-hero-text">
+                    <h2>برنامه تدریس هفتگی شما</h2>
+                    <p>زمان‌بندی کلاس‌هایی که شما در آن‌ها تدریس می‌کنید</p>
+                </div>
+            </div>
+            <div class="tws-hero-stats">
+                <div class="tws-stat-box">
+                    <span class="tws-stat-value">{{ total_sessions }}</span>
+                    <span class="tws-stat-label">جلسه هفتگی</span>
+                </div>
+                <div class="tws-stat-box">
+                    <span class="tws-stat-value">{{ total_classrooms }}</span>
+                    <span class="tws-stat-label">کلاس فعال</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Cards -->
+    {% for day in schedule_days %}
+    <div class="tws-day-card">
+        <div class="tws-day-header">
+            <h3 class="tws-day-title">
+                <div class="tws-day-icon">
+                    <i class="bi bi-calendar-day-fill"></i>
+                </div>
+                {{ day.name }}
+            </h3>
+            <span class="tws-day-count">
+                {{ day.count }} جلسه
+            </span>
+        </div>
+        <div class="tws-day-body">
+            {% if day.classes %}
+            <div class="tws-class-grid">
+                {% for schedule in day.classes %}
+                <div class="tws-class-card">
+                    <div class="tws-class-time">
+                        <i class="bi bi-clock-fill"></i>
+                        {{ schedule.start_time|time:"H:i" }} تا {{ schedule.end_time|time:"H:i" }}
+                    </div>
+                    <h4 class="tws-class-subject">{{ schedule.classroom.subject }}</h4>
+                    <div class="tws-class-name">
+                        <i class="bi bi-bookmark-fill"></i>
+                        {{ schedule.classroom.name }}
+                    </div>
+                    <div class="tws-class-footer">
+                        <span class="tws-class-grade">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            پایه {{ schedule.classroom.get_grade_display }} - {{ schedule.classroom.get_field_display }}
+                        </span>
+                        {% if schedule.room %}
+                        <span class="tws-room-badge">
+                            <i class="bi bi-door-open-fill"></i>
+                            {{ schedule.room }}
+                        </span>
+                        {% endif %}
+                        <span class="tws-students-count">
+                            <i class="bi bi-people-fill"></i>
+                            {{ schedule.classroom.students.count }} دانش‌آموز
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="tws-empty-day">
+                <div class="tws-empty-icon">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </div>
+                <p class="tws-empty-text">کلاسی در این روز ندارید</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="tws-empty-all">
+        <div class="tws-empty-all-icon">
+            <i class="bi bi-calendar-x-fill"></i>
+        </div>
+        <h4>هنوز برنامه هفتگی برای شما ثبت نشده است</h4>
+        <p>
+            در حال حاضر هیچ کلاسی با شما به عنوان معلم در برنامه هفتگی تعریف نشده است.
+        </p>
+        <p style="margin-top: 10px; font-size: 0.85rem;">
+            لطفاً با معاون مدرسه هماهنگ کنید تا برنامه هفتگی کلاس‌های شما را تنظیم کند.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

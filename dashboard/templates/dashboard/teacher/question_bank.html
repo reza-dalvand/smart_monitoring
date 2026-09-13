@@ -1,46 +1,442 @@
 {% extends 'base.html' %}
-
 {% block title %}بانک سوالات - پنل معلم{% endblock %}
-
 {% block content %}
-<div class="page-breadcrumb">
-    <h1 class="breadcrumb-title">
-        <i class="bi bi-journal-bookmark-fill"></i>
-        بانک سوالات
-    </h1>
-    <div class="breadcrumb-nav">
-        <a href="{% url 'dashboard:home' %}">خانه</a>
-        <i class="bi bi-chevron-left"></i>
-        <span>بانک سوالات</span>
+<style>
+    .teacher-panel {
+        --tp-primary: #1a237e;
+        --tp-primary-2: #283593;
+        --tp-secondary: #ffc107;
+        --tp-success: #16a34a;
+        --tp-danger: #dc2626;
+        --tp-warning: #d97706;
+        --tp-info: #0284c7;
+    }
+
+    .tp-page-header {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        border-radius: 22px;
+        padding: 32px;
+        color: white;
+        margin-bottom: 26px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .tp-page-header::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .tp-page-header::after {
+        content: '';
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        bottom: -80px;
+        left: -60px;
+    }
+
+    .tp-header-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .tp-header-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .tp-header-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--tp-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--tp-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .tp-header-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.75rem;
+        font-weight: 900;
+    }
+
+    .tp-header-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .tp-header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .tp-btn-header {
+        padding: 13px 22px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 0.92rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        border: none;
+    }
+
+    .tp-btn-header.ai {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+    }
+
+    .tp-btn-header.ai:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(124, 58, 237, 0.35);
+        color: white;
+    }
+
+    .tp-btn-header.manual {
+        background: var(--tp-secondary);
+        color: var(--tp-primary);
+        box-shadow: 0 8px 18px rgba(255, 193, 7, 0.25);
+    }
+
+    .tp-btn-header.manual:hover {
+        background: white;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(255, 193, 7, 0.35);
+        color: var(--tp-primary);
+    }
+
+    .tp-filter-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 24px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .tp-filter-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #17224a;
+        margin-bottom: 16px;
+    }
+
+    .tp-filter-title i {
+        color: var(--tp-secondary);
+        font-size: 1.1rem;
+    }
+
+    .tp-table-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .tp-table-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tp-table-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .tp-table-title i {
+        color: var(--tp-secondary);
+        font-size: 1.15rem;
+    }
+
+    .tp-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #f7f9fd;
+        border: 1px solid #e9eef7;
+        color: #667085;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .tp-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .tp-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 14px 16px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .tp-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.9rem;
+    }
+
+    .tp-table tbody tr {
+        transition: background 0.18s ease;
+    }
+
+    .tp-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .tp-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .tp-question-text {
+        font-weight: 700;
+        color: #17224a;
+        line-height: 1.7;
+    }
+
+    .tp-question-topic {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 6px;
+        font-size: 0.78rem;
+        color: #7b8494;
+    }
+
+    .tp-question-topic i {
+        color: var(--tp-secondary);
+    }
+
+    .tp-source-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 11px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tp-source-badge.ai {
+        background: rgba(124, 58, 237, 0.10);
+        color: #7c3aed;
+    }
+
+    .tp-source-badge.manual {
+        background: rgba(2, 132, 199, 0.10);
+        color: #0284c7;
+    }
+
+    .tp-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 11px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .tp-status-badge.approved {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .tp-status-badge.rejected {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .tp-status-badge.pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .tp-timer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        background: #f7f9fd;
+        border: 1px solid #e9eef7;
+        color: #667085;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .tp-timer-badge i {
+        color: var(--tp-secondary);
+    }
+
+    .tp-action-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .tp-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #dfe6f2;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .tp-action-btn.edit {
+        color: var(--tp-primary);
+    }
+
+    .tp-action-btn.edit:hover {
+        background: var(--tp-primary);
+        border-color: var(--tp-primary);
+        color: white;
+    }
+
+    .tp-action-btn.delete {
+        color: var(--tp-danger);
+    }
+
+    .tp-action-btn.delete:hover {
+        background: var(--tp-danger);
+        border-color: var(--tp-danger);
+        color: white;
+    }
+
+    .tp-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .tp-empty-icon {
+        width: 90px;
+        height: 90px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 16px;
+    }
+
+    .tp-empty-state h5 {
+        font-weight: 900;
+        color: #364152;
+        margin-bottom: 8px;
+    }
+
+    .tp-empty-state p {
+        color: #8a94a6;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 767px) {
+        .tp-page-header {
+            padding: 22px;
+        }
+
+        .tp-header-text h2 {
+            font-size: 1.35rem;
+        }
+
+        .tp-header-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.7rem;
+        }
+    }
+</style>
+
+<div class="teacher-panel">
+    <!-- Header -->
+    <div class="tp-page-header">
+        <div class="tp-header-content">
+            <div class="tp-header-title">
+                <div class="tp-header-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div class="tp-header-text">
+                    <h2>بانک سوالات</h2>
+                    <p>مدیریت سوالات کلاس‌های شما | تعداد کل: {{ total_count }} سوال</p>
+                </div>
+            </div>
+            <div class="tp-header-actions">
+                <a href="{% url 'dashboard:teacher_ai_new' %}" class="tp-btn-header ai">
+                    <i class="bi bi-robot"></i>
+                    تولید با هوش مصنوعی
+                </a>
+                <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="tp-btn-header manual">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    سوال دستی جدید
+                </a>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-    <div>
-        <h4 class="mb-1">سوالات کلاس‌های شما</h4>
-        <small class="text-muted">
-            تعداد کل: {{ total_count }} سوال
-        </small>
-    </div>
-
-    <div class="d-flex gap-2">
-        <a href="{% url 'dashboard:teacher_ai_new' %}" class="btn btn-primary">
-            <i class="bi bi-robot me-1"></i>
-            تولید سوال با هوش مصنوعی
-        </a>
-
-        <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i>
-            سوال دستی جدید
-        </a>
-    </div>
-</div>
-
-<div class="card shadow-sm border-0 rounded-4 mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-2 align-items-end">
+    <!-- Filters -->
+    <div class="tp-filter-card">
+        <div class="tp-filter-title">
+            <i class="bi bi-funnel-fill"></i>
+            فیلتر و جستجو
+        </div>
+        <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label small fw-bold">کلاس</label>
+                <label class="form-label small fw-bold text-muted mb-1">کلاس</label>
                 <select name="classroom" class="form-select form-select-sm">
                     <option value="">همه کلاس‌ها</option>
                     {% for classroom in classrooms %}
@@ -50,18 +446,16 @@
                     {% endfor %}
                 </select>
             </div>
-
             <div class="col-md-2">
-                <label class="form-label small fw-bold">منبع</label>
+                <label class="form-label small fw-bold text-muted mb-1">منبع</label>
                 <select name="source" class="form-select form-select-sm">
                     <option value="">همه</option>
                     <option value="ai" {% if source_filter == 'ai' %}selected{% endif %}>هوش مصنوعی</option>
                     <option value="manual" {% if source_filter == 'manual' %}selected{% endif %}>دستی</option>
                 </select>
             </div>
-
             <div class="col-md-2">
-                <label class="form-label small fw-bold">وضعیت</label>
+                <label class="form-label small fw-bold text-muted mb-1">وضعیت</label>
                 <select name="review_status" class="form-select form-select-sm">
                     <option value="">همه</option>
                     <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>در انتظار بررسی</option>
@@ -69,109 +463,140 @@
                     <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>رد شده</option>
                 </select>
             </div>
-
             <div class="col-md-3">
-                <label class="form-label small fw-bold">جستجو</label>
-                <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="متن سوال یا مبحث">
+                <label class="form-label small fw-bold text-muted mb-1">جستجو</label>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="متن سوال یا مبحث...">
             </div>
-
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
                     <i class="bi bi-funnel-fill me-1"></i>
-                    فیلتر
+                    اعمال فیلتر
                 </button>
-
                 <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-x-circle"></i>
                 </a>
             </div>
         </form>
     </div>
-</div>
 
-<div class="card shadow-sm border-0 rounded-4">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>کلاس</th>
-                    <th>سوال</th>
-                    <th>منبع</th>
-                    <th>وضعیت</th>
-                    <th>زمان</th>
-                    <th>عملیات</th>
-                </tr>
-            </thead>
+    <!-- Questions Table -->
+    <div class="tp-table-card">
+        <div class="tp-table-header">
+            <h3 class="tp-table-title">
+                <i class="bi bi-collection-fill"></i>
+                لیست سوالات
+            </h3>
+            <span class="tp-count-badge">
+                <i class="bi bi-hash"></i>
+                {{ total_count }} سوال
+            </span>
+        </div>
 
-            <tbody>
-                {% for question in questions %}
+        {% if questions %}
+        <div class="table-responsive">
+            <table class="tp-table">
+                <thead>
                     <tr>
-                        <td>{{ question.id }}</td>
-
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>سوال</th>
+                        <th>منبع</th>
+                        <th>وضعیت</th>
+                        <th>زمان پاسخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for question in questions %}
+                    <tr>
+                        <td><strong>{{ question.id }}</strong></td>
                         <td>
                             <strong>{{ question.classroom.name }}</strong>
                             <br>
                             <small class="text-muted">{{ question.classroom.subject }}</small>
                         </td>
-
                         <td style="min-width: 280px;">
-                            {{ question.text|truncatechars:90 }}
-
+                            <div class="tp-question-text">
+                                {{ question.text|truncatechars:90 }}
+                            </div>
                             {% if question.topic %}
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-tag me-1"></i>
+                                <div class="tp-question-topic">
+                                    <i class="bi bi-tag-fill"></i>
                                     {{ question.topic }}
-                                </small>
+                                </div>
                             {% endif %}
                         </td>
-
                         <td>
                             {% if question.source == 'ai' %}
-                                <span class="badge bg-info text-dark">هوش مصنوعی</span>
+                                <span class="tp-source-badge ai">
+                                    <i class="bi bi-robot"></i>
+                                    هوش مصنوعی
+                                </span>
                             {% else %}
-                                <span class="badge bg-secondary">دستی</span>
+                                <span class="tp-source-badge manual">
+                                    <i class="bi bi-pencil-square"></i>
+                                    دستی
+                                </span>
                             {% endif %}
                         </td>
-
                         <td>
                             {% if question.review_status == 'approved' %}
-                                <span class="badge bg-success">تایید شده</span>
+                                <span class="tp-status-badge approved">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    تایید شده
+                                </span>
                             {% elif question.review_status == 'rejected' %}
-                                <span class="badge bg-danger">رد شده</span>
+                                <span class="tp-status-badge rejected">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                    رد شده
+                                </span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">در انتظار</span>
+                                <span class="tp-status-badge pending">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    در انتظار
+                                </span>
                             {% endif %}
                         </td>
-
                         <td>
-                            {{ question.timer_seconds }} ثانیه
+                            <span class="tp-timer-badge">
+                                <i class="bi bi-clock-fill"></i>
+                                {{ question.timer_seconds }} ثانیه
+                            </span>
                         </td>
-
                         <td>
-                            <div class="d-flex gap-1">
-                                <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
+                            <div class="tp-action-btns">
+                                <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="tp-action-btn edit" title="ویرایش">
+                                    <i class="bi bi-pencil-fill"></i>
                                 </a>
-
-                                <a href="{% url 'dashboard:teacher_question_delete' question.id %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
+                                <a href="{% url 'dashboard:teacher_question_delete' question.id %}" class="tp-action-btn delete" title="حذف">
+                                    <i class="bi bi-trash-fill"></i>
                                 </a>
                             </div>
                         </td>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                            <br>
-                            هنوز سوالی ثبت نشده است.
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="tp-empty-state">
+            <div class="tp-empty-icon">
+                <i class="bi bi-inbox-fill"></i>
+            </div>
+            <h5>هنوز سوالی ثبت نشده است</h5>
+            <p>برای شروع، اولین سوال خود را با هوش مصنوعی یا به صورت دستی بسازید.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'dashboard:teacher_ai_new' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-robot me-1"></i>
+                    تولید با هوش مصنوعی
+                </a>
+                <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    سوال دستی
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

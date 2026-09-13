@@ -1,5 +1,4 @@
 from functools import wraps
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -35,18 +34,14 @@ def teacher_required(view_func):
     """
     فقط کاربرانی که نقش معلم دارند اجازه ورود به صفحات معلم را دارند.
     """
-
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('accounts:login')
-
         if request.user.role != 'teacher':
             messages.error(request, 'دسترسی فقط برای معلم مجاز است.')
             return redirect('dashboard:home')
-
         return view_func(request, *args, **kwargs)
-
     return wrapper
 
 
@@ -54,8 +49,8 @@ def get_teacher_classrooms(user):
     """
     فقط کلاس‌هایی را برمی‌گرداند که معلم آن‌ها خود کاربر است.
     """
-
     return Classroom.objects.filter(teacher=user).order_by('name')
+
 
 @login_required
 def dashboard_home(request):
@@ -71,6 +66,7 @@ def dashboard_home(request):
 
 
 # ========== داشبورد دانش‌آموز ==========
+
 def student_dashboard(request):
     """داشبورد مخصوص دانش‌آموز"""
     student = request.user
@@ -78,13 +74,12 @@ def student_dashboard(request):
 
     total_sessions = ClassSession.objects.filter(classroom__students=student).count()
     total_attendance_checks = AttendanceCheck.objects.filter(session__classroom__students=student).count()
-    
+
     present_count = AttendanceRecord.objects.filter(
-        student=student, 
+        student=student,
         status='present',
         attendance_check__session__classroom__students=student
     ).count()
-    
     absent_count = max(total_attendance_checks - present_count, 0)
 
     attendance_percentage = 0
@@ -92,11 +87,9 @@ def student_dashboard(request):
         attendance_percentage = round((present_count / total_attendance_checks) * 100)
 
     total_questions = Question.objects.filter(classroom__students=student).count()
-    
     answers = StudentAnswer.objects.filter(student=student, question__classroom__students=student)
     answered_questions = answers.count()
     correct_answers = answers.filter(is_correct=True).count()
-    
     wrong_answers = answered_questions - correct_answers
     unanswered_questions = max(total_questions - answered_questions, 0)
 
@@ -105,23 +98,21 @@ def student_dashboard(request):
         answer_percentage = round((correct_answers / answered_questions) * 100)
 
     sessions = ClassSession.objects.filter(classroom__students=student).order_by('id')
-    
+
     attendance_chart_data = {
         'labels': [],
         'present': [],
         'absent': []
     }
-    
     for session in sessions:
         session_present = AttendanceRecord.objects.filter(
             attendance_check__session=session,
             student=student,
             status='present'
         ).count()
-        
         session_total_checks = session.attendance_checks.count()
         session_absent = max(session_total_checks - session_present, 0)
-        
+
         attendance_chart_data['labels'].append(session.topic or f'جلسه {session.id}')
         attendance_chart_data['present'].append(session_present)
         attendance_chart_data['absent'].append(session_absent)
@@ -153,18 +144,21 @@ def student_dashboard(request):
 
 
 # ========== داشبورد معلم ==========
+
 def teacher_dashboard(request):
     context = {'welcome_message': 'به داشبورد معلم خوش آمدید'}
     return render(request, 'dashboard/index.html', context)
 
 
 # ========== داشبورد مدیریت ==========
+
 def admin_dashboard(request):
     context = {'welcome_message': 'به داشبورد مدیریت خوش آمدید'}
     return render(request, 'dashboard/index.html', context)
 
 
 # ========== برنامه هفتگی دانش‌آموز ==========
+
 @login_required
 def weekly_schedule_view(request):
     """صفحه برنامه هفتگی دانش‌آموز"""
@@ -172,15 +166,14 @@ def weekly_schedule_view(request):
         return render(request, 'dashboard/index.html', {
             'welcome_message': 'دسترسی محدود به دانش‌آموزان'
         })
-    
+
     student = request.user
-    
     schedules = WeeklySchedule.objects.filter(
         classroom__students=student
     ).select_related('classroom', 'classroom__teacher').order_by(
         'day_of_week', 'start_time'
     )
-    
+
     days_info = [
         ('saturday', 'شنبه'),
         ('sunday', 'یکشنبه'),
@@ -188,7 +181,7 @@ def weekly_schedule_view(request):
         ('tuesday', 'سه‌شنبه'),
         ('wednesday', 'چهارشنبه'),
     ]
-    
+
     schedule_days = []
     for day_key, day_name in days_info:
         day_classes = [s for s in schedules if s.day_of_week == day_key]
@@ -198,37 +191,79 @@ def weekly_schedule_view(request):
             'classes': day_classes,
             'count': len(day_classes),
         })
-    
+
     context = {
         'schedule_days': schedule_days,
         'total_classes': schedules.count(),
     }
-    
     return render(request, 'dashboard/weekly_schedule.html', context)
 
 
+# ========== برنامه هفتگی معلم ==========
+
+@teacher_required
+def teacher_weekly_schedule(request):
+    """
+    برنامه هفتگی معلم
+    فقط کلاس‌هایی که خود کاربر معلم آن‌ها است نمایش داده می‌شود.
+    """
+    schedules = WeeklySchedule.objects.filter(
+        classroom__teacher=request.user
+    ).select_related('classroom').order_by(
+        'day_of_week', 'start_time'
+    )
+
+    days_info = [
+        ('saturday', 'شنبه'),
+        ('sunday', 'یکشنبه'),
+        ('monday', 'دوشنبه'),
+        ('tuesday', 'سه‌شنبه'),
+        ('wednesday', 'چهارشنبه'),
+    ]
+
+    schedule_days = []
+    for day_key, day_name in days_info:
+        day_classes = [s for s in schedules if s.day_of_week == day_key]
+        schedule_days.append({
+            'key': day_key,
+            'name': day_name,
+            'classes': day_classes,
+            'count': len(day_classes),
+        })
+
+    # آمار کلی
+    total_sessions = schedules.count()
+    total_classrooms = schedules.values('classroom').distinct().count()
+
+    context = {
+        'schedule_days': schedule_days,
+        'total_sessions': total_sessions,
+        'total_classrooms': total_classrooms,
+        'title': 'برنامه هفتگی من',
+    }
+    return render(request, 'dashboard/teacher/weekly_schedule.html', context)
+
+
 # ========== پنل معاون ==========
+
 @login_required
 def assistant_dashboard(request):
     """داشبورد اصلی معاون"""
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
-    # آمار کلی
+
     total_classes = Classroom.objects.count()
     total_students = User.objects.filter(role='student').count()
     total_teachers = User.objects.filter(role='teacher').count()
-    
-    # غیبت‌های امروز
+
     today = timezone.now().date()
     today_attendance = AttendanceRecord.objects.filter(
         status='absent',
         attendance_check__session__session_date__date=today
     ).select_related('student', 'attendance_check__session__classroom')
-    
     today_absent_count = today_attendance.count()
-    
+
     context = {
         'total_classes': total_classes,
         'total_students': total_students,
@@ -236,7 +271,6 @@ def assistant_dashboard(request):
         'today_absent_count': today_absent_count,
         'recent_absences': today_attendance[:10],
     }
-    
     return render(request, 'dashboard/assistant_dashboard.html', context)
 
 
@@ -246,14 +280,12 @@ def absences_today_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     today = timezone.now().date()
-    
-    # فیلتر بر اساس مقطع یا رشته
     grade_filter = request.GET.get('grade')
     field_filter = request.GET.get('field')
     class_filter = request.GET.get('classroom')
-    
+
     absences = AttendanceRecord.objects.filter(
         status='absent',
         attendance_check__session__session_date__date=today
@@ -261,15 +293,14 @@ def absences_today_view(request):
         'student',
         'attendance_check__session__classroom'
     ).order_by('attendance_check__session__classroom__name', 'student__last_name')
-    
+
     if grade_filter:
         absences = absences.filter(attendance_check__session__classroom__grade=grade_filter)
     if field_filter:
         absences = absences.filter(attendance_check__session__classroom__field=field_filter)
     if class_filter:
         absences = absences.filter(attendance_check__session__classroom__id=class_filter)
-    
-    # اضافه کردن اطلاعات والدین
+
     absences_with_parent = []
     for record in absences:
         parent_phone = ''
@@ -280,16 +311,14 @@ def absences_today_view(request):
             parent_name = profile.father_name or ''
         except StudentProfile.DoesNotExist:
             pass
-        
         absences_with_parent.append({
             'record': record,
             'parent_phone': parent_phone,
             'parent_name': parent_name,
         })
-    
-    # لیست کلاس‌ها برای فیلتر
+
     classrooms = Classroom.objects.all().order_by('grade', 'field', 'name')
-    
+
     context = {
         'absences_with_parent': absences_with_parent,
         'total_absences': len(absences_with_parent),
@@ -301,7 +330,6 @@ def absences_today_view(request):
         'grades': Classroom.GRADE_CHOICES,
         'fields': Classroom.FIELD_CHOICES,
     }
-    
     return render(request, 'dashboard/assistant/absences_today.html', context)
 
 
@@ -311,18 +339,16 @@ def class_list_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
-    # فیلتر
+
     grade_filter = request.GET.get('grade')
     field_filter = request.GET.get('field')
-    
+
     classrooms = Classroom.objects.all().order_by('grade', 'field', 'name')
-    
     if grade_filter:
         classrooms = classrooms.filter(grade=grade_filter)
     if field_filter:
         classrooms = classrooms.filter(field=field_filter)
-    
+
     context = {
         'classrooms': classrooms,
         'grades': Classroom.GRADE_CHOICES,
@@ -330,7 +356,6 @@ def class_list_view(request):
         'grade_filter': grade_filter,
         'field_filter': field_filter,
     }
-    
     return render(request, 'dashboard/assistant/class_list.html', context)
 
 
@@ -340,7 +365,7 @@ def class_create_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     if request.method == 'POST':
         form = ClassroomForm(request.POST)
         if form.is_valid():
@@ -349,12 +374,11 @@ def class_create_view(request):
             return redirect('dashboard:assistant_class_list')
     else:
         form = ClassroomForm()
-    
+
     context = {
         'form': form,
         'title': 'ایجاد کلاس جدید'
     }
-    
     return render(request, 'dashboard/assistant/class_form.html', context)
 
 
@@ -364,9 +388,8 @@ def class_edit_view(request, pk):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     classroom = get_object_or_404(Classroom, pk=pk)
-    
     if request.method == 'POST':
         form = ClassroomForm(request.POST, instance=classroom)
         if form.is_valid():
@@ -375,13 +398,12 @@ def class_edit_view(request, pk):
             return redirect('dashboard:assistant_class_list')
     else:
         form = ClassroomForm(instance=classroom)
-    
+
     context = {
         'form': form,
         'classroom': classroom,
         'title': f'ویرایش کلاس {classroom.name}'
     }
-    
     return render(request, 'dashboard/assistant/class_form.html', context)
 
 
@@ -391,14 +413,13 @@ def class_delete_view(request, pk):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     classroom = get_object_or_404(Classroom, pk=pk)
-    
     if request.method == 'POST':
         classroom.delete()
         messages.success(request, 'کلاس با موفقیت حذف شد')
         return redirect('dashboard:assistant_class_list')
-    
+
     context = {'classroom': classroom}
     return render(request, 'dashboard/assistant/class_confirm_delete.html', context)
 
@@ -409,19 +430,17 @@ def schedule_builder_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
-    # فیلتر بر اساس کلاس انتخاب شده
+
     classroom_id = request.GET.get('classroom')
     selected_classroom = None
     schedule_days = []
-    
+
     if classroom_id:
         selected_classroom = get_object_or_404(Classroom, pk=classroom_id)
-        
         schedules = WeeklySchedule.objects.filter(
             classroom=selected_classroom
         ).order_by('day_of_week', 'start_time')
-        
+
         days_info = [
             ('saturday', 'شنبه'),
             ('sunday', 'یکشنبه'),
@@ -429,7 +448,7 @@ def schedule_builder_view(request):
             ('tuesday', 'سه‌شنبه'),
             ('wednesday', 'چهارشنبه'),
         ]
-        
+
         for day_key, day_name in days_info:
             day_classes = [s for s in schedules if s.day_of_week == day_key]
             schedule_days.append({
@@ -438,8 +457,7 @@ def schedule_builder_view(request):
                 'classes': day_classes,
                 'count': len(day_classes),
             })
-    
-    # فرم افزودن برنامه جدید
+
     if request.method == 'POST':
         form = WeeklyScheduleForm(request.POST)
         if form.is_valid():
@@ -449,20 +467,17 @@ def schedule_builder_view(request):
             return redirect(f'{request.path}?classroom={classroom_id}')
     else:
         form = WeeklyScheduleForm()
-    
-    # اگر کلاس انتخاب شده، فرم را با آن مقداردهی اولیه کنیم
-    if selected_classroom:
-        form.fields['classroom'].initial = selected_classroom
-    
+        if selected_classroom:
+            form.fields['classroom'].initial = selected_classroom
+
     classrooms = Classroom.objects.all().order_by('grade', 'field', 'name')
-    
+
     context = {
         'form': form,
         'classrooms': classrooms,
         'selected_classroom': selected_classroom,
         'schedule_days': schedule_days,
     }
-    
     return render(request, 'dashboard/assistant/schedule_builder.html', context)
 
 
@@ -472,15 +487,14 @@ def schedule_delete_view(request, pk):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     schedule = get_object_or_404(WeeklySchedule, pk=pk)
     classroom_id = schedule.classroom.id
-    
+
     if request.method == 'POST':
         schedule.delete()
         messages.success(request, 'جلسه از برنامه حذف شد')
-    
-    return redirect(f'{request.META.get("HTTP_REFERER", "/assistant/schedule/")}?classroom={classroom_id}')
+        return redirect(f'{request.META.get("HTTP_REFERER", "/assistant/schedule/")}?classroom={classroom_id}')
 
 
 @login_required
@@ -489,16 +503,14 @@ def schedule_copy_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     if request.method == 'POST':
         form = CopyScheduleForm(request.POST)
         if form.is_valid():
             source = form.cleaned_data['source_classroom']
             target = form.cleaned_data['target_classroom']
-            
             source_schedules = WeeklySchedule.objects.filter(classroom=source)
             copied_count = 0
-            
             for schedule in source_schedules:
                 WeeklySchedule.objects.create(
                     classroom=target,
@@ -508,7 +520,6 @@ def schedule_copy_view(request):
                     room=schedule.room
                 )
                 copied_count += 1
-            
             messages.success(
                 request,
                 f'برنامه هفتگی با {copied_count} جلسه از "{source.name}" به "{target.name}" کپی شد'
@@ -516,12 +527,11 @@ def schedule_copy_view(request):
             return redirect(f'/assistant/schedule/?classroom={target.id}')
     else:
         form = CopyScheduleForm()
-    
+
     context = {
         'form': form,
         'title': 'کپی برنامه هفتگی'
     }
-    
     return render(request, 'dashboard/assistant/schedule_copy.html', context)
 
 
@@ -531,13 +541,12 @@ def schedule_print_view(request, classroom_id):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     classroom = get_object_or_404(Classroom, pk=classroom_id)
-    
     schedules = WeeklySchedule.objects.filter(
         classroom=classroom
     ).order_by('day_of_week', 'start_time')
-    
+
     days_info = [
         ('saturday', 'شنبه'),
         ('sunday', 'یکشنبه'),
@@ -545,7 +554,7 @@ def schedule_print_view(request, classroom_id):
         ('tuesday', 'سه‌شنبه'),
         ('wednesday', 'چهارشنبه'),
     ]
-    
+
     schedule_days = []
     for day_key, day_name in days_info:
         day_classes = [s for s in schedules if s.day_of_week == day_key]
@@ -555,13 +564,12 @@ def schedule_print_view(request, classroom_id):
             'classes': day_classes,
             'count': len(day_classes),
         })
-    
+
     context = {
         'classroom': classroom,
         'schedule_days': schedule_days,
         'print_mode': True,
     }
-    
     return render(request, 'dashboard/assistant/schedule_print.html', context)
 
 
@@ -571,15 +579,13 @@ def student_list_view(request):
     if request.user.role != 'assistant':
         messages.error(request, 'دسترسی غیرمجاز')
         return redirect('dashboard:home')
-    
+
     students = User.objects.filter(role='student').order_by('last_name', 'first_name')
-    
-    # فیلتر
+
     classroom_id = request.GET.get('classroom')
     if classroom_id:
         students = students.filter(enrolled_classes__id=classroom_id)
-    
-    # اضافه کردن اطلاعات والدین
+
     students_with_parent = []
     for student in students:
         parent_phone = ''
@@ -590,22 +596,20 @@ def student_list_view(request):
             parent_name = profile.father_name or ''
         except StudentProfile.DoesNotExist:
             pass
-        
         students_with_parent.append({
             'student': student,
             'parent_phone': parent_phone,
             'parent_name': parent_name,
         })
-    
+
     classrooms = Classroom.objects.all().order_by('grade', 'field', 'name')
-    
+
     context = {
         'students_with_parent': students_with_parent,
         'total_students': len(students_with_parent),
         'classrooms': classrooms,
         'class_filter': classroom_id,
     }
-    
     return render(request, 'dashboard/assistant/student_list.html', context)
 
 
@@ -616,9 +620,7 @@ def teacher_ai_new(request):
     """
     صفحه ساخت درخواست تولید سوال با هوش مصنوعی
     """
-
     classrooms = get_teacher_classrooms(request.user)
-
     if not classrooms.exists():
         messages.warning(
             request,
@@ -627,7 +629,6 @@ def teacher_ai_new(request):
 
     if request.method == 'POST':
         form = AIGenerationForm(request.POST, request.FILES, teacher=request.user)
-
         if form.is_valid():
             job = form.save(commit=False)
             job.teacher = request.user
@@ -649,7 +650,6 @@ def teacher_ai_new(request):
                     request,
                     f'خطا در تولید سوال: {job.error_message}'
                 )
-
             return redirect('dashboard:teacher_ai_review', job_id=job.id)
     else:
         form = AIGenerationForm(teacher=request.user)
@@ -659,7 +659,6 @@ def teacher_ai_new(request):
         'classrooms_count': classrooms.count(),
         'title': 'تولید سوال با هوش مصنوعی',
     }
-
     return render(request, 'dashboard/teacher/ai_generate_form.html', context)
 
 
@@ -668,15 +667,12 @@ def teacher_ai_review(request, job_id):
     """
     صفحه بررسی سوال‌های تولیدشده توسط هوش مصنوعی
     """
-
     job = get_object_or_404(
         AIGenerationJob,
         id=job_id,
         teacher=request.user
     )
-
     questions = job.generated_questions.all().order_by('id')
-
     pending_count = questions.filter(review_status='pending').count()
     approved_count = questions.filter(review_status='approved').count()
     rejected_count = questions.filter(review_status='rejected').count()
@@ -689,7 +685,6 @@ def teacher_ai_review(request, job_id):
         'rejected_count': rejected_count,
         'title': 'بررسی سوال‌های تولیدشده',
     }
-
     return render(request, 'dashboard/teacher/ai_review.html', context)
 
 
@@ -698,21 +693,17 @@ def teacher_ai_question_approve(request, pk):
     """
     تایید یک سوال تولیدشده توسط هوش مصنوعی
     """
-
     question = get_object_or_404(
         Question,
         pk=pk,
         ai_job__teacher=request.user
     )
-
     if request.method == 'POST':
         question.review_status = 'approved'
         question.is_approved = True
         question.save()
-
         messages.success(request, 'سوال تایید شد و به بانک سوال اضافه شد.')
-
-    return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
+        return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
 
 
 @teacher_required
@@ -720,21 +711,17 @@ def teacher_ai_question_reject(request, pk):
     """
     رد یک سوال تولیدشده توسط هوش مصنوعی
     """
-
     question = get_object_or_404(
         Question,
         pk=pk,
         ai_job__teacher=request.user
     )
-
     if request.method == 'POST':
         question.review_status = 'rejected'
         question.is_approved = False
         question.save()
-
         messages.warning(request, 'سوال رد شد. می‌توانید برای سوال‌های ردشده درخواست تولید مجدد بدهید.')
-
-    return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
+        return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
 
 
 @teacher_required
@@ -742,16 +729,13 @@ def teacher_ai_regenerate_rejected(request, job_id):
     """
     تولید مجدد سوال‌های ردشده
     """
-
     job = get_object_or_404(
         AIGenerationJob,
         id=job_id,
         teacher=request.user
     )
-
     if request.method == 'POST':
         regenerated_count = regenerate_rejected_questions(job)
-
         if regenerated_count > 0:
             messages.success(
                 request,
@@ -759,8 +743,7 @@ def teacher_ai_regenerate_rejected(request, job_id):
             )
         else:
             messages.info(request, 'سوال ردشده‌ای برای تولید مجدد وجود ندارد.')
-
-    return redirect('dashboard:teacher_ai_review', job_id=job.id)
+        return redirect('dashboard:teacher_ai_review', job_id=job.id)
 
 
 # ========== فاز ۲: بانک سوال و سوال دستی ==========
@@ -769,10 +752,8 @@ def teacher_ai_regenerate_rejected(request, job_id):
 def teacher_question_bank(request):
     """
     بانک سوال معلم
-
     معلم فقط سوال‌های کلاس‌های خودش را می‌بیند.
     """
-
     questions = Question.objects.filter(
         classroom__teacher=request.user
     ).select_related(
@@ -791,13 +772,10 @@ def teacher_question_bank(request):
 
     if classroom_filter:
         questions = questions.filter(classroom_id=classroom_filter)
-
     if source_filter:
         questions = questions.filter(source=source_filter)
-
     if status_filter:
         questions = questions.filter(review_status=status_filter)
-
     if search_query:
         questions = questions.filter(
             Q(text__icontains=search_query) |
@@ -814,7 +792,6 @@ def teacher_question_bank(request):
         'total_count': questions.count(),
         'title': 'بانک سوالات',
     }
-
     return render(request, 'dashboard/teacher/question_bank.html', context)
 
 
@@ -823,10 +800,8 @@ def teacher_question_manual_create(request):
     """
     ساخت سوال دستی توسط معلم
     """
-
     if request.method == 'POST':
         form = QuestionForm(request.POST, teacher=request.user)
-
         if form.is_valid():
             question = form.save(commit=False)
             question.created_by = request.user
@@ -834,7 +809,6 @@ def teacher_question_manual_create(request):
             question.is_approved = True
             question.review_status = 'approved'
             question.save()
-
             messages.success(request, 'سوال دستی با موفقیت در بانک سوال ذخیره شد.')
             return redirect('dashboard:teacher_question_bank')
     else:
@@ -844,7 +818,6 @@ def teacher_question_manual_create(request):
         'form': form,
         'title': 'ساخت سوال دستی',
     }
-
     return render(request, 'dashboard/teacher/question_form.html', context)
 
 
@@ -852,10 +825,8 @@ def teacher_question_manual_create(request):
 def teacher_question_edit(request, pk):
     """
     ویرایش سوال توسط معلم
-
     معلم فقط سوال‌های کلاس‌های خودش را می‌تواند ویرایش کند.
     """
-
     question = get_object_or_404(
         Question,
         pk=pk,
@@ -864,21 +835,15 @@ def teacher_question_edit(request, pk):
 
     if request.method == 'POST':
         form = QuestionForm(request.POST, instance=question, teacher=request.user)
-
         if form.is_valid():
             question = form.save(commit=False)
-
             if question.source == 'manual':
                 question.review_status = 'approved'
                 question.is_approved = True
             elif question.review_status == 'rejected':
-                # اگر سوال هوش مصنوعی قبلاً رد شده و حالا معلم آن را ویرایش کرد،
-                # دوباره به حالت در انتظار بررسی برمی‌گردد.
                 question.review_status = 'pending'
                 question.is_approved = False
-
             question.save()
-
             messages.success(request, 'سوال با موفقیت ویرایش شد.')
             return redirect('dashboard:teacher_question_bank')
     else:
@@ -889,7 +854,6 @@ def teacher_question_edit(request, pk):
         'question': question,
         'title': 'ویرایش سوال',
     }
-
     return render(request, 'dashboard/teacher/question_form.html', context)
 
 
@@ -898,7 +862,6 @@ def teacher_question_delete(request, pk):
     """
     حذف سوال توسط معلم
     """
-
     question = get_object_or_404(
         Question,
         pk=pk,
@@ -914,5 +877,4 @@ def teacher_question_delete(request, pk):
         'question': question,
         'title': 'حذف سوال',
     }
-
     return render(request, 'dashboard/teacher/question_confirm_delete.html', context)

@@ -1,60 +1,213 @@
 {% extends 'base.html' %}
-
 {% block title %}حذف سوال - پنل معلم{% endblock %}
-
 {% block content %}
-<div class="page-breadcrumb">
-    <h1 class="breadcrumb-title">
-        <i class="bi bi-trash-fill"></i>
-        حذف سوال
-    </h1>
-    <div class="breadcrumb-nav">
-        <a href="{% url 'dashboard:home' %}">خانه</a>
-        <i class="bi bi-chevron-left"></i>
-        <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
-        <i class="bi bi-chevron-left"></i>
-        <span>حذف سوال</span>
+<style>
+    .qd-page {
+        --qd-danger: #dc2626;
+    }
+
+    .qd-card {
+        background: white;
+        border-radius: 22px;
+        padding: 40px;
+        border: 1px solid #fee2e2;
+        box-shadow: 0 12px 32px rgba(220, 38, 38, 0.08);
+        max-width: 550px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .qd-icon {
+        width: 95px;
+        height: 95px;
+        background: #fef2f2;
+        color: var(--qd-danger);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.8rem;
+        margin-bottom: 22px;
+        animation: pulse-danger 2s infinite;
+    }
+
+    @keyframes pulse-danger {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+        50% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); }
+    }
+
+    .qd-title {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #17224a;
+        margin-bottom: 14px;
+    }
+
+    .qd-message {
+        color: #667085;
+        margin-bottom: 24px;
+        line-height: 1.8;
+        font-size: 0.92rem;
+    }
+
+    .qd-question-preview {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 24px;
+        text-align: right;
+    }
+
+    .qd-question-label {
+        font-size: 0.78rem;
+        color: #b91c1c;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .qd-question-text {
+        color: #364152;
+        font-size: 0.9rem;
+        line-height: 1.8;
+    }
+
+    .qd-warning {
+        background: #fffbeb;
+        border: 1px solid #fef3c7;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: right;
+    }
+
+    .qd-warning i {
+        color: #d97706;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .qd-warning p {
+        margin: 0;
+        color: #92400e;
+        font-size: 0.85rem;
+        line-height: 1.7;
+    }
+
+    .qd-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .qd-btn {
+        padding: 13px 28px;
+        border-radius: 13px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .qd-btn.danger {
+        background: var(--qd-danger);
+        color: white;
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
+    }
+
+    .qd-btn.danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(220, 38, 38, 0.35);
+        color: white;
+    }
+
+    .qd-btn.cancel {
+        background: #f2f5fa;
+        color: #364152;
+    }
+
+    .qd-btn.cancel:hover {
+        background: #e8edf6;
+    }
+
+    @media (max-width: 576px) {
+        .qd-card {
+            padding: 25px;
+        }
+
+        .qd-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="qd-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-trash-fill"></i>
+            حذف سوال
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>حذف سوال</span>
+        </div>
     </div>
-</div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-danger rounded-4">
-            <div class="card-body p-4 text-center">
-                <div class="mb-3">
-                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
-                </div>
+    <div class="qd-card">
+        <div class="qd-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
 
-                <h5 class="fw-bold mb-3">
-                    آیا از حذف این سوال مطمئن هستید؟
-                </h5>
+        <h2 class="qd-title">آیا از حذف این سوال مطمئن هستید؟</h2>
 
-                <div class="alert alert-light border">
-                    {{ question.text|truncatechars:200 }}
-                </div>
-
-                <p class="text-muted">
-                    این عملیات قابل بازگشت نیست.
-                    اگر این سوال قبلاً در آزمون یا درخواستی استفاده شده باشد، ممکن است رکوردهای مرتبط نیز تحت تاثیر قرار بگیرند.
-                </p>
-
-                <form method="post">
-                    {% csrf_token %}
-
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash me-1"></i>
-                            بله، حذف شود
-                        </button>
-
-                        <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-1"></i>
-                            انصراف
-                        </a>
-                    </div>
-                </form>
+        <div class="qd-question-preview">
+            <div class="qd-question-label">
+                <i class="bi bi-question-circle-fill"></i>
+                سوال #{{ question.id }} - {{ question.classroom.name }}
+            </div>
+            <div class="qd-question-text">
+                {{ question.text|truncatechars:200 }}
             </div>
         </div>
+
+        <div class="qd-warning">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <p>
+                این عملیات قابل بازگشت نیست.
+                اگر این سوال قبلاً در آزمون یا درخواستی استفاده شده باشد، ممکن است رکوردهای مرتبط نیز تحت تاثیر قرار بگیرند.
+            </p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="qd-actions">
+                <button type="submit" class="qd-btn danger">
+                    <i class="bi bi-trash-fill"></i>
+                    بله، حذف شود
+                </button>
+                <a href="{% url 'dashboard:teacher_question_bank' %}" class="qd-btn cancel">
+                    <i class="bi bi-x-circle"></i>
+                    انصراف
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

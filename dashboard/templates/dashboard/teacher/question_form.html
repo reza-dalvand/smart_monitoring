@@ -1,73 +1,405 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ title }} - پنل معلم{% endblock %}
-
 {% block content %}
-<div class="page-breadcrumb">
-    <h1 class="breadcrumb-title">
-        <i class="bi bi-question-circle-fill"></i>
-        {{ title }}
-    </h1>
-    <div class="breadcrumb-nav">
-        <a href="{% url 'dashboard:home' %}">خانه</a>
-        <i class="bi bi-chevron-left"></i>
-        <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
-        <i class="bi bi-chevron-left"></i>
-        <span>{{ title }}</span>
+<style>
+    .qf-page {
+        --qf-primary: #1a237e;
+        --qf-secondary: #ffc107;
+    }
+
+    .qf-card {
+        background: white;
+        border-radius: 22px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+        overflow: hidden;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+
+    .qf-card-header {
+        background: linear-gradient(135deg, var(--qf-primary) 0%, #303f9f 100%);
+        padding: 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .qf-card-header::before {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -80px;
+        left: -60px;
+    }
+
+    .qf-card-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--qf-secondary);
+        border-radius: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--qf-primary);
+        margin-bottom: 16px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 22px rgba(255, 193, 7, 0.3);
+    }
+
+    .qf-card-header h2 {
+        font-size: 1.4rem;
+        font-weight: 900;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .qf-card-body {
+        padding: 30px;
+    }
+
+    .qf-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .qf-form-group {
+        margin-bottom: 20px;
+    }
+
+    .qf-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .qf-form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 0.88rem;
+    }
+
+    .qf-form-label i {
+        color: var(--qf-secondary);
+    }
+
+    .qf-form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e8edf6;
+        border-radius: 12px;
+        font-family: inherit;
+        transition: all 0.25s ease;
+        background: #fbfcfe;
+    }
+
+    .qf-form-control:focus {
+        outline: none;
+        border-color: var(--qf-primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.08);
+    }
+
+    .qf-form-help {
+        font-size: 0.78rem;
+        color: #8a94a6;
+        margin-top: 6px;
+    }
+
+    .qf-form-error {
+        background: #fef2f2;
+        color: #b91c1c;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        border: 1px solid #fee2e2;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .qf-choices-section {
+        background: #f8fafd;
+        border: 1px solid #edf1f8;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .qf-choices-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #17224a;
+        margin-bottom: 16px;
+    }
+
+    .qf-choices-title i {
+        color: var(--qf-secondary);
+    }
+
+    .qf-form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 26px;
+        padding-top: 20px;
+        border-top: 1px solid #f2f5fa;
+    }
+
+    .qf-btn-submit {
+        flex: 1;
+        padding: 14px 20px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(135deg, var(--qf-primary), #303f9f);
+        color: white;
+        box-shadow: 0 8px 18px rgba(26, 35, 126, 0.25);
+    }
+
+    .qf-btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(26, 35, 126, 0.35);
+    }
+
+    .qf-btn-cancel {
+        padding: 14px 25px;
+        border-radius: 14px;
+        font-weight: 800;
+        border: 2px solid #e8edf6;
+        background: white;
+        color: #667085;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .qf-btn-cancel:hover {
+        background: #f2f5fa;
+        color: #364152;
+    }
+
+    @media (max-width: 767px) {
+        .qf-form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .qf-card-body {
+            padding: 20px;
+        }
+
+        .qf-form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="qf-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-question-circle-fill"></i>
+            {{ title }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ title }}</span>
+        </div>
     </div>
-</div>
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                                {{ field.label }}
-                            </label>
-
-                            {{ field }}
-
-                            {% if field.help_text %}
-                                <div class="form-text">
-                                    {{ field.help_text }}
-                                </div>
-                            {% endif %}
-
-                            {% if field.errors %}
-                                {% for error in field.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="bi bi-exclamation-circle me-1"></i>
-                                        {{ error }}
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-circle me-1"></i>
-                            ذخیره سوال
-                        </button>
-
-                        <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary btn-lg">
-                            <i class="bi bi-x-circle me-1"></i>
-                            انصراف
-                        </a>
-                    </div>
-                </form>
+    <div class="qf-card">
+        <!-- Header -->
+        <div class="qf-card-header">
+            <div class="qf-card-icon">
+                <i class="bi bi-pencil-square"></i>
             </div>
+            <h2>{{ title }}</h2>
+        </div>
+
+        <!-- Body -->
+        <div class="qf-card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="qf-form-error mb-3">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="qf-form-row">
+                    <!-- Classroom -->
+                    <div class="qf-form-group">
+                        <label class="qf-form-label">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                            {{ form.classroom.label }}
+                        </label>
+                        {{ form.classroom }}
+                        {% if form.classroom.help_text %}
+                            <div class="qf-form-help">{{ form.classroom.help_text }}</div>
+                        {% endif %}
+                        {% for error in form.classroom.errors %}
+                            <div class="qf-form-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Session -->
+                    <div class="qf-form-group">
+                        <label class="qf-form-label">
+                            <i class="bi bi-calendar-event-fill"></i>
+                            {{ form.session.label }}
+                        </label>
+                        {{ form.session }}
+                        {% if form.session.help_text %}
+                            <div class="qf-form-help">{{ form.session.help_text }}</div>
+                        {% endif %}
+                        {% for error in form.session.errors %}
+                            <div class="qf-form-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Topic -->
+                    <div class="qf-form-group full">
+                        <label class="qf-form-label">
+                            <i class="bi bi-tag-fill"></i>
+                            {{ form.topic.label }}
+                        </label>
+                        {{ form.topic }}
+                        {% for error in form.topic.errors %}
+                            <div class="qf-form-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Question Text -->
+                    <div class="qf-form-group full">
+                        <label class="qf-form-label">
+                            <i class="bi bi-card-text"></i>
+                            {{ form.text.label }}
+                        </label>
+                        {{ form.text }}
+                        {% for error in form.text.errors %}
+                            <div class="qf-form-error">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Choices Section -->
+                <div class="qf-choices-section">
+                    <div class="qf-choices-title">
+                        <i class="bi bi-list-check"></i>
+                        گزینه‌های پاسخ
+                    </div>
+
+                    <div class="qf-form-row">
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-1-circle-fill"></i>
+                                گزینه الف
+                            </label>
+                            {{ form.choice_a }}
+                            {% for error in form.choice_a.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-2-circle-fill"></i>
+                                گزینه ب
+                            </label>
+                            {{ form.choice_b }}
+                            {% for error in form.choice_b.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-3-circle-fill"></i>
+                                گزینه ج
+                            </label>
+                            {{ form.choice_c }}
+                            {% for error in form.choice_c.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-4-circle-fill"></i>
+                                گزینه د
+                            </label>
+                            {{ form.choice_d }}
+                            {% for error in form.choice_d.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-check-circle-fill"></i>
+                                {{ form.correct_answer.label }}
+                            </label>
+                            {{ form.correct_answer }}
+                            {% for error in form.correct_answer.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="qf-form-group">
+                            <label class="qf-form-label">
+                                <i class="bi bi-clock-fill"></i>
+                                {{ form.timer_seconds.label }}
+                            </label>
+                            {{ form.timer_seconds }}
+                            {% if form.timer_seconds.help_text %}
+                                <div class="qf-form-help">{{ form.timer_seconds.help_text }}</div>
+                            {% endif %}
+                            {% for error in form.timer_seconds.errors %}
+                                <div class="qf-form-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qf-form-actions">
+                    <button type="submit" class="qf-btn-submit">
+                        <i class="bi bi-check-circle-fill"></i>
+                        ذخیره سوال
+                    </button>
+                    <a href="{% url 'dashboard:teacher_question_bank' %}" class="qf-btn-cancel">
+                        <i class="bi bi-x-circle"></i>
+                        انصراف
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

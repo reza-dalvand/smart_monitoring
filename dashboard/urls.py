@@ -11,13 +11,12 @@ urlpatterns = [
     path('weekly-schedule/', views.weekly_schedule_view, name='weekly_schedule'),
 
     # ========== پنل معلم - فاز ۲ ==========
+    path('teacher/schedule/', views.teacher_weekly_schedule, name='teacher_weekly_schedule'),
     path('teacher/ai/new/', views.teacher_ai_new, name='teacher_ai_new'),
     path('teacher/ai/<int:job_id>/review/', views.teacher_ai_review, name='teacher_ai_review'),
     path('teacher/ai/<int:job_id>/regenerate/', views.teacher_ai_regenerate_rejected, name='teacher_ai_regenerate_rejected'),
-
     path('teacher/ai/question/<int:pk>/approve/', views.teacher_ai_question_approve, name='teacher_ai_question_approve'),
     path('teacher/ai/question/<int:pk>/reject/', views.teacher_ai_question_reject, name='teacher_ai_question_reject'),
-
     path('teacher/questions/', views.teacher_question_bank, name='teacher_question_bank'),
     path('teacher/questions/manual/create/', views.teacher_question_manual_create, name='teacher_question_manual_create'),
     path('teacher/questions/<int:pk>/edit/', views.teacher_question_edit, name='teacher_question_edit'),

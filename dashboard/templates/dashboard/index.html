@@ -1,262 +1,396 @@
 {% extends 'base.html' %}
-
-{% block title %}داشبورد - سامانه پایش هوشمند{% endblock %}
-
+{% block title %}داشبورد معلم - سامانه پایش هوشمند{% endblock %}
 {% block content %}
-<!-- Breadcrumb -->
-<div class="page-breadcrumb">
-    <h1 class="breadcrumb-title">داشبورد مدیریت</h1>
-    <div class="breadcrumb-nav">
-        <a href="#">خانه</a>
-        <i class="bi bi-chevron-left"></i>
-        <span>داشبورد</span>
-    </div>
-</div>
+<style>
+    .teacher-dashboard {
+        --td-primary: #1a237e;
+        --td-secondary: #ffc107;
+        --td-purple: #7c3aed;
+        --td-success: #16a34a;
+        --td-danger: #dc2626;
+        --td-warning: #d97706;
+        --td-info: #0284c7;
+    }
 
-<!-- Stat Cards -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-card-title">کلاس‌های فعال</div>
-                    <div class="stat-card-value">۱۲</div>
-                    <div class="stat-card-trend">
-                        <i class="bi bi-arrow-up"></i>
-                        <span>۱۲٪ نسبت به ماه قبل</span>
-                    </div>
-                </div>
-                <div class="stat-card-icon">
-                    <i class="bi bi-door-open-fill"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card success">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-card-title">حاضرین امروز</div>
-                    <div class="stat-card-value">۳۴۵</div>
-                    <div class="stat-card-trend">
-                        <i class="bi bi-arrow-up"></i>
-                        <span>۸٪ نسبت به دیروز</span>
-                    </div>
-                </div>
-                <div class="stat-card-icon">
-                    <i class="bi bi-person-check-fill"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card warning">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-card-title">سوالات تولید شده</div>
-                    <div class="stat-card-value">۸۹</div>
-                    <div class="stat-card-trend">
-                        <i class="bi bi-arrow-up"></i>
-                        <span>۲۳ سوال جدید</span>
-                    </div>
-                </div>
-                <div class="stat-card-icon">
-                    <i class="bi bi-question-circle-fill"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card info">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-card-title">میانگین مشارکت</div>
-                    <div class="stat-card-value">۸۷٪</div>
-                    <div class="stat-card-trend down">
-                        <i class="bi bi-arrow-down"></i>
-                        <span>۳٪ نسبت به هفته قبل</span>
-                    </div>
-                </div>
-                <div class="stat-card-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    .td-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 35px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
 
-<!-- Content Row -->
-<div class="row">
-    <!-- Recent Sessions -->
-    <div class="col-lg-8 mb-4">
-        <div class="content-card">
-            <div class="content-card-header">
-                <h3 class="content-card-title">
-                    <i class="bi bi-calendar-check-fill"></i>
-                    آخرین جلسات برگزار شده
-                </h3>
-                <button class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-eye"></i>
-                    مشاهده همه
-                </button>
-            </div>
-            <div class="content-card-body">
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>نام کلاس</th>
-                                <th>تاریخ</th>
-                                <th>وضعیت حضور</th>
-                                <th>میانگین نمره</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <strong>ریاضی پایه دهم</strong>
-                                    <br>
-                                    <small class="text-muted">کلاس ۱۰۱</small>
-                                </td>
-                                <td>۱۴۰۴/۰۲/۱۵</td>
-                                <td>
-                                    <span class="badge-status badge-success">۹۵٪ حاضر</span>
-                                </td>
-                                <td>
-                                    <strong>۱۶.۵</strong>
-                                    <small class="text-muted">از ۲۰</small>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>فیزیک پایه یازدهم</strong>
-                                    <br>
-                                    <small class="text-muted">کلاس ۲۰۵</small>
-                                </td>
-                                <td>۱۴۰۴/۰۲/۱۴</td>
-                                <td>
-                                    <span class="badge-status badge-warning">۷۰٪ حاضر</span>
-                                </td>
-                                <td>
-                                    <strong>۱۴.۲</strong>
-                                    <small class="text-muted">از ۲۰</small>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>شیمی پایه دوازدهم</strong>
-                                    <br>
-                                    <small class="text-muted">کلاس ۳۰۸</small>
-                                </td>
-                                <td>۱۴۰۴/۰۲/۱۳</td>
-                                <td>
-                                    <span class="badge-status badge-success">۸۸٪ حاضر</span>
-                                </td>
-                                <td>
-                                    <strong>۱۷.۸</strong>
-                                    <small class="text-muted">از ۲۰</small>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+    .td-hero::before {
+        content: '';
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -130px;
+        right: -110px;
+    }
+
+    .td-hero::after {
+        content: '';
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        bottom: -90px;
+        left: -70px;
+    }
+
+    .td-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+
+    .td-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .td-hero-avatar {
+        width: 85px;
+        height: 85px;
+        background: var(--td-secondary);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        color: var(--td-primary);
+        font-weight: 900;
+        box-shadow: 0 12px 28px rgba(255, 193, 7, 0.3);
+    }
+
+    .td-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.8rem;
+        font-weight: 900;
+    }
+
+    .td-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .td-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffe9a8;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-top: 12px;
+    }
+
+    .td-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .td-quick-card {
+        background: white;
+        border-radius: 18px;
+        padding: 24px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        text-decoration: none;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .td-quick-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--td-primary), var(--td-secondary));
+    }
+
+    .td-quick-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+    }
+
+    .td-quick-card.ai::before {
+        background: linear-gradient(180deg, #7c3aed, #a855f7);
+    }
+
+    .td-quick-card.manual::before {
+        background: linear-gradient(180deg, #16a34a, #4ade80);
+    }
+
+    .td-quick-card.bank::before {
+        background: linear-gradient(180deg, #0284c7, #38bdf8);
+    }
+
+    .td-quick-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+
+    .td-quick-card.ai .td-quick-icon {
+        background: rgba(124, 58, 237, 0.10);
+        color: #7c3aed;
+    }
+
+    .td-quick-card.manual .td-quick-icon {
+        background: rgba(22, 163, 74, 0.10);
+        color: #16a34a;
+    }
+
+    .td-quick-card.bank .td-quick-icon {
+        background: rgba(2, 132, 199, 0.10);
+        color: #0284c7;
+    }
+
+    .td-quick-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+        margin-bottom: 6px;
+    }
+
+    .td-quick-desc {
+        font-size: 0.85rem;
+        color: #7b8494;
+        margin: 0;
+    }
+
+    .td-content-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .td-content-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .td-content-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .td-content-title i {
+        color: var(--td-secondary);
+        font-size: 1.2rem;
+    }
+
+    .td-content-body {
+        padding: 24px;
+    }
+
+    .td-tips-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .td-tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+        background: #f8fafd;
+        border-radius: 14px;
+        border: 1px solid #edf1f8;
+    }
+
+    .td-tip-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .td-tip-icon.purple {
+        background: rgba(124, 58, 237, 0.10);
+        color: #7c3aed;
+    }
+
+    .td-tip-icon.green {
+        background: rgba(22, 163, 74, 0.10);
+        color: #16a34a;
+    }
+
+    .td-tip-icon.blue {
+        background: rgba(2, 132, 199, 0.10);
+        color: #0284c7;
+    }
+
+    .td-tip-content h6 {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #17224a;
+        margin-bottom: 4px;
+    }
+
+    .td-tip-content p {
+        font-size: 0.82rem;
+        color: #7b8494;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 767px) {
+        .td-hero {
+            padding: 24px;
+        }
+
+        .td-hero-title {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .td-hero-text h2 {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<div class="teacher-dashboard">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-person-workspace"></i>
+            پنل معلم
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>داشبورد معلم</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="td-hero">
+        <div class="td-hero-content">
+            <div class="td-hero-title">
+                <div class="td-hero-avatar">
+                    {{ user.username|first|upper }}
+                </div>
+                <div class="td-hero-text">
+                    <h2>خوش آمدید، {{ user.get_full_name|default:user.username }}</h2>
+                    <p>مدیریت سوالات، تولید با هوش مصنوعی و نظارت بر مشارکت دانش‌آموزان</p>
+                    <span class="td-hero-badge">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        {{ user.get_role_display }}
+                    </span>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Quick Actions -->
-    <div class="col-lg-4 mb-4">
-        <div class="content-card">
-            <div class="content-card-header">
-                <h3 class="content-card-title">
-                    <i class="bi bi-lightning-fill"></i>
-                    اقدامات سریع
-                </h3>
+    <div class="td-quick-actions">
+        <a href="{% url 'dashboard:teacher_ai_new' %}" class="td-quick-card ai">
+            <div class="td-quick-icon">
+                <i class="bi bi-robot"></i>
             </div>
-            <div class="content-card-body">
-                <div class="d-grid gap-3">
-                    <button class="btn btn-primary btn-lg text-right">
-                        <i class="bi bi-camera-video-fill me-2"></i>
-                        شروع کلاس جدید
-                    </button>
-                    <button class="btn btn-outline-primary btn-lg text-right">
-                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>
-                        آپلود PDF کتاب (AI)
-                    </button>
-                    <button class="btn btn-outline-success btn-lg text-right">
-                        <i class="bi bi-clipboard-check-fill me-2"></i>
-                        ثبت حضور و غیاب
-                    </button>
-                    <button class="btn btn-outline-info btn-lg text-right">
-                        <i class="bi bi-question-circle-fill me-2"></i>
-                        ایجاد آزمون جدید
-                    </button>
-                </div>
+            <div class="td-quick-title">تولید سوال با هوش مصنوعی</div>
+            <p class="td-quick-desc">آپلود PDF و تولید خودکار سوالات چهارگزینه‌ای</p>
+        </a>
+
+        <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="td-quick-card manual">
+            <div class="td-quick-icon">
+                <i class="bi bi-pencil-square"></i>
             </div>
+            <div class="td-quick-title">ساخت سوال دستی</div>
+            <p class="td-quick-desc">ایجاد سوال چهارگزینه‌ای به صورت دستی</p>
+        </a>
+
+        <a href="{% url 'dashboard:teacher_question_bank' %}" class="td-quick-card bank">
+            <div class="td-quick-icon">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <div class="td-quick-title">بانک سوالات</div>
+            <p class="td-quick-desc">مشاهده و مدیریت تمام سوالات کلاس‌ها</p>
+        </a>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="td-content-card">
+        <div class="td-content-header">
+            <h3 class="td-content-title">
+                <i class="bi bi-lightbulb-fill"></i>
+                راهنمای سریع
+            </h3>
         </div>
-        
-        <!-- Notifications -->
-        <div class="content-card">
-            <div class="content-card-header">
-                <h3 class="content-card-title">
-                    <i class="bi bi-bell-fill"></i>
-                    اعلان‌های اخیر
-                </h3>
-            </div>
-            <div class="content-card-body p-0">
-                <div class="list-group list-group-flush">
-                    <a href="#" class="list-group-item list-group-item-action border-0">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-info-circle-fill text-primary" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <p class="mb-1 small"><strong>کلاس جدید</strong></p>
-                                <small class="text-muted">۵ دقیقه پیش</small>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action border-0">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <p class="mb-1 small"><strong>آزمون تکمیل شد</strong></p>
-                                <small class="text-muted">۲ ساعت پیش</small>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action border-0">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 1.5rem;"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <p class="mb-1 small"><strong>هشدار غیبت</strong></p>
-                                <small class="text-muted">دیروز</small>
-                            </div>
-                        </div>
-                    </a>
+        <div class="td-content-body">
+            <div class="td-tips-list">
+                <div class="td-tip-item">
+                    <div class="td-tip-icon purple">
+                        <i class="bi bi-stars"></i>
+                    </div>
+                    <div class="td-tip-content">
+                        <h6>تولید سوال با هوش مصنوعی</h6>
+                        <p>فایل PDF درس را آپلود کنید، مبحث را مشخص کنید و هوش مصنوعی سوالات را می‌سازد. سپس می‌توانید سوالات را بررسی، تایید یا رد کنید.</p>
+                    </div>
+                </div>
+                <div class="td-tip-item">
+                    <div class="td-tip-icon green">
+                        <i class="bi bi-pencil-fill"></i>
+                    </div>
+                    <div class="td-tip-content">
+                        <h6>ساخت سوال دستی</h6>
+                        <p>اگر می‌خواهید سوال خاصی طراحی کنید، از بخش ساخت سوال دستی استفاده کنید. این سوالات مستقیماً در بانک سوال ذخیره می‌شوند.</p>
+                    </div>
+                </div>
+                <div class="td-tip-item">
+                    <div class="td-tip-icon blue">
+                        <i class="bi bi-journal-check"></i>
+                    </div>
+                    <div class="td-tip-content">
+                        <h6>بانک سوالات</h6>
+                        <p>تمام سوالات کلاس‌های شما در بانک سوالات قابل مشاهده، ویرایش و حذف هستند. می‌توانید بر اساس کلاس، منبع و وضعیت فیلتر کنید.</p>
+                    </div>
                 </div>
             </div>
         </div>

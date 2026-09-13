@@ -1,217 +1,711 @@
 {% extends 'base.html' %}
-
 {% block title %}بررسی سوال‌های تولیدشده - پنل معلم{% endblock %}
-
 {% block content %}
-<div class="page-breadcrumb">
-    <h1 class="breadcrumb-title">
-        <i class="bi bi-clipboard-check-fill"></i>
-        بررسی سوال‌های تولیدشده
-    </h1>
-    <div class="breadcrumb-nav">
-        <a href="{% url 'dashboard:home' %}">خانه</a>
-        <i class="bi bi-chevron-left"></i>
-        <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
-        <i class="bi bi-chevron-left"></i>
-        <span>بررسی سوال‌های هوش مصنوعی</span>
+<style>
+    .ai-review-page {
+        --ar-primary: #1a237e;
+        --ar-secondary: #ffc107;
+        --ar-purple: #7c3aed;
+        --ar-success: #16a34a;
+        --ar-danger: #dc2626;
+        --ar-warning: #d97706;
+    }
+
+    .ar-job-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+        margin-bottom: 26px;
+    }
+
+    .ar-job-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        padding: 24px 28px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .ar-job-title {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ar-job-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
+
+    .ar-job-title h3 {
+        margin: 0 0 4px 0;
+        font-size: 1.2rem;
+        font-weight: 900;
+    }
+
+    .ar-job-title p {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 0.85rem;
+    }
+
+    .ar-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .ar-status-badge.completed {
+        background: rgba(22, 163, 74, 0.2);
+        color: #bbf7d0;
+    }
+
+    .ar-status-badge.failed {
+        background: rgba(220, 38, 38, 0.2);
+        color: #fecaca;
+    }
+
+    .ar-status-badge.pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #fef3c7;
+    }
+
+    .ar-job-body {
+        padding: 24px 28px;
+    }
+
+    .ar-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .ar-info-item {
+        background: #f8fafd;
+        border: 1px solid #edf1f8;
+        border-radius: 12px;
+        padding: 14px;
+    }
+
+    .ar-info-label {
+        font-size: 0.75rem;
+        color: #7b8494;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .ar-info-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #17224a;
+    }
+
+    .ar-prompt-box {
+        background: #f8fafd;
+        border: 1px solid #edf1f8;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .ar-prompt-label {
+        font-size: 0.8rem;
+        color: #7b8494;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ar-prompt-label i {
+        color: var(--ar-purple);
+    }
+
+    .ar-stats-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-top: 18px;
+        border-top: 1px solid #f2f5fa;
+    }
+
+    .ar-stat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .ar-stat-chip.warning {
+        background: rgba(217, 119, 6, 0.10);
+        color: #b45309;
+    }
+
+    .ar-stat-chip.success {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .ar-stat-chip.danger {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .ar-actions-row {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .ar-btn {
+        padding: 9px 16px;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .ar-btn.regenerate {
+        background: var(--ar-warning);
+        color: white;
+    }
+
+    .ar-btn.regenerate:hover {
+        background: #b45309;
+        color: white;
+    }
+
+    .ar-btn.new {
+        background: var(--ar-purple);
+        color: white;
+    }
+
+    .ar-btn.new:hover {
+        background: #6d28d9;
+        color: white;
+    }
+
+    .ar-btn.bank {
+        background: #f2f5fa;
+        color: #364152;
+    }
+
+    .ar-btn.bank:hover {
+        background: #e8edf6;
+    }
+
+    /* Question Cards */
+    .ar-questions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+        .ar-questions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .ar-question-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .ar-question-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .ar-question-card.approved {
+        border-right: 5px solid var(--ar-success);
+    }
+
+    .ar-question-card.rejected {
+        border-right: 5px solid var(--ar-danger);
+    }
+
+    .ar-question-card.pending {
+        border-right: 5px solid var(--ar-warning);
+    }
+
+    .ar-question-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .ar-question-number {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .ar-question-number span {
+        width: 32px;
+        height: 32px;
+        background: var(--ar-purple);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+
+    .ar-question-body {
+        padding: 20px;
+    }
+
+    .ar-question-text {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #17224a;
+        line-height: 1.9;
+        margin-bottom: 14px;
+    }
+
+    .ar-question-topic {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #7b8494;
+        margin-bottom: 16px;
+    }
+
+    .ar-question-topic i {
+        color: var(--ar-secondary);
+    }
+
+    .ar-choices-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .ar-choice-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid #edf1f8;
+        background: #fbfcfe;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .ar-choice-item.correct {
+        background: rgba(22, 163, 74, 0.06);
+        border-color: rgba(22, 163, 74, 0.2);
+    }
+
+    .ar-choice-letter {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #f2f5fa;
+        color: #667085;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .ar-choice-item.correct .ar-choice-letter {
+        background: var(--ar-success);
+        color: white;
+    }
+
+    .ar-choice-text {
+        flex: 1;
+        color: #364152;
+    }
+
+    .ar-choice-check {
+        color: var(--ar-success);
+        font-size: 1.1rem;
+    }
+
+    .ar-question-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid #f2f5fa;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ar-timer-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #7b8494;
+    }
+
+    .ar-timer-info i {
+        color: var(--ar-secondary);
+    }
+
+    .ar-question-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .ar-action-btn {
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .ar-action-btn.approve {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .ar-action-btn.approve:hover {
+        background: var(--ar-success);
+        color: white;
+    }
+
+    .ar-action-btn.reject {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+    }
+
+    .ar-action-btn.reject:hover {
+        background: var(--ar-danger);
+        color: white;
+    }
+
+    .ar-action-btn.edit {
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--ar-primary);
+    }
+
+    .ar-action-btn.edit:hover {
+        background: var(--ar-primary);
+        color: white;
+    }
+
+    .ar-empty-alert {
+        background: linear-gradient(135deg, rgba(217, 119, 6, 0.06), rgba(255, 193, 7, 0.08));
+        border: 1px solid rgba(217, 119, 6, 0.2);
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .ar-empty-alert i {
+        font-size: 2.5rem;
+        color: var(--ar-warning);
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 576px) {
+        .ar-job-header {
+            padding: 18px;
+        }
+
+        .ar-job-body {
+            padding: 18px;
+        }
+
+        .ar-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="ai-review-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-clipboard-check-fill"></i>
+            بررسی سوال‌های تولیدشده
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_question_bank' %}">بانک سوالات</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>بررسی سوال‌های هوش مصنوعی</span>
+        </div>
     </div>
-</div>
 
-<div class="card shadow-sm border-0 rounded-4 mb-4">
-    <div class="card-body p-4">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <strong>کلاس:</strong>
-                {{ job.classroom.name }} - {{ job.classroom.subject }}
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <strong>وضعیت پردازش:</strong>
-                {% if job.status == 'completed' %}
-                    <span class="badge bg-success">{{ job.get_status_display }}</span>
-                {% elif job.status == 'failed' %}
-                    <span class="badge bg-danger">{{ job.get_status_display }}</span>
-                {% else %}
-                    <span class="badge bg-warning text-dark">{{ job.get_status_display }}</span>
-                {% endif %}
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <strong>مبحث:</strong>
-                {{ job.topic|default:"-" }}
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <strong>تعداد درخواستی:</strong>
-                {{ job.requested_count }} سوال
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <strong>زمان هر سوال:</strong>
-                {{ job.default_timer_seconds }} ثانیه
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <strong>فایل PDF:</strong>
-                {% if job.pdf_file %}
-                    <a href="{{ job.pdf_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>
-                        مشاهده فایل
-                    </a>
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-
-            {% if job.prompt %}
-                <div class="col-12 mb-3">
-                    <strong>پرامپت معلم:</strong>
-                    <div class="border rounded p-3 bg-light">
-                        {{ job.prompt|linebreaksbr }}
-                    </div>
+    <!-- Job Info Card -->
+    <div class="ar-job-card">
+        <div class="ar-job-header">
+            <div class="ar-job-title">
+                <div class="ar-job-icon">
+                    <i class="bi bi-stars"></i>
                 </div>
+                <div>
+                    <h3>درخواست تولید سوال #{{ job.id }}</h3>
+                    <p>{{ job.classroom.name }} - {{ job.classroom.subject }}</p>
+                </div>
+            </div>
+            {% if job.status == 'completed' %}
+                <span class="ar-status-badge completed">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ job.get_status_display }}
+                </span>
+            {% elif job.status == 'failed' %}
+                <span class="ar-status-badge failed">
+                    <i class="bi bi-x-circle-fill"></i>
+                    {{ job.get_status_display }}
+                </span>
+            {% else %}
+                <span class="ar-status-badge pending">
+                    <i class="bi bi-hourglass-split"></i>
+                    {{ job.get_status_display }}
+                </span>
             {% endif %}
         </div>
 
-        <hr>
-
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge bg-warning text-dark fs-6">
-                در انتظار بررسی: {{ pending_count }}
-            </span>
-
-            <span class="badge bg-success fs-6">
-                تایید شده: {{ approved_count }}
-            </span>
-
-            <span class="badge bg-danger fs-6">
-                رد شده: {{ rejected_count }}
-            </span>
-
-            <div class="ms-auto d-flex gap-2">
-                {% if rejected_count > 0 %}
-                    <form method="post" action="{% url 'dashboard:teacher_ai_regenerate_rejected' job.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-arrow-repeat me-1"></i>
-                            تولید مجدد {{ rejected_count }} سوال ردشده
-                        </button>
-                    </form>
-                {% endif %}
-
-                <a href="{% url 'dashboard:teacher_ai_new' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i>
-                    درخواست جدید
-                </a>
-
-                <a href="{% url 'dashboard:teacher_question_bank' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-journal-bookmark me-1"></i>
-                    بانک سوالات
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% if questions %}
-    <div class="row">
-        {% for question in questions %}
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <strong>سوال {{ forloop.counter }}</strong>
-
-                        {% if question.review_status == 'approved' %}
-                            <span class="badge bg-success">تایید شده</span>
-                        {% elif question.review_status == 'rejected' %}
-                            <span class="badge bg-danger">رد شده</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark">در انتظار بررسی</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="card-body">
-                        <p class="fw-bold">
-                            {{ question.text }}
-                        </p>
-
-                        {% if question.topic %}
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-tag me-1"></i>
-                                مبحث: {{ question.topic }}
-                            </p>
-                        {% endif %}
-
-                        <ul class="list-group list-group-flush mb-3">
-                            <li class="list-group-item {% if question.correct_answer == 'a' %}list-group-item-success{% endif %}">
-                                <strong>الف:</strong> {{ question.choice_a }}
-                                {% if question.correct_answer == 'a' %}
-                                    <i class="bi bi-check-circle-fill text-success ms-2"></i>
-                                {% endif %}
-                            </li>
-
-                            <li class="list-group-item {% if question.correct_answer == 'b' %}list-group-item-success{% endif %}">
-                                <strong>ب:</strong> {{ question.choice_b }}
-                                {% if question.correct_answer == 'b' %}
-                                    <i class="bi bi-check-circle-fill text-success ms-2"></i>
-                                {% endif %}
-                            </li>
-
-                            <li class="list-group-item {% if question.correct_answer == 'c' %}list-group-item-success{% endif %}">
-                                <strong>ج:</strong> {{ question.choice_c }}
-                                {% if question.correct_answer == 'c' %}
-                                    <i class="bi bi-check-circle-fill text-success ms-2"></i>
-                                {% endif %}
-                            </li>
-
-                            <li class="list-group-item {% if question.correct_answer == 'd' %}list-group-item-success{% endif %}">
-                                <strong>د:</strong> {{ question.choice_d }}
-                                {% if question.correct_answer == 'd' %}
-                                    <i class="bi bi-check-circle-fill text-success ms-2"></i>
-                                {% endif %}
-                            </li>
-                        </ul>
-
-                        <div class="text-muted small mb-3">
-                            <i class="bi bi-clock me-1"></i>
-                            زمان پاسخ: {{ question.timer_seconds }} ثانیه
-                        </div>
-
-                        <div class="d-flex flex-wrap gap-2">
-                            {% if question.review_status != 'approved' %}
-                                <form method="post" action="{% url 'dashboard:teacher_ai_question_approve' question.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-success">
-                                        <i class="bi bi-check-circle me-1"></i>
-                                        تایید
-                                    </button>
-                                </form>
-                            {% endif %}
-
-                            {% if question.review_status != 'rejected' %}
-                                <form method="post" action="{% url 'dashboard:teacher_ai_question_reject' question.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-x-circle me-1"></i>
-                                        رد
-                                    </button>
-                                </form>
-                            {% endif %}
-
-                            <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil me-1"></i>
-                                ویرایش
+        <div class="ar-job-body">
+            <div class="ar-info-grid">
+                <div class="ar-info-item">
+                    <div class="ar-info-label">کلاس</div>
+                    <div class="ar-info-value">{{ job.classroom.name }} - {{ job.classroom.subject }}</div>
+                </div>
+                <div class="ar-info-item">
+                    <div class="ar-info-label">مبحث</div>
+                    <div class="ar-info-value">{{ job.topic|default:"-" }}</div>
+                </div>
+                <div class="ar-info-item">
+                    <div class="ar-info-label">تعداد درخواستی</div>
+                    <div class="ar-info-value">{{ job.requested_count }} سوال</div>
+                </div>
+                <div class="ar-info-item">
+                    <div class="ar-info-label">زمان هر سوال</div>
+                    <div class="ar-info-value">{{ job.default_timer_seconds }} ثانیه</div>
+                </div>
+                <div class="ar-info-item">
+                    <div class="ar-info-label">فایل PDF</div>
+                    <div class="ar-info-value">
+                        {% if job.pdf_file %}
+                            <a href="{{ job.pdf_file.url }}" target="_blank" style="color: var(--ar-purple); text-decoration: none;">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+                                مشاهده فایل
                             </a>
-                        </div>
+                        {% else %}
+                            -
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
+            {% if job.prompt %}
+            <div class="ar-prompt-box">
+                <div class="ar-prompt-label">
+                    <i class="bi bi-chat-text-fill"></i>
+                    پرامپت معلم
+                </div>
+                <div style="color: #364152; font-size: 0.9rem; line-height: 1.8;">
+                    {{ job.prompt|linebreaksbr }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="ar-stats-row">
+                <span class="ar-stat-chip warning">
+                    <i class="bi bi-hourglass-split"></i>
+                    در انتظار بررسی: {{ pending_count }}
+                </span>
+                <span class="ar-stat-chip success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    تایید شده: {{ approved_count }}
+                </span>
+                <span class="ar-stat-chip danger">
+                    <i class="bi bi-x-circle-fill"></i>
+                    رد شده: {{ rejected_count }}
+                </span>
+
+                <div class="ar-actions-row">
+                    {% if rejected_count > 0 %}
+                    <form method="post" action="{% url 'dashboard:teacher_ai_regenerate_rejected' job.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="ar-btn regenerate">
+                            <i class="bi bi-arrow-repeat"></i>
+                            تولید مجدد {{ rejected_count }} سوال ردشده
+                        </button>
+                    </form>
+                    {% endif %}
+                    <a href="{% url 'dashboard:teacher_ai_new' %}" class="ar-btn new">
+                        <i class="bi bi-plus-circle"></i>
+                        درخواست جدید
+                    </a>
+                    <a href="{% url 'dashboard:teacher_question_bank' %}" class="ar-btn bank">
+                        <i class="bi bi-journal-bookmark"></i>
+                        بانک سوالات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    {% if questions %}
+    <div class="ar-questions-grid">
+        {% for question in questions %}
+        <div class="ar-question-card {{ question.review_status }}">
+            <div class="ar-question-header">
+                <div class="ar-question-number">
+                    <span>{{ forloop.counter }}</span>
+                    سوال {{ forloop.counter }}
+                </div>
+                {% if question.review_status == 'approved' %}
+                    <span class="ar-stat-chip success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        تایید شده
+                    </span>
+                {% elif question.review_status == 'rejected' %}
+                    <span class="ar-stat-chip danger">
+                        <i class="bi bi-x-circle-fill"></i>
+                        رد شده
+                    </span>
+                {% else %}
+                    <span class="ar-stat-chip warning">
+                        <i class="bi bi-hourglass-split"></i>
+                        در انتظار بررسی
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="ar-question-body">
+                <div class="ar-question-text">
+                    {{ question.text }}
+                </div>
+
+                {% if question.topic %}
+                <div class="ar-question-topic">
+                    <i class="bi bi-tag-fill"></i>
+                    مبحث: {{ question.topic }}
+                </div>
+                {% endif %}
+
+                <div class="ar-choices-list">
+                    <div class="ar-choice-item {% if question.correct_answer == 'a' %}correct{% endif %}">
+                        <span class="ar-choice-letter">الف</span>
+                        <span class="ar-choice-text">{{ question.choice_a }}</span>
+                        {% if question.correct_answer == 'a' %}
+                            <i class="bi bi-check-circle-fill ar-choice-check"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ar-choice-item {% if question.correct_answer == 'b' %}correct{% endif %}">
+                        <span class="ar-choice-letter">ب</span>
+                        <span class="ar-choice-text">{{ question.choice_b }}</span>
+                        {% if question.correct_answer == 'b' %}
+                            <i class="bi bi-check-circle-fill ar-choice-check"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ar-choice-item {% if question.correct_answer == 'c' %}correct{% endif %}">
+                        <span class="ar-choice-letter">ج</span>
+                        <span class="ar-choice-text">{{ question.choice_c }}</span>
+                        {% if question.correct_answer == 'c' %}
+                            <i class="bi bi-check-circle-fill ar-choice-check"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ar-choice-item {% if question.correct_answer == 'd' %}correct{% endif %}">
+                        <span class="ar-choice-letter">د</span>
+                        <span class="ar-choice-text">{{ question.choice_d }}</span>
+                        {% if question.correct_answer == 'd' %}
+                            <i class="bi bi-check-circle-fill ar-choice-check"></i>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ar-question-footer">
+                    <div class="ar-timer-info">
+                        <i class="bi bi-clock-fill"></i>
+                        زمان پاسخ: {{ question.timer_seconds }} ثانیه
+                    </div>
+                    <div class="ar-question-actions">
+                        {% if question.review_status != 'approved' %}
+                        <form method="post" action="{% url 'dashboard:teacher_ai_question_approve' question.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="ar-action-btn approve">
+                                <i class="bi bi-check-circle"></i>
+                                تایید
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if question.review_status != 'rejected' %}
+                        <form method="post" action="{% url 'dashboard:teacher_ai_question_reject' question.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="ar-action-btn reject">
+                                <i class="bi bi-x-circle"></i>
+                                رد
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="ar-action-btn edit">
+                            <i class="bi bi-pencil"></i>
+                            ویرایش
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </div>
-{% else %}
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        هنوز سوالی برای این درخواست تولید نشده است.
+    {% else %}
+    <div class="ar-empty-alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <h5 style="font-weight: 800; color: #17224a; margin-bottom: 8px;">هنوز سوالی تولید نشده است</h5>
+        <p class="text-muted mb-0">لطفاً منتظر بمانید یا درخواست جدیدی ثبت کنید.</p>
     </div>
-{% endif %}
+    {% endif %}
+</div>
 {% endblock %}
