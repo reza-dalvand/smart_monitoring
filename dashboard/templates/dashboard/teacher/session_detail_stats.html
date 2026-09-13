@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% block title %}آمار جلسه {{ session.id }} - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .ssd-page {
+        --ssd-primary: #1a237e;
+        --ssd-secondary: #ffc107;
+        --ssd-success: #16a34a;
+        --ssd-danger: #dc2626;
+        --ssd-warning: #d97706;
+        --ssd-info: #0284c7;
+        --ssd-purple: #7c3aed;
+    }
+
+    .ssd-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .ssd-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .ssd-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .ssd-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .ssd-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--ssd-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--ssd-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .ssd-hero-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .ssd-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.88rem;
+    }
+
+    .ssd-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 26px;
+    }
+
+    .ssd-stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ssd-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .ssd-stat-card.success::before { background: var(--ssd-success); }
+    .ssd-stat-card.danger::before { background: var(--ssd-danger); }
+    .ssd-stat-card.warning::before { background: var(--ssd-warning); }
+    .ssd-stat-card.info::before { background: var(--ssd-info); }
+    .ssd-stat-card.purple::before { background: var(--ssd-purple); }
+
+    .ssd-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .ssd-stat-card.success .ssd-stat-icon { background: rgba(22, 163, 74, 0.10); color: var(--ssd-success); }
+    .ssd-stat-card.danger .ssd-stat-icon { background: rgba(220, 38, 38, 0.10); color: var(--ssd-danger); }
+    .ssd-stat-card.warning .ssd-stat-icon { background: rgba(217, 119, 6, 0.12); color: var(--ssd-warning); }
+    .ssd-stat-card.info .ssd-stat-icon { background: rgba(2, 132, 199, 0.10); color: var(--ssd-info); }
+    .ssd-stat-card.purple .ssd-stat-icon { background: rgba(124, 58, 237, 0.10); color: var(--ssd-purple); }
+
+    .ssd-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        color: #17224a;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .ssd-stat-label {
+        font-size: 0.8rem;
+        color: #7b8494;
+        font-weight: 600;
+    }
+
+    .ssd-section {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .ssd-section-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .ssd-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .ssd-section-title i {
+        color: var(--ssd-secondary);
+        font-size: 1.2rem;
+    }
+
+    .ssd-section-body {
+        padding: 22px;
+    }
+
+    .ssd-attendance-item {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 14px;
+        border: 1px solid #edf1f8;
+    }
+
+    .ssd-attendance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ssd-attendance-time {
+        font-size: 0.82rem;
+        color: #7b8494;
+    }
+
+    .ssd-attendance-stats {
+        display: flex;
+        gap: 10px;
+    }
+
+    .ssd-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .ssd-badge.success {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .ssd-badge.danger {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .ssd-badge.warning {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .ssd-student-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ssd-student-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .ssd-student-chip.present {
+        background: rgba(22, 163, 74, 0.08);
+        color: #15803d;
+        border: 1px solid rgba(22, 163, 74, 0.2);
+    }
+
+    .ssd-student-chip.absent {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+        border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    .ssd-student-chip i {
+        font-size: 0.7rem;
+    }
+
+    .ssd-question-item {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 14px;
+        border: 1px solid #edf1f8;
+    }
+
+    .ssd-question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        gap: 12px;
+    }
+
+    .ssd-question-text {
+        font-size: 0.9rem;
+        color: #364152;
+        line-height: 1.7;
+        flex: 1;
+    }
+
+    .ssd-question-stats {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .ssd-mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .ssd-mini-badge.success {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .ssd-mini-badge.danger {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .ssd-mini-badge.warning {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .ssd-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .ssd-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .ssd-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.85rem;
+    }
+
+    .ssd-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .ssd-progress-bar {
+        height: 8px;
+        background: #f2f5fa;
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 60px;
+    }
+
+    .ssd-progress-fill {
+        height: 100%;
+        border-radius: 999px;
+    }
+
+    .ssd-progress-fill.success { background: linear-gradient(90deg, var(--ssd-success), #4ade80); }
+    .ssd-progress-fill.warning { background: linear-gradient(90deg, var(--ssd-warning), #fbbf24); }
+    .ssd-progress-fill.danger { background: linear-gradient(90deg, var(--ssd-danger), #f87171); }
+
+    .ssd-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 767px) {
+        .ssd-hero {
+            padding: 22px;
+        }
+
+        .ssd-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .ssd-question-header {
+            flex-direction: column;
+        }
+
+        .ssd-question-stats {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+</style>
+
+<div class="ssd-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-clipboard-data-fill"></i>
+            آمار جلسه {{ session.id }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_participation_stats' %}">آمار مشارکت</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>جلسه {{ session.id }}</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="ssd-hero">
+        <div class="ssd-hero-content">
+            <div class="ssd-hero-title">
+                <div class="ssd-hero-icon">
+                    <i class="bi bi-calendar-check-fill"></i>
+                </div>
+                <div class="ssd-hero-text">
+                    <h2>جلسه {{ session.id }} - {{ classroom.name }}</h2>
+                    <p>
+                        {{ classroom.subject }} |
+                        {{ session.session_date|date:"Y/m/d - H:i" }}
+                        {% if session.topic %} | {{ session.topic }}{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="ssd-stats-grid">
+        <div class="ssd-stat-card info">
+            <div class="ssd-stat-icon">
+                <i class="bi bi-send-fill"></i>
+            </div>
+            <span class="ssd-stat-value">{{ total_requests }}</span>
+            <span class="ssd-stat-label">کل درخواست‌ها</span>
+        </div>
+        <div class="ssd-stat-card purple">
+            <div class="ssd-stat-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <span class="ssd-stat-value">{{ face_only_count|add:combined_count }}</span>
+            <span class="ssd-stat-label">حضور و غیاب</span>
+        </div>
+        <div class="ssd-stat-card warning">
+            <div class="ssd-stat-icon">
+                <i class="bi bi-question-circle-fill"></i>
+            </div>
+            <span class="ssd-stat-value">{{ question_only_count|add:combined_count }}</span>
+            <span class="ssd-stat-label">سوال</span>
+        </div>
+    </div>
+
+    <!-- Attendance Section -->
+    {% if attendance_data %}
+    <div class="ssd-section">
+        <div class="ssd-section-header">
+            <h3 class="ssd-section-title">
+                <i class="bi bi-person-check-fill"></i>
+                حضور و غیاب‌ها
+            </h3>
+        </div>
+        <div class="ssd-section-body">
+            {% for item in attendance_data %}
+            <div class="ssd-attendance-item">
+                <div class="ssd-attendance-header">
+                    <span class="ssd-attendance-time">
+                        <i class="bi bi-clock-fill me-1"></i>
+                        {{ item.request.created_at|date:"H:i" }}
+                    </span>
+                    <div class="ssd-attendance-stats">
+                        <span class="ssd-badge success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            حاضر: {{ item.present_count }}
+                        </span>
+                        <span class="ssd-badge danger">
+                            <i class="bi bi-x-circle-fill"></i>
+                            غایب: {{ item.absent_count }}
+                        </span>
+                        {% if item.pending_count > 0 %}
+                        <span class="ssd-badge warning">
+                            <i class="bi bi-hourglass-split"></i>
+                            در انتظار: {{ item.pending_count }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="ssd-student-list">
+                    {% for response in item.responses %}
+                    <span class="ssd-student-chip {% if response.final_status == 'present' %}present{% else %}absent{% endif %}">
+                        {% if response.final_status == 'present' %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill"></i>
+                        {% endif %}
+                        {{ response.student.get_full_name|default:response.student.username }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Questions Section -->
+    {% if questions_data %}
+    <div class="ssd-section">
+        <div class="ssd-section-header">
+            <h3 class="ssd-section-title">
+                <i class="bi bi-question-circle-fill"></i>
+                سوالات
+            </h3>
+        </div>
+        <div class="ssd-section-body">
+            {% for item in questions_data %}
+            <div class="ssd-question-item">
+                <div class="ssd-question-header">
+                    <div class="ssd-question-text">
+                        <strong>سوال {{ item.request_question.order }}:</strong>
+                        {{ item.question.text|truncatechars:120 }}
+                    </div>
+                    <div class="ssd-question-stats">
+                        <span class="ssd-mini-badge success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ item.correct_count }}
+                        </span>
+                        <span class="ssd-mini-badge danger">
+                            <i class="bi bi-x-circle-fill"></i>
+                            {{ item.wrong_count }}
+                        </span>
+                        <span class="ssd-mini-badge warning">
+                            <i class="bi bi-dash-circle"></i>
+                            {{ item.no_answer_count }}
+                        </span>
+                    </div>
+                </div>
+                <div class="ssd-student-list">
+                    {% for answer in item.answers %}
+                    <span class="ssd-student-chip {% if answer.is_correct %}present{% else %}absent{% endif %}">
+                        {% if answer.is_correct %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill"></i>
+                        {% endif %}
+                        {{ answer.student.get_full_name|default:answer.student.username }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Students Summary -->
+    <div class="ssd-section">
+        <div class="ssd-section-header">
+            <h3 class="ssd-section-title">
+                <i class="bi bi-people-fill"></i>
+                خلاصه عملکرد دانش‌آموزان
+            </h3>
+        </div>
+        <div class="ssd-section-body">
+            {% if students_stats %}
+            <div class="table-responsive">
+                <table class="ssd-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>دانش‌آموز</th>
+                            <th>حضور</th>
+                            <th>غیبت</th>
+                            <th>درصد حضور</th>
+                            <th>پاسخ صحیح</th>
+                            <th>پاسخ غلط</th>
+                            <th>درصد صحیح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_stats %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>
+                                <strong>{{ item.student.get_full_name|default:item.student.username }}</strong>
+                            </td>
+                            <td>
+                                <span style="color: var(--ssd-success); font-weight: 700;">
+                                    {{ item.present_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: var(--ssd-danger); font-weight: 700;">
+                                    {{ item.absent_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="ssd-progress-bar">
+                                        {% if item.attendance_percentage >= 75 %}
+                                            <div class="ssd-progress-fill success" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% elif item.attendance_percentage >= 50 %}
+                                            <div class="ssd-progress-fill warning" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% else %}
+                                            <div class="ssd-progress-fill danger" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                    <strong>{{ item.attendance_percentage }}٪</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="color: var(--ssd-success); font-weight: 700;">
+                                    {{ item.correct_answers }}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: var(--ssd-danger); font-weight: 700;">
+                                    {{ item.wrong_answers }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="ssd-progress-bar">
+                                        {% if item.answer_percentage >= 75 %}
+                                            <div class="ssd-progress-fill success" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% elif item.answer_percentage >= 50 %}
+                                            <div class="ssd-progress-fill warning" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% else %}
+                                            <div class="ssd-progress-fill danger" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                    <strong>{{ item.answer_percentage }}٪</strong>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="ssd-empty">
+                <i class="bi bi-people" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                <p class="mt-2 mb-0">دانش‌آموزی در این کلاس ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

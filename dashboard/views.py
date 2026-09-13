@@ -1251,3 +1251,354 @@ def teacher_question_delete(request, pk):
         'title': 'حذف سوال',
     }
     return render(request, 'dashboard/teacher/question_confirm_delete.html', context)
+
+
+
+# این کد را به انتهای views.py اضافه کنید
+
+# ========== آمار مشارکت ==========
+
+@teacher_required
+def teacher_participation_stats(request):
+    """
+    صفحه اصلی آمار مشارکت - انتخاب کلاس
+    """
+    classrooms = get_teacher_classrooms(request.user)
+    
+    context = {
+        'classrooms': classrooms,
+        'title': 'آمار مشارکت',
+    }
+    return render(request, 'dashboard/teacher/participation_stats.html', context)
+
+
+@teacher_required
+def teacher_session_detail_stats(request, session_id):
+    """
+    آمار تفصیلی یک جلسه خاص
+    """
+    session = get_object_or_404(
+        ClassSession,
+        id=session_id,
+        classroom__teacher=request.user
+    )
+    
+    classroom = session.classroom
+    students = classroom.students.all().order_by('last_name', 'first_name')
+    
+    # درخواست‌های این جلسه
+    attendance_requests = session.attendance_requests.all().order_by('created_at')
+    
+    # آمار کلی جلسه
+    total_requests = attendance_requests.count()
+    face_only_count = attendance_requests.filter(request_type='face_only').count()
+    question_only_count = attendance_requests.filter(request_type='question_only').count()
+    combined_count = attendance_requests.filter(request_type='face_and_question').count()
+    
+    # جمع‌آوری آمار حضور و غیاب
+    attendance_data = []
+    for req in attendance_requests.filter(request_type__in=['face_only', 'face_and_question']):
+        responses = req.responses.all().select_related('student')
+        present_count = responses.filter(final_status='present').count()
+        absent_count = responses.filter(final_status='absent').count()
+        pending_count = responses.filter(final_status='pending').count()
+        
+        attendance_data.append({
+            'request': req,
+            'responses': responses,
+            'present_count': present_count,
+            'absent_count': absent_count,
+            'pending_count': pending_count,
+            'total': responses.count(),
+        })
+    
+    # جمع‌آوری آمار سوالات
+    questions_data = []
+    for req in attendance_requests.filter(request_type__in=['question_only', 'face_and_question']):
+        request_questions = req.request_questions.all().select_related('question').order_by('order')
+        for rq in request_questions:
+            answers = StudentAnswer.objects.filter(
+                attendance_request=req,
+                question=rq.question
+            ).select_related('student')
+            
+            correct_count = answers.filter(is_correct=True).count()
+            wrong_count = answers.filter(is_correct=False).count()
+            total_students = classroom.students.count()
+            no_answer_count = total_students - answers.count()
+            
+            questions_data.append({
+                'request': req,
+                'request_question': rq,
+                'question': rq.question,
+                'answers': answers,
+                'correct_count': correct_count,
+                'wrong_count': wrong_count,
+                'no_answer_count': no_answer_count,
+                'total_students': total_students,
+            })
+    
+    # آمار هر دانش‌آموز در این جلسه
+    students_stats = []
+    for student in students:
+        # حضور و غیاب
+        student_responses = AttendanceResponse.objects.filter(
+            attendance_request__session=session,
+            student=student,
+            attendance_request__request_type__in=['face_only', 'face_and_question']
+        )
+        present_count = student_responses.filter(final_status='present').count()
+        absent_count = student_responses.filter(final_status='absent').count()
+        total_attendance_checks = student_responses.count()
+        
+        # پاسخ سوالات
+        student_answers = StudentAnswer.objects.filter(
+            attendance_request__session=session,
+            student=student
+        )
+        correct_answers = student_answers.filter(is_correct=True).count()
+        wrong_answers = student_answers.filter(is_correct=False).count()
+        total_questions_answered = student_answers.count()
+        
+        # درصد حضور
+        attendance_percentage = 0
+        if total_attendance_checks > 0:
+            attendance_percentage = round((present_count / total_attendance_checks) * 100)
+        
+        # درصد پاسخ صحیح
+        answer_percentage = 0
+        if total_questions_answered > 0:
+            answer_percentage = round((correct_answers / total_questions_answered) * 100)
+        
+        students_stats.append({
+            'student': student,
+            'present_count': present_count,
+            'absent_count': absent_count,
+            'total_attendance_checks': total_attendance_checks,
+            'attendance_percentage': attendance_percentage,
+            'correct_answers': correct_answers,
+            'wrong_answers': wrong_answers,
+            'total_questions_answered': total_questions_answered,
+            'answer_percentage': answer_percentage,
+        })
+    
+    context = {
+        'session': session,
+        'classroom': classroom,
+        'students': students,
+        'attendance_requests': attendance_requests,
+        'total_requests': total_requests,
+        'face_only_count': face_only_count,
+        'question_only_count': question_only_count,
+        'combined_count': combined_count,
+        'attendance_data': attendance_data,
+        'questions_data': questions_data,
+        'students_stats': students_stats,
+        'title': f'آمار جلسه {session.id}',
+    }
+    return render(request, 'dashboard/teacher/session_detail_stats.html', context)
+
+
+@teacher_required
+def teacher_period_stats(request, classroom_id):
+    """
+    آمار هفتگی و ماهانه یک کلاس
+    """
+    classroom = get_object_or_404(
+        Classroom,
+        id=classroom_id,
+        teacher=request.user
+    )
+    
+    # پارامترهای فیلتر
+    period = request.GET.get('period', 'weekly')  # weekly or monthly
+    date_str = request.GET.get('date')
+    
+    from datetime import datetime, timedelta
+    
+    if date_str:
+        try:
+            reference_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except:
+            reference_date = timezone.now().date()
+    else:
+        reference_date = timezone.now().date()
+    
+    if period == 'weekly':
+        # شروع هفته (شنبه)
+        days_since_saturday = (reference_date.weekday() + 2) % 7
+        start_date = reference_date - timedelta(days=days_since_saturday)
+        end_date = start_date + timedelta(days=6)
+        period_name = f'هفته {start_date.strftime("%Y/%m/%d")} تا {end_date.strftime("%Y/%m/%d")}'
+    else:  # monthly
+        start_date = reference_date.replace(day=1)
+        if reference_date.month == 12:
+            end_date = reference_date.replace(year=reference_date.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            end_date = reference_date.replace(month=reference_date.month + 1, day=1) - timedelta(days=1)
+        period_name = f'{reference_date.strftime("%B %Y")}'
+    
+    # جلسات این دوره
+    sessions = ClassSession.objects.filter(
+        classroom=classroom,
+        session_date__date__gte=start_date,
+        session_date__date__lte=end_date
+    ).order_by('session_date')
+    
+    sessions_count = sessions.count()
+    
+    # درخواست‌های این دوره
+    requests = AttendanceRequest.objects.filter(
+        classroom=classroom,
+        session__in=sessions
+    )
+    
+    # آمار کلی دوره
+    total_face_checks = AttendanceResponse.objects.filter(
+        attendance_request__in=requests,
+        attendance_request__request_type__in=['face_only', 'face_and_question']
+    ).count()
+    
+    total_present = AttendanceResponse.objects.filter(
+        attendance_request__in=requests,
+        attendance_request__request_type__in=['face_only', 'face_and_question'],
+        final_status='present'
+    ).count()
+    
+    total_absent = AttendanceResponse.objects.filter(
+        attendance_request__in=requests,
+        attendance_request__request_type__in=['face_only', 'face_and_question'],
+        final_status='absent'
+    ).count()
+    
+    total_questions = StudentAnswer.objects.filter(
+        attendance_request__in=requests
+    ).count()
+    
+    total_correct = StudentAnswer.objects.filter(
+        attendance_request__in=requests,
+        is_correct=True
+    ).count()
+    
+    total_wrong = StudentAnswer.objects.filter(
+        attendance_request__in=requests,
+        is_correct=False
+    ).count()
+    
+    # آمار هر دانش‌آموز در این دوره
+    students = classroom.students.all().order_by('last_name', 'first_name')
+    students_stats = []
+    
+    for student in students:
+        # حضور و غیاب
+        student_responses = AttendanceResponse.objects.filter(
+            attendance_request__in=requests,
+            attendance_request__request_type__in=['face_only', 'face_and_question'],
+            student=student
+        )
+        present_count = student_responses.filter(final_status='present').count()
+        absent_count = student_responses.filter(final_status='absent').count()
+        total_checks = student_responses.count()
+        
+        attendance_percentage = 0
+        if total_checks > 0:
+            attendance_percentage = round((present_count / total_checks) * 100)
+        
+        # پاسخ سوالات
+        student_answers = StudentAnswer.objects.filter(
+            attendance_request__in=requests,
+            student=student
+        )
+        correct_count = student_answers.filter(is_correct=True).count()
+        wrong_count = student_answers.filter(is_correct=False).count()
+        total_answered = student_answers.count()
+        
+        answer_percentage = 0
+        if total_answered > 0:
+            answer_percentage = round((correct_count / total_answered) * 100)
+        
+        students_stats.append({
+            'student': student,
+            'present_count': present_count,
+            'absent_count': absent_count,
+            'total_checks': total_checks,
+            'attendance_percentage': attendance_percentage,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'total_answered': total_answered,
+            'answer_percentage': answer_percentage,
+        })
+    
+    # آمار روزانه برای نمودار
+    daily_stats = []
+    current_date = start_date
+    while current_date <= end_date:
+        day_sessions = sessions.filter(session_date__date=current_date)
+        day_requests = requests.filter(session__in=day_sessions)
+        
+        day_present = AttendanceResponse.objects.filter(
+            attendance_request__in=day_requests,
+            attendance_request__request_type__in=['face_only', 'face_and_question'],
+            final_status='present'
+        ).count()
+        
+        day_absent = AttendanceResponse.objects.filter(
+            attendance_request__in=day_requests,
+            attendance_request__request_type__in=['face_only', 'face_and_question'],
+            final_status='absent'
+        ).count()
+        
+        day_correct = StudentAnswer.objects.filter(
+            attendance_request__in=day_requests,
+            is_correct=True
+        ).count()
+        
+        day_wrong = StudentAnswer.objects.filter(
+            attendance_request__in=day_requests,
+            is_correct=False
+        ).count()
+        
+        daily_stats.append({
+            'date': current_date,
+            'date_str': current_date.strftime('%m/%d'),
+            'present': day_present,
+            'absent': day_absent,
+            'correct': day_correct,
+            'wrong': day_wrong,
+        })
+        current_date += timedelta(days=1)
+    
+    # تاریخ‌های قبلی و بعدی برای ناوبری
+    if period == 'weekly':
+        prev_date = (start_date - timedelta(days=7)).strftime('%Y-%m-%d')
+        next_date = (start_date + timedelta(days=7)).strftime('%Y-%m-%d')
+    else:
+        prev_month = start_date - timedelta(days=1)
+        prev_date = prev_month.replace(day=1).strftime('%Y-%m-%d')
+        if end_date.month == 12:
+            next_date = end_date.replace(year=end_date.year + 1, month=1, day=1).strftime('%Y-%m-%d')
+        else:
+            next_date = end_date.replace(month=end_date.month + 1, day=1).strftime('%Y-%m-%d')
+    
+    context = {
+        'classroom': classroom,
+        'period': period,
+        'period_name': period_name,
+        'start_date': start_date,
+        'end_date': end_date,
+        'reference_date': reference_date.strftime('%Y-%m-%d'),
+        'prev_date': prev_date,
+        'next_date': next_date,
+        'sessions': sessions,
+        'sessions_count': sessions_count,
+        'total_face_checks': total_face_checks,
+        'total_present': total_present,
+        'total_absent': total_absent,
+        'total_questions': total_questions,
+        'total_correct': total_correct,
+        'total_wrong': total_wrong,
+        'students_stats': students_stats,
+        'daily_stats': daily_stats,
+        'title': f'آمار {period_name}',
+    }
+    return render(request, 'dashboard/teacher/period_stats.html', context)

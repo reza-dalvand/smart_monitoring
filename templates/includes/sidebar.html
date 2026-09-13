@@ -60,17 +60,11 @@
 
     <div class="menu-section">
         <div class="menu-section-title">گزارشات</div>
-        <a href="#" class="menu-item">
+        <a href="{% url 'dashboard:teacher_participation_stats' %}" class="menu-item {% if 'participation' in request.resolver_match.url_name or 'session_detail_stats' in request.resolver_match.url_name or 'period_stats' in request.resolver_match.url_name %}active{% endif %}">
             <div class="menu-item-icon">
                 <i class="bi bi-graph-up"></i>
             </div>
             <span class="menu-item-text">آمار مشارکت</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-file-earmark-bar-graph"></i>
-            </div>
-            <span class="menu-item-text">کارنامه دانش‌آموزان</span>
         </a>
     </div>
 

@@ -20,6 +20,11 @@ urlpatterns = [
     path('teacher/requests/<int:request_id>/results/', views.teacher_request_results, name='teacher_request_results'),
     path('teacher/requests/<int:request_id>/finish/', views.teacher_finish_request, name='teacher_finish_request'),
 
+    # ========== پنل معلم - آمار مشارکت ==========
+    path('teacher/participation/', views.teacher_participation_stats, name='teacher_participation_stats'),
+    path('teacher/session/<int:session_id>/stats/', views.teacher_session_detail_stats, name='teacher_session_detail_stats'),
+    path('teacher/classroom/<int:classroom_id>/period-stats/', views.teacher_period_stats, name='teacher_period_stats'),
+
     # ========== پنل معلم - فاز ۲ ==========
     path('teacher/ai/new/', views.teacher_ai_new, name='teacher_ai_new'),
     path('teacher/ai/<int:job_id>/review/', views.teacher_ai_review, name='teacher_ai_review'),

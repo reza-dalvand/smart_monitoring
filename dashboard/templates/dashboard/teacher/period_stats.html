@@ -1,0 +1,839 @@
+{% extends 'base.html' %}
+{% block title %}{{ period_name }} - {{ classroom.name }} - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .pst-page {
+        --pst-primary: #1a237e;
+        --pst-secondary: #ffc107;
+        --pst-success: #16a34a;
+        --pst-danger: #dc2626;
+        --pst-warning: #d97706;
+        --pst-info: #0284c7;
+        --pst-purple: #7c3aed;
+    }
+
+    .pst-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .pst-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .pst-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .pst-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .pst-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--pst-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--pst-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .pst-hero-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .pst-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.88rem;
+    }
+
+    .pst-hero-nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pst-nav-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .pst-nav-btn:hover {
+        background: white;
+        color: var(--pst-primary);
+    }
+
+    .pst-period-toggle {
+        display: flex;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pst-period-btn {
+        padding: 8px 18px;
+        border-radius: 9px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pst-period-btn.active {
+        background: white;
+        color: var(--pst-primary);
+    }
+
+    .pst-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 26px;
+    }
+
+    .pst-stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pst-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .pst-stat-card.success::before { background: var(--pst-success); }
+    .pst-stat-card.danger::before { background: var(--pst-danger); }
+    .pst-stat-card.warning::before { background: var(--pst-warning); }
+    .pst-stat-card.info::before { background: var(--pst-info); }
+    .pst-stat-card.purple::before { background: var(--pst-purple); }
+
+    .pst-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .pst-stat-card.success .pst-stat-icon { background: rgba(22, 163, 74, 0.10); color: var(--pst-success); }
+    .pst-stat-card.danger .pst-stat-icon { background: rgba(220, 38, 38, 0.10); color: var(--pst-danger); }
+    .pst-stat-card.warning .pst-stat-icon { background: rgba(217, 119, 6, 0.12); color: var(--pst-warning); }
+    .pst-stat-card.info .pst-stat-icon { background: rgba(2, 132, 199, 0.10); color: var(--pst-info); }
+    .pst-stat-card.purple .pst-stat-icon { background: rgba(124, 58, 237, 0.10); color: var(--pst-purple); }
+
+    .pst-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        color: #17224a;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .pst-stat-label {
+        font-size: 0.8rem;
+        color: #7b8494;
+        font-weight: 600;
+    }
+
+    .pst-section {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .pst-section-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .pst-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .pst-section-title i {
+        color: var(--pst-secondary);
+        font-size: 1.2rem;
+    }
+
+    .pst-section-body {
+        padding: 22px;
+    }
+
+    .pst-chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+
+    .pst-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .pst-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .pst-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.85rem;
+    }
+
+    .pst-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .pst-student-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pst-student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--pst-secondary);
+        color: var(--pst-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .pst-progress-bar {
+        height: 8px;
+        background: #f2f5fa;
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 60px;
+    }
+
+    .pst-progress-fill {
+        height: 100%;
+        border-radius: 999px;
+    }
+
+    .pst-progress-fill.success { background: linear-gradient(90deg, var(--pst-success), #4ade80); }
+    .pst-progress-fill.warning { background: linear-gradient(90deg, var(--pst-warning), #fbbf24); }
+    .pst-progress-fill.danger { background: linear-gradient(90deg, var(--pst-danger), #f87171); }
+
+    .pst-session-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #edf1f8;
+        transition: all 0.2s ease;
+    }
+
+    .pst-session-item:hover {
+        background: #f1f5f9;
+        transform: translateX(-3px);
+    }
+
+    .pst-session-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pst-session-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--pst-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .pst-session-title {
+        font-weight: 700;
+        color: #17224a;
+        margin: 0 0 3px 0;
+        font-size: 0.9rem;
+    }
+
+    .pst-session-date {
+        font-size: 0.75rem;
+        color: #7b8494;
+    }
+
+    .pst-session-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .pst-btn {
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.78rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .pst-btn.primary {
+        background: var(--pst-primary);
+        color: white;
+    }
+
+    .pst-btn.primary:hover {
+        background: #303f9f;
+        color: white;
+    }
+
+    .pst-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    .pst-empty-icon {
+        font-size: 2.5rem;
+        opacity: 0.4;
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 767px) {
+        .pst-hero {
+            padding: 22px;
+        }
+
+        .pst-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .pst-hero-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="pst-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-graph-up"></i>
+            آمار مشارکت
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_participation_stats' %}">آمار مشارکت</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ classroom.name }}</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="pst-hero">
+        <div class="pst-hero-content">
+            <div class="pst-hero-title">
+                <div class="pst-hero-icon">
+                    <i class="bi bi-calendar-range-fill"></i>
+                </div>
+                <div class="pst-hero-text">
+                    <h2>{{ classroom.name }} - {{ classroom.subject }}</h2>
+                    <p>{{ period_name }}</p>
+                </div>
+            </div>
+
+            <div class="pst-hero-nav">
+                <a href="?period={{ period }}&date={{ prev_date }}" class="pst-nav-btn" title="دوره قبل">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <div class="pst-period-toggle">
+                    <a href="?period=weekly" class="pst-period-btn {% if period == 'weekly' %}active{% endif %}">
+                        <i class="bi bi-calendar-week"></i>
+                        هفتگی
+                    </a>
+                    <a href="?period=monthly" class="pst-period-btn {% if period == 'monthly' %}active{% endif %}">
+                        <i class="bi bi-calendar-month"></i>
+                        ماهانه
+                    </a>
+                </div>
+                <a href="?period={{ period }}&date={{ next_date }}" class="pst-nav-btn" title="دوره بعد">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="pst-stats-grid">
+        <div class="pst-stat-card info">
+            <div class="pst-stat-icon">
+                <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <span class="pst-stat-value">{{ sessions_count }}</span>
+            <span class="pst-stat-label">جلسه برگزارشده</span>
+        </div>
+        <div class="pst-stat-card success">
+            <div class="pst-stat-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <span class="pst-stat-value">{{ total_present }}</span>
+            <span class="pst-stat-label">کل حضورها</span>
+        </div>
+        <div class="pst-stat-card danger">
+            <div class="pst-stat-icon">
+                <i class="bi bi-person-x-fill"></i>
+            </div>
+            <span class="pst-stat-value">{{ total_absent }}</span>
+            <span class="pst-stat-label">کل غیبت‌ها</span>
+        </div>
+        <div class="pst-stat-card purple">
+            <div class="pst-stat-icon">
+                <i class="bi bi-question-circle-fill"></i>
+            </div>
+            <span class="pst-stat-value">{{ total_correct }}</span>
+            <span class="pst-stat-label">پاسخ صحیح</span>
+        </div>
+        <div class="pst-stat-card warning">
+            <div class="pst-stat-icon">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <span class="pst-stat-value">{{ total_wrong }}</span>
+            <span class="pst-stat-label">پاسخ غلط</span>
+        </div>
+    </div>
+
+    <!-- Sessions List -->
+    {% if sessions %}
+    <div class="pst-section">
+        <div class="pst-section-header">
+            <h3 class="pst-section-title">
+                <i class="bi bi-calendar-check-fill"></i>
+                جلسات این دوره ({{ sessions_count }} جلسه)
+            </h3>
+        </div>
+        <div class="pst-section-body">
+            {% for session in sessions %}
+            <div class="pst-session-item">
+                <div class="pst-session-info">
+                    <div class="pst-session-icon">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="pst-session-title">
+                            جلسه {{ session.id }}
+                            {% if session.topic %} - {{ session.topic }}{% endif %}
+                        </h6>
+                        <span class="pst-session-date">
+                            {{ session.session_date|date:"Y/m/d - H:i" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="pst-session-actions">
+                    <a href="{% url 'dashboard:teacher_session_detail_stats' session.id %}" class="pst-btn primary">
+                        <i class="bi bi-eye-fill"></i>
+                        مشاهده جزئیات
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Students Stats -->
+    <div class="pst-section">
+        <div class="pst-section-header">
+            <h3 class="pst-section-title">
+                <i class="bi bi-people-fill"></i>
+                عملکرد دانش‌آموزان در {{ period_name }}
+            </h3>
+        </div>
+        <div class="pst-section-body">
+            {% if students_stats %}
+            <div class="table-responsive">
+                <table class="pst-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>دانش‌آموز</th>
+                            <th>حضور</th>
+                            <th>غیبت</th>
+                            <th>درصد حضور</th>
+                            <th>پاسخ صحیح</th>
+                            <th>پاسخ غلط</th>
+                            <th>درصد صحیح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_stats %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>
+                                <div class="pst-student-cell">
+                                    <div class="pst-student-avatar">
+                                        {{ item.student.username|first|upper }}
+                                    </div>
+                                    <span>
+                                        {{ item.student.get_full_name|default:item.student.username }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="color: var(--pst-success); font-weight: 700;">
+                                    {{ item.present_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: var(--pst-danger); font-weight: 700;">
+                                    {{ item.absent_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="pst-progress-bar">
+                                        {% if item.attendance_percentage >= 75 %}
+                                            <div class="pst-progress-fill success" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% elif item.attendance_percentage >= 50 %}
+                                            <div class="pst-progress-fill warning" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% else %}
+                                            <div class="pst-progress-fill danger" style="width: {{ item.attendance_percentage }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                    <strong>{{ item.attendance_percentage }}٪</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="color: var(--pst-success); font-weight: 700;">
+                                    {{ item.correct_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: var(--pst-danger); font-weight: 700;">
+                                    {{ item.wrong_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="pst-progress-bar">
+                                        {% if item.answer_percentage >= 75 %}
+                                            <div class="pst-progress-fill success" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% elif item.answer_percentage >= 50 %}
+                                            <div class="pst-progress-fill warning" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% else %}
+                                            <div class="pst-progress-fill danger" style="width: {{ item.answer_percentage }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                    <strong>{{ item.answer_percentage }}٪</strong>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="pst-empty">
+                <div class="pst-empty-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <p class="mb-0">دانش‌آموزی در این کلاس ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    {% if daily_stats %}
+    <div class="pst-section">
+        <div class="pst-section-header">
+            <h3 class="pst-section-title">
+                <i class="bi bi-bar-chart-fill"></i>
+                نمودار روزانه
+            </h3>
+        </div>
+        <div class="pst-section-body">
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="pst-chart-wrapper">
+                        <canvas id="attendanceDailyChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="pst-chart-wrapper">
+                        <canvas id="answersDailyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if daily_stats %}
+{{ daily_stats|json_script:"dailyStatsData" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    function initPeriodCharts() {
+        if (typeof Chart === 'undefined') return;
+
+        const dataElement = document.getElementById('dailyStatsData');
+        if (!dataElement) return;
+
+        let dailyStats = [];
+        try {
+            dailyStats = JSON.parse(dataElement.textContent);
+        } catch (error) {
+            console.error('خطا در خواندن داده‌ها:', error);
+            return;
+        }
+
+        const labels = dailyStats.map(d => d.date_str);
+        const presentData = dailyStats.map(d => d.present);
+        const absentData = dailyStats.map(d => d.absent);
+        const correctData = dailyStats.map(d => d.correct);
+        const wrongData = dailyStats.map(d => d.wrong);
+
+        Chart.defaults.font.family = "'Vazirmatn', Tahoma, sans-serif";
+        Chart.defaults.color = '#2c3e50';
+
+        const tooltipStyle = {
+            rtl: true,
+            textDirection: 'rtl',
+            backgroundColor: '#111a3d',
+            padding: 12,
+            cornerRadius: 12,
+            boxPadding: 6
+        };
+
+        function createChart(canvasId, config) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) existingChart.destroy();
+            new Chart(canvas.getContext('2d'), config);
+        }
+
+        createChart('attendanceDailyChart', {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'حضور',
+                        data: presentData,
+                        backgroundColor: 'rgba(22, 163, 74, 0.82)',
+                        borderColor: 'rgba(22, 163, 74, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        maxBarThickness: 26
+                    },
+                    {
+                        label: 'غیبت',
+                        data: absentData,
+                        backgroundColor: 'rgba(220, 38, 38, 0.75)',
+                        borderColor: 'rgba(220, 38, 38, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        maxBarThickness: 26
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'حضور و غیاب روزانه',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    legend: {
+                        position: 'top',
+                        rtl: true,
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 16,
+                            font: { size: 12, weight: '700' }
+                        }
+                    },
+                    tooltip: tooltipStyle
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0, color: '#8a94a6', font: { size: 11 } },
+                        grid: { color: '#f0f3f8' }
+                    },
+                    x: {
+                        ticks: { color: '#667085', font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        createChart('answersDailyChart', {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'پاسخ صحیح',
+                        data: correctData,
+                        backgroundColor: 'rgba(22, 163, 74, 0.82)',
+                        borderColor: 'rgba(22, 163, 74, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        maxBarThickness: 26
+                    },
+                    {
+                        label: 'پاسخ غلط',
+                        data: wrongData,
+                        backgroundColor: 'rgba(220, 38, 38, 0.75)',
+                        borderColor: 'rgba(220, 38, 38, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 8,
+                        maxBarThickness: 26
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'پاسخ به سوالات روزانه',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    legend: {
+                        position: 'top',
+                        rtl: true,
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 16,
+                            font: { size: 12, weight: '700' }
+                        }
+                    },
+                    tooltip: tooltipStyle
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0, color: '#8a94a6', font: { size: 11 } },
+                        grid: { color: '#f0f3f8' }
+                    },
+                    x: {
+                        ticks: { color: '#667085', font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPeriodCharts);
+    } else {
+        initPeriodCharts();
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}
