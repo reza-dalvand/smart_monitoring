@@ -1,0 +1,685 @@
+{% extends 'base.html' %}
+{% block title %}نتایج درخواست {{ attendance_request.id }} - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .rr-page {
+        --rr-primary: #1a237e;
+        --rr-secondary: #ffc107;
+        --rr-success: #16a34a;
+        --rr-danger: #dc2626;
+        --rr-warning: #d97706;
+        --rr-info: #0284c7;
+        --rr-purple: #7c3aed;
+    }
+
+    .rr-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .rr-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .rr-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .rr-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .rr-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--rr-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--rr-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .rr-hero-text h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+    }
+
+    .rr-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.88rem;
+    }
+
+    .rr-hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .rr-btn {
+        padding: 11px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .rr-btn.danger {
+        background: var(--rr-danger);
+        color: white;
+    }
+
+    .rr-btn.danger:hover {
+        background: #b91c1c;
+        color: white;
+    }
+
+    .rr-btn.outline {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .rr-btn.outline:hover {
+        background: white;
+        color: var(--rr-primary);
+    }
+
+    .rr-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 26px;
+    }
+
+    .rr-stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rr-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .rr-stat-card.success::before { background: var(--rr-success); }
+    .rr-stat-card.danger::before { background: var(--rr-danger); }
+    .rr-stat-card.warning::before { background: var(--rr-warning); }
+    .rr-stat-card.info::before { background: var(--rr-info); }
+    .rr-stat-card.purple::before { background: var(--rr-purple); }
+
+    .rr-stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 12px;
+    }
+
+    .rr-stat-card.success .rr-stat-icon { background: rgba(22, 163, 74, 0.10); color: var(--rr-success); }
+    .rr-stat-card.danger .rr-stat-icon { background: rgba(220, 38, 38, 0.10); color: var(--rr-danger); }
+    .rr-stat-card.warning .rr-stat-icon { background: rgba(217, 119, 6, 0.12); color: var(--rr-warning); }
+    .rr-stat-card.info .rr-stat-icon { background: rgba(2, 132, 199, 0.10); color: var(--rr-info); }
+    .rr-stat-card.purple .rr-stat-icon { background: rgba(124, 58, 237, 0.10); color: var(--rr-purple); }
+
+    .rr-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        color: #17224a;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .rr-stat-label {
+        font-size: 0.8rem;
+        color: #7b8494;
+        font-weight: 600;
+    }
+
+    .rr-section {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .rr-section-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .rr-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .rr-section-title i {
+        color: var(--rr-secondary);
+        font-size: 1.2rem;
+    }
+
+    .rr-section-body {
+        padding: 22px;
+    }
+
+    .rr-filter-btns {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .rr-filter-btn {
+        padding: 7px 14px;
+        border-radius: 9px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        border: 1px solid #dfe6f2;
+        background: white;
+        color: #364152;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .rr-filter-btn:hover, .rr-filter-btn.active {
+        background: var(--rr-primary);
+        color: white;
+        border-color: var(--rr-primary);
+    }
+
+    .rr-question-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 14px;
+        margin-bottom: 12px;
+        border: 1px solid #edf1f8;
+    }
+
+    .rr-question-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+    }
+
+    .rr-question-num {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--rr-purple);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .rr-question-text {
+        font-size: 0.88rem;
+        color: #364152;
+        line-height: 1.6;
+        flex: 1;
+    }
+
+    .rr-question-stats {
+        display: flex;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .rr-mini-stat {
+        text-align: center;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: white;
+        border: 1px solid #edf1f8;
+    }
+
+    .rr-mini-stat-value {
+        font-size: 1.1rem;
+        font-weight: 900;
+        display: block;
+    }
+
+    .rr-mini-stat-value.success { color: var(--rr-success); }
+    .rr-mini-stat-value.danger { color: var(--rr-danger); }
+    .rr-mini-stat-value.warning { color: var(--rr-warning); }
+
+    .rr-mini-stat-label {
+        font-size: 0.68rem;
+        color: #7b8494;
+    }
+
+    .rr-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .rr-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .rr-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.85rem;
+    }
+
+    .rr-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .rr-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .rr-status-badge.present {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .rr-status-badge.absent {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+
+    .rr-status-badge.pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .rr-student-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .rr-student-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--rr-secondary);
+        color: var(--rr-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .rr-answer-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    .rr-answer-badge.correct {
+        background: rgba(22, 163, 74, 0.10);
+        color: var(--rr-success);
+    }
+
+    .rr-answer-badge.wrong {
+        background: rgba(220, 38, 38, 0.10);
+        color: var(--rr-danger);
+    }
+
+    .rr-answer-badge.none {
+        background: #f2f5fa;
+        color: #94a3b8;
+    }
+
+    .rr-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 767px) {
+        .rr-hero {
+            padding: 22px;
+        }
+
+        .rr-question-stat {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .rr-question-stats {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+</style>
+
+<div class="rr-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-clipboard-data-fill"></i>
+            نتایج درخواست #{{ attendance_request.id }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_active_classes' %}">کلاس‌های فعال</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}">{{ classroom.name }}</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>نتایج</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="rr-hero">
+        <div class="rr-hero-content">
+            <div class="rr-hero-title">
+                <div class="rr-hero-icon">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                </div>
+                <div class="rr-hero-text">
+                    <h2>{{ attendance_request.get_request_type_display }}</h2>
+                    <p>
+                        {{ classroom.name }} - {{ classroom.subject }} |
+                        جلسه {{ session.id }}
+                        {% if session.topic %} - {{ session.topic }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="rr-hero-actions">
+                {% if attendance_request.status == 'active' %}
+                <form method="post" action="{% url 'dashboard:teacher_finish_request' attendance_request.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rr-btn danger">
+                        <i class="bi bi-stop-circle-fill"></i>
+                        پایان درخواست
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}" class="rr-btn outline">
+                    <i class="bi bi-arrow-right"></i>
+                    بازگشت به کلاس
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="rr-stats-grid">
+        <div class="rr-stat-card info">
+            <div class="rr-stat-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <span class="rr-stat-value">{{ total_students }}</span>
+            <span class="rr-stat-label">کل دانش‌آموزان</span>
+        </div>
+        <div class="rr-stat-card success">
+            <div class="rr-stat-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <span class="rr-stat-value">{{ present_count }}</span>
+            <span class="rr-stat-label">حاضر</span>
+        </div>
+        <div class="rr-stat-card danger">
+            <div class="rr-stat-icon">
+                <i class="bi bi-person-x-fill"></i>
+            </div>
+            <span class="rr-stat-value">{{ absent_count }}</span>
+            <span class="rr-stat-label">غایب</span>
+        </div>
+        <div class="rr-stat-card warning">
+            <div class="rr-stat-icon">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <span class="rr-stat-value">{{ pending_count }}</span>
+            <span class="rr-stat-label">در انتظار</span>
+        </div>
+        {% if questions_stats %}
+        <div class="rr-stat-card purple">
+            <div class="rr-stat-icon">
+                <i class="bi bi-question-circle-fill"></i>
+            </div>
+            <span class="rr-stat-value">{{ questions_stats|length }}</span>
+            <span class="rr-stat-label">سوال ارسال‌شده</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Questions Stats -->
+    {% if questions_stats %}
+    <div class="rr-section">
+        <div class="rr-section-header">
+            <h3 class="rr-section-title">
+                <i class="bi bi-collection-fill"></i>
+                آمار سوالات
+            </h3>
+        </div>
+        <div class="rr-section-body">
+            {% for stat in questions_stats %}
+            <div class="rr-question-stat">
+                <div class="rr-question-info">
+                    <div class="rr-question-num">{{ stat.request_question.order }}</div>
+                    <div class="rr-question-text">
+                        {{ stat.question.text|truncatechars:80 }}
+                    </div>
+                </div>
+                <div class="rr-question-stats">
+                    <div class="rr-mini-stat">
+                        <span class="rr-mini-stat-value success">{{ stat.correct_count }}</span>
+                        <span class="rr-mini-stat-label">صحیح</span>
+                    </div>
+                    <div class="rr-mini-stat">
+                        <span class="rr-mini-stat-value danger">{{ stat.wrong_count }}</span>
+                        <span class="rr-mini-stat-label">غلط</span>
+                    </div>
+                    <div class="rr-mini-stat">
+                        <span class="rr-mini-stat-value warning">{{ stat.no_answer_count }}</span>
+                        <span class="rr-mini-stat-label">بی‌پاسخ</span>
+                    </div>
+                    <div class="rr-mini-stat">
+                        <span class="rr-mini-stat-value">{{ stat.correct_percentage }}٪</span>
+                        <span class="rr-mini-stat-label">درصد صحیح</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Students Detail -->
+    <div class="rr-section">
+        <div class="rr-section-header">
+            <h3 class="rr-section-title">
+                <i class="bi bi-people-fill"></i>
+                وضعیت دانش‌آموزان
+            </h3>
+            <div class="rr-filter-btns">
+                <a href="{% url 'dashboard:teacher_request_results' attendance_request.id %}" class="rr-filter-btn {% if not status_filter %}active{% endif %}">
+                    همه
+                </a>
+                <a href="?status=present" class="rr-filter-btn {% if status_filter == 'present' %}active{% endif %}">
+                    <i class="bi bi-person-check-fill"></i>
+                    حاضر
+                </a>
+                <a href="?status=absent" class="rr-filter-btn {% if status_filter == 'absent' %}active{% endif %}">
+                    <i class="bi bi-person-x-fill"></i>
+                    غایب
+                </a>
+                <a href="?status=pending" class="rr-filter-btn {% if status_filter == 'pending' %}active{% endif %}">
+                    <i class="bi bi-hourglass-split"></i>
+                    در انتظار
+                </a>
+            </div>
+        </div>
+        <div class="rr-section-body">
+            {% if students_detail %}
+            <div class="table-responsive">
+                <table class="rr-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>دانش‌آموز</th>
+                            <th>وضعیت حضور</th>
+                            {% if questions_stats %}
+                            <th>پاسخ‌ها</th>
+                            <th>صحیح</th>
+                            <th>غلط</th>
+                            <th>بی‌پاسخ</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_detail %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>
+                                <div class="rr-student-cell">
+                                    <div class="rr-student-avatar">
+                                        {{ item.student.username|first|upper }}
+                                    </div>
+                                    <span>
+                                        {{ item.student.get_full_name|default:item.student.username }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if item.response.final_status == 'present' %}
+                                    <span class="rr-status-badge present">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        حاضر
+                                    </span>
+                                {% elif item.response.final_status == 'absent' %}
+                                    <span class="rr-status-badge absent">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                        غایب
+                                    </span>
+                                {% else %}
+                                    <span class="rr-status-badge pending">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        در انتظار
+                                    </span>
+                                {% endif %}
+                            </td>
+                            {% if questions_stats %}
+                            <td>
+                                <div class="d-flex gap-1">
+                                    {% for answer in item.answers %}
+                                        {% if answer.is_correct %}
+                                            <span class="rr-answer-badge correct">✓</span>
+                                        {% else %}
+                                            <span class="rr-answer-badge wrong">✗</span>
+                                        {% endif %}
+                                    {% empty %}
+                                        <span class="rr-answer-badge none">-</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <strong style="color: var(--rr-success);">{{ item.correct }}</strong>
+                            </td>
+                            <td>
+                                <strong style="color: var(--rr-danger);">{{ item.wrong }}</strong>
+                            </td>
+                            <td>
+                                <strong style="color: var(--rr-warning);">{{ item.no_answer }}</strong>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="rr-empty">
+                <i class="bi bi-people" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                <p class="mt-2 mb-0">دانش‌آموزی با این فیلتر یافت نشد.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

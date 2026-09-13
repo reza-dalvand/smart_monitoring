@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% block title %}ایجاد درخواست حضور / سوال - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .ar-form-page {
+        --ar-primary: #1a237e;
+        --ar-secondary: #ffc107;
+        --ar-success: #16a34a;
+        --ar-purple: #7c3aed;
+    }
+
+    .ar-form-card {
+        background: white;
+        border-radius: 22px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+        overflow: hidden;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .ar-form-header {
+        background: linear-gradient(135deg, var(--ar-primary) 0%, #303f9f 100%);
+        padding: 28px;
+        color: white;
+        text-align: center;
+    }
+
+    .ar-form-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--ar-secondary);
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--ar-primary);
+        margin-bottom: 14px;
+        box-shadow: 0 10px 22px rgba(255, 193, 7, 0.3);
+    }
+
+    .ar-form-header h2 {
+        font-size: 1.4rem;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .ar-form-body {
+        padding: 28px;
+    }
+
+    .ar-info-bar {
+        background: #f8fafc;
+        border: 1px solid #edf1f8;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ar-info-bar i {
+        color: var(--ar-primary);
+        font-size: 1.4rem;
+    }
+
+    .ar-info-bar-text h6 {
+        margin: 0 0 4px 0;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .ar-info-bar-text p {
+        margin: 0;
+        color: #7b8494;
+        font-size: 0.85rem;
+    }
+
+    .ar-form-group {
+        margin-bottom: 22px;
+    }
+
+    .ar-form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .ar-form-label i {
+        color: var(--ar-secondary);
+    }
+
+    .ar-radio-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .ar-radio-card {
+        position: relative;
+    }
+
+    .ar-radio-card input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .ar-radio-card label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 18px 16px;
+        border: 2px solid #edf1f8;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-align: center;
+        background: #fbfcfe;
+    }
+
+    .ar-radio-card input:checked + label {
+        border-color: var(--ar-primary);
+        background: rgba(26, 35, 126, 0.04);
+        box-shadow: 0 4px 12px rgba(26, 35, 126, 0.1);
+    }
+
+    .ar-radio-card label i {
+        font-size: 1.8rem;
+        color: var(--ar-primary);
+    }
+
+    .ar-radio-card label span {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #17224a;
+    }
+
+    .ar-questions-box {
+        background: #f8fafc;
+        border: 1px solid #edf1f8;
+        border-radius: 14px;
+        padding: 20px;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .ar-question-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        background: white;
+        border: 1px solid #edf1f8;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .ar-question-check:hover {
+        border-color: #c7d2fe;
+        background: #fbfcff;
+    }
+
+    .ar-question-check input {
+        margin-top: 4px;
+    }
+
+    .ar-question-text {
+        font-size: 0.88rem;
+        color: #364152;
+        line-height: 1.6;
+    }
+
+    .ar-form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #f2f5fa;
+    }
+
+    .ar-btn-submit {
+        flex: 1;
+        padding: 14px 20px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(135deg, var(--ar-success), #15803d);
+        color: white;
+        box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
+    }
+
+    .ar-btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(22, 163, 74, 0.35);
+    }
+
+    .ar-btn-cancel {
+        padding: 14px 25px;
+        border-radius: 14px;
+        font-weight: 800;
+        border: 2px solid #e8edf6;
+        background: white;
+        color: #667085;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.25s ease;
+    }
+
+    .ar-btn-cancel:hover {
+        background: #f2f5fa;
+        color: #364152;
+    }
+
+    @media (max-width: 576px) {
+        .ar-form-body {
+            padding: 20px;
+        }
+
+        .ar-form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="ar-form-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-send-fill"></i>
+            ایجاد درخواست حضور / سوال
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_active_classes' %}">کلاس‌های فعال</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}">{{ classroom.name }}</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>درخواست جدید</span>
+        </div>
+    </div>
+
+    <div class="ar-form-card">
+        <!-- Header -->
+        <div class="ar-form-header">
+            <div class="ar-form-icon">
+                <i class="bi bi-send-fill"></i>
+            </div>
+            <h2>ایجاد درخواست جدید</h2>
+        </div>
+
+        <!-- Body -->
+        <div class="ar-form-body">
+            <!-- Info Bar -->
+            <div class="ar-info-bar">
+                <i class="bi bi-info-circle-fill"></i>
+                <div class="ar-info-bar-text">
+                    <h6>{{ classroom.name }} - {{ classroom.subject }} | جلسه {{ session.id }}</h6>
+                    <p>
+                        {% if session.topic %}
+                            موضوع: {{ session.topic }}
+                        {% endif %}
+                        | تعداد دانش‌آموزان: {{ classroom.students.count }}
+                    </p>
+                </div>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Request Type -->
+                <div class="ar-form-group">
+                    <label class="ar-form-label">
+                        <i class="bi bi-list-check"></i>
+                        نوع درخواست را انتخاب کنید
+                    </label>
+                    <div class="ar-radio-group">
+                        <div class="ar-radio-card">
+                            <input type="radio" name="request_type" id="face_only" value="face_only" checked onchange="toggleQuestions()">
+                            <label for="face_only">
+                                <i class="bi bi-person-check-fill"></i>
+                                <span>فقط حضور و غیاب</span>
+                            </label>
+                        </div>
+                        <div class="ar-radio-card">
+                            <input type="radio" name="request_type" id="question_only" value="question_only" onchange="toggleQuestions()">
+                            <label for="question_only">
+                                <i class="bi bi-question-circle-fill"></i>
+                                <span>فقط سوال</span>
+                            </label>
+                        </div>
+                        <div class="ar-radio-card">
+                            <input type="radio" name="request_type" id="face_and_question" value="face_and_question" onchange="toggleQuestions()">
+                            <label for="face_and_question">
+                                <i class="bi bi-person-check-fill"></i>
+                                <i class="bi bi-question-circle-fill" style="margin-right: -5px;"></i>
+                                <span>حضور + سوال</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Face Time -->
+                <div class="ar-form-group" id="faceTimeGroup">
+                    <label class="ar-form-label">
+                        <i class="bi bi-clock-fill"></i>
+                        مهلت اسکن چهره (ثانیه)
+                    </label>
+                    {{ form.face_time_seconds }}
+                    <small class="text-muted mt-1 d-block">
+                        {{ form.face_time_seconds.help_text }}
+                    </small>
+                </div>
+
+                <!-- Questions Selection -->
+                <div class="ar-form-group" id="questionsGroup" style="display: none;">
+                    <label class="ar-form-label">
+                        <i class="bi bi-collection-fill"></i>
+                        سوالات را انتخاب کنید
+                    </label>
+                    <div class="ar-questions-box">
+                        {% if questions_form.questions.field.queryset %}
+                            {% for question in questions_form.questions.field.queryset %}
+                            <div class="ar-question-check">
+                                <input type="checkbox" 
+                                       name="questions" 
+                                       value="{{ question.id }}" 
+                                       id="q_{{ question.id }}"
+                                       class="form-check-input">
+                                <label for="q_{{ question.id }}" class="ar-question-text" style="cursor: pointer;">
+                                    <strong>سوال {{ question.id }}:</strong>
+                                    {{ question.text|truncatechars:100 }}
+                                    {% if question.topic %}
+                                        <br>
+                                        <small class="text-muted">مبحث: {{ question.topic }}</small>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem; opacity: 0.4;"></i>
+                            <p class="mt-2 mb-0">هیچ سوال تاییدشده‌ای در بانک سوال این کلاس وجود ندارد.</p>
+                            <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                ساخت سوال جدید
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="ar-form-actions">
+                    <button type="submit" class="ar-btn-submit">
+                        <i class="bi bi-send-fill"></i>
+                        ایجاد و ارسال درخواست
+                    </button>
+                    <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}" class="ar-btn-cancel">
+                        <i class="bi bi-x-circle"></i>
+                        انصراف
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleQuestions() {
+    const requestType = document.querySelector('input[name="request_type"]:checked').value;
+    const questionsGroup = document.getElementById('questionsGroup');
+    const faceTimeGroup = document.getElementById('faceTimeGroup');
+    
+    if (requestType === 'question_only' || requestType === 'face_and_question') {
+        questionsGroup.style.display = 'block';
+    } else {
+        questionsGroup.style.display = 'none';
+    }
+    
+    if (requestType === 'question_only') {
+        faceTimeGroup.style.display = 'none';
+    } else {
+        faceTimeGroup.style.display = 'block';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', toggleQuestions);
+</script>
+{% endblock %}

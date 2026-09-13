@@ -10,8 +10,17 @@ urlpatterns = [
     # برنامه هفتگی دانش‌آموز
     path('weekly-schedule/', views.weekly_schedule_view, name='weekly_schedule'),
 
-    # ========== پنل معلم - فاز ۲ ==========
+    # ========== پنل معلم - کلاس‌های فعال ==========
     path('teacher/schedule/', views.teacher_weekly_schedule, name='teacher_weekly_schedule'),
+    path('teacher/classes/', views.teacher_active_classes, name='teacher_active_classes'),
+    path('teacher/classes/<int:classroom_id>/', views.teacher_class_detail, name='teacher_class_detail'),
+    path('teacher/classes/<int:classroom_id>/start-session/', views.teacher_start_session, name='teacher_start_session'),
+    path('teacher/classes/<int:classroom_id>/session/<int:session_id>/new-request/', views.teacher_create_attendance_request, name='teacher_create_attendance_request'),
+    path('teacher/classes/<int:classroom_id>/students/', views.teacher_class_students, name='teacher_class_students'),
+    path('teacher/requests/<int:request_id>/results/', views.teacher_request_results, name='teacher_request_results'),
+    path('teacher/requests/<int:request_id>/finish/', views.teacher_finish_request, name='teacher_finish_request'),
+
+    # ========== پنل معلم - فاز ۲ ==========
     path('teacher/ai/new/', views.teacher_ai_new, name='teacher_ai_new'),
     path('teacher/ai/<int:job_id>/review/', views.teacher_ai_review, name='teacher_ai_review'),
     path('teacher/ai/<int:job_id>/regenerate/', views.teacher_ai_regenerate_rejected, name='teacher_ai_regenerate_rejected'),

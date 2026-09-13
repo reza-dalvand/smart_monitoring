@@ -1,11 +1,11 @@
 from django import forms
-
 from .models import (
     Classroom,
     WeeklySchedule,
     ClassSession,
     AIGenerationJob,
     Question,
+    AttendanceRequest,
 )
 
 
@@ -59,7 +59,6 @@ class WeeklyScheduleForm(forms.ModelForm):
 
 class CopyScheduleForm(forms.Form):
     """فرم کپی برنامه از یک کلاس به کلاس دیگر"""
-
     source_classroom = forms.ModelChoiceField(
         queryset=Classroom.objects.all(),
         label='کلاس مبدأ',
@@ -75,7 +74,6 @@ class CopyScheduleForm(forms.Form):
 class AIGenerationForm(forms.ModelForm):
     """
     فرم درخواست تولید سوال با هوش مصنوعی
-
     فعلاً سرویس هوش مصنوعی ماک است.
     """
 
@@ -120,7 +118,6 @@ class AIGenerationForm(forms.ModelForm):
 
     def __init__(self, *args, teacher=None, **kwargs):
         super().__init__(*args, **kwargs)
-
         if teacher is not None:
             self.fields['classroom'].queryset = Classroom.objects.filter(
                 teacher=teacher
@@ -135,24 +132,18 @@ class AIGenerationForm(forms.ModelForm):
 
     def clean_requested_count(self):
         count = self.cleaned_data.get('requested_count')
-
         if count is None:
             raise forms.ValidationError('تعداد سوال الزامی است.')
-
         if count < 1 or count > 20:
             raise forms.ValidationError('تعداد سوال باید بین ۱ تا ۲۰ باشد.')
-
         return count
 
     def clean_default_timer_seconds(self):
         timer = self.cleaned_data.get('default_timer_seconds')
-
         if timer is None:
             raise forms.ValidationError('زمان پاسخ سوال الزامی است.')
-
         if timer < 30 or timer > 3600:
             raise forms.ValidationError('زمان پاسخ هر سوال باید بین ۳۰ ثانیه تا ۳۶۰۰ ثانیه باشد.')
-
         return timer
 
 
@@ -219,12 +210,10 @@ class QuestionForm(forms.ModelForm):
 
     def __init__(self, *args, teacher=None, **kwargs):
         super().__init__(*args, **kwargs)
-
         if teacher is not None:
             self.fields['classroom'].queryset = Classroom.objects.filter(
                 teacher=teacher
             ).order_by('name')
-
             self.fields['session'].queryset = ClassSession.objects.filter(
                 classroom__teacher=teacher
             ).order_by('-session_date')
@@ -239,19 +228,91 @@ class QuestionForm(forms.ModelForm):
     def clean_session(self):
         session = self.cleaned_data.get('session')
         classroom = self.cleaned_data.get('classroom')
-
         if session and classroom and session.classroom != classroom:
             raise forms.ValidationError('جلسه انتخاب‌شده باید متعلق به کلاس انتخاب‌شده باشد.')
-
         return session
 
     def clean_timer_seconds(self):
         timer = self.cleaned_data.get('timer_seconds')
-
         if timer is None:
             raise forms.ValidationError('زمان پاسخ سوال الزامی است.')
-
         if timer < 10 or timer > 7200:
             raise forms.ValidationError('زمان پاسخ سوال باید بین ۱۰ ثانیه تا ۷۲۰۰ ثانیه باشد.')
-
         return timer
+
+
+# =====================================================================
+# فرم‌های جدید - کلاس‌های فعال
+# =====================================================================
+
+class AttendanceRequestForm(forms.ModelForm):
+    """
+    فرم ایجاد درخواست حضور و غیاب / سوال
+    """
+
+    class Meta:
+        model = AttendanceRequest
+        fields = ['request_type', 'face_time_seconds']
+        widgets = {
+            'request_type': forms.RadioSelect(attrs={
+                'class': 'form-check-input'
+            }),
+            'face_time_seconds': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 30,
+                'max': 600
+            }),
+        }
+        labels = {
+            'request_type': 'نوع درخواست',
+            'face_time_seconds': 'مهلت اسکن چهره (ثانیه)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['face_time_seconds'].help_text = 'زمانی که دانش‌آموز برای اسکن چهره فرصت دارد (۳۰ تا ۶۰۰ ثانیه)'
+
+
+class SelectQuestionsForm(forms.Form):
+    """
+    فرم انتخاب سوالات برای ارسال به دانش‌آموزان
+    """
+    questions = forms.ModelMultipleChoiceField(
+        queryset=Question.objects.none(),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-check-input'
+        }),
+        label='سوالات را انتخاب کنید',
+        help_text='یک یا چند سوال از بانک سوال این کلاس انتخاب کنید'
+    )
+
+    def __init__(self, *args, classroom=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if classroom:
+            self.fields['questions'].queryset = Question.objects.filter(
+                classroom=classroom,
+                is_approved=True
+            ).order_by('-created_at')
+        else:
+            self.fields['questions'].queryset = Question.objects.none()
+
+    def clean_questions(self):
+        questions = self.cleaned_data.get('questions')
+        if not questions:
+            raise forms.ValidationError('حداقل یک سوال باید انتخاب شود.')
+        return questions
+
+
+class StartSessionForm(forms.Form):
+    """
+    فرم شروع جلسه جدید
+    """
+    topic = forms.CharField(
+        max_length=200,
+        required=False,
+        label='موضوع جلسه (اختیاری)',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'مثال: جلسه سوم - فصل دوم'
+        })
+    )

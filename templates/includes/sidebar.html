@@ -22,23 +22,17 @@
     {% if user.role == 'teacher' %}
     <div class="menu-section">
         <div class="menu-section-title">مدیریت کلاس</div>
+        <a href="{% url 'dashboard:teacher_active_classes' %}" class="menu-item {% if 'teacher_active_classes' in request.resolver_match.url_name or 'teacher_class_detail' in request.resolver_match.url_name or 'teacher_class_students' in request.resolver_match.url_name or 'teacher_request_results' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon">
+                <i class="bi bi-play-circle-fill"></i>
+            </div>
+            <span class="menu-item-text">کلاس‌های فعال</span>
+        </a>
         <a href="{% url 'dashboard:teacher_weekly_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_weekly_schedule' %}active{% endif %}">
             <div class="menu-item-icon">
                 <i class="bi bi-calendar-week-fill"></i>
             </div>
             <span class="menu-item-text">برنامه هفتگی من</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-journal-check"></i>
-            </div>
-            <span class="menu-item-text">کلاس‌های من</span>
-        </a>
-        <a href="#" class="menu-item">
-            <div class="menu-item-icon">
-                <i class="bi bi-person-check-fill"></i>
-            </div>
-            <span class="menu-item-text">حضور و غیاب</span>
         </a>
     </div>
 

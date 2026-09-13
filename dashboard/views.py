@@ -2,7 +2,7 @@ from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
 
@@ -15,6 +15,9 @@ from .models import (
     StudentAnswer,
     WeeklySchedule,
     AIGenerationJob,
+    AttendanceRequest,
+    AttendanceRequestQuestion,
+    AttendanceResponse,
 )
 from accounts.models import User, StudentProfile
 from .forms import (
@@ -23,6 +26,9 @@ from .forms import (
     CopyScheduleForm,
     AIGenerationForm,
     QuestionForm,
+    AttendanceRequestForm,
+    SelectQuestionsForm,
+    StartSessionForm,
 )
 from .services import (
     generate_questions_for_job,
@@ -231,7 +237,6 @@ def teacher_weekly_schedule(request):
             'count': len(day_classes),
         })
 
-    # آمار کلی
     total_sessions = schedules.count()
     total_classrooms = schedules.values('classroom').distinct().count()
 
@@ -242,6 +247,374 @@ def teacher_weekly_schedule(request):
         'title': 'برنامه هفتگی من',
     }
     return render(request, 'dashboard/teacher/weekly_schedule.html', context)
+
+
+# ========== کلاس‌های فعال معلم ==========
+
+@teacher_required
+def teacher_active_classes(request):
+    """
+    لیست کلاس‌های فعال معلم
+    """
+    classrooms = get_teacher_classrooms(request.user).annotate(
+        students_count=Count('students', distinct=True),
+        sessions_count=Count('sessions', distinct=True),
+        active_requests=Count(
+            'attendance_requests',
+            filter=Q(attendance_requests__status='active'),
+            distinct=True
+        )
+    )
+
+    # بررسی جلسات فعال
+    active_sessions = ClassSession.objects.filter(
+        classroom__teacher=request.user
+    ).order_by('-session_date')
+
+    context = {
+        'classrooms': classrooms,
+        'active_sessions': active_sessions[:5],
+        'total_classrooms': classrooms.count(),
+        'title': 'کلاس‌های فعال',
+    }
+    return render(request, 'dashboard/teacher/active_classes.html', context)
+
+
+@teacher_required
+def teacher_class_detail(request, classroom_id):
+    """
+    صفحه جزئیات یک کلاس
+    """
+    classroom = get_object_or_404(
+        Classroom,
+        id=classroom_id,
+        teacher=request.user
+    )
+
+    # جلسات اخیر
+    sessions = classroom.sessions.order_by('-session_date')[:10]
+
+    # درخواست‌های فعال
+    active_requests = classroom.attendance_requests.filter(
+        status='active'
+    ).order_by('-created_at')
+
+    # درخواست‌های اخیر
+    recent_requests = classroom.attendance_requests.order_by('-created_at')[:10]
+
+    # فرم شروع جلسه
+    start_form = StartSessionForm()
+
+    # آمار
+    students_count = classroom.students.count()
+    sessions_count = classroom.sessions.count()
+    questions_count = classroom.questions.filter(is_approved=True).count()
+
+    context = {
+        'classroom': classroom,
+        'sessions': sessions,
+        'active_requests': active_requests,
+        'recent_requests': recent_requests,
+        'start_form': start_form,
+        'students_count': students_count,
+        'sessions_count': sessions_count,
+        'questions_count': questions_count,
+        'title': f'کلاس {classroom.name}',
+    }
+    return render(request, 'dashboard/teacher/class_detail.html', context)
+
+
+@teacher_required
+def teacher_start_session(request, classroom_id):
+    """
+    شروع جلسه جدید برای یک کلاس
+    """
+    classroom = get_object_or_404(
+        Classroom,
+        id=classroom_id,
+        teacher=request.user
+    )
+
+    if request.method == 'POST':
+        form = StartSessionForm(request.POST)
+        if form.is_valid():
+            session = ClassSession.objects.create(
+                classroom=classroom,
+                topic=form.cleaned_data.get('topic', '')
+            )
+            messages.success(
+                request,
+                f'جلسه جدید با موفقیت شروع شد. (جلسه {session.id})'
+            )
+            return redirect('dashboard:teacher_class_detail', classroom_id=classroom.id)
+    else:
+        form = StartSessionForm()
+
+    return redirect('dashboard:teacher_class_detail', classroom_id=classroom.id)
+
+
+@teacher_required
+def teacher_create_attendance_request(request, classroom_id, session_id):
+    """
+    ایجاد درخواست حضور و غیاب / سوال
+    """
+    classroom = get_object_or_404(
+        Classroom,
+        id=classroom_id,
+        teacher=request.user
+    )
+    session = get_object_or_404(
+        ClassSession,
+        id=session_id,
+        classroom=classroom
+    )
+
+    # بررسی اینکه کلاس دانش‌آموز دارد
+    if classroom.students.count() == 0:
+        messages.error(request, 'این کلاس هیچ دانش‌آموزی ندارد.')
+        return redirect('dashboard:teacher_class_detail', classroom_id=classroom.id)
+
+    if request.method == 'POST':
+        form = AttendanceRequestForm(request.POST)
+        questions_form = SelectQuestionsForm(request.POST, classroom=classroom)
+
+        request_type = request.POST.get('request_type', 'face_only')
+
+        if form.is_valid():
+            # اگر شامل سوال است، فرم سوالات هم باید معتبر باشد
+            if request_type in ('question_only', 'face_and_question'):
+                if not questions_form.is_valid():
+                    messages.error(request, 'لطفاً حداقل یک سوال انتخاب کنید.')
+                    return redirect(
+                        f'{request.path}'
+                    )
+                selected_questions = questions_form.cleaned_data['questions']
+            else:
+                selected_questions = []
+
+            # ایجاد درخواست
+            attendance_request = form.save(commit=False)
+            attendance_request.teacher = request.user
+            attendance_request.classroom = classroom
+            attendance_request.session = session
+            attendance_request.save()
+
+            # اضافه کردن سوالات
+            if selected_questions:
+                for index, question in enumerate(selected_questions, 1):
+                    AttendanceRequestQuestion.objects.create(
+                        attendance_request=attendance_request,
+                        question=question,
+                        order=index,
+                        timer_seconds=question.timer_seconds
+                    )
+
+            messages.success(
+                request,
+                f'درخواست با موفقیت ایجاد شد. '
+                f'نوع: {attendance_request.get_request_type_display()}'
+            )
+            return redirect(
+                'dashboard:teacher_request_results',
+                request_id=attendance_request.id
+            )
+    else:
+        form = AttendanceRequestForm()
+        questions_form = SelectQuestionsForm(classroom=classroom)
+
+    context = {
+        'form': form,
+        'questions_form': questions_form,
+        'classroom': classroom,
+        'session': session,
+        'title': 'ایجاد درخواست حضور و غیاب / سوال',
+    }
+    return render(request, 'dashboard/teacher/attendance_request_form.html', context)
+
+
+@teacher_required
+def teacher_class_students(request, classroom_id):
+    """
+    لیست دانش‌آموزان یک کلاس
+    """
+    classroom = get_object_or_404(
+        Classroom,
+        id=classroom_id,
+        teacher=request.user
+    )
+
+    students = classroom.students.select_related('profile').order_by(
+        'last_name', 'first_name'
+    )
+
+    students_with_info = []
+    for student in students:
+        try:
+            profile = student.profile
+            parent_phone = profile.parent_phone or profile.parent_phone_2 or ''
+        except StudentProfile.DoesNotExist:
+            parent_phone = ''
+
+        # آمار کلی دانش‌آموز در این کلاس
+        total_answers = StudentAnswer.objects.filter(
+            student=student,
+            question__classroom=classroom
+        ).count()
+        correct_answers = StudentAnswer.objects.filter(
+            student=student,
+            question__classroom=classroom,
+            is_correct=True
+        ).count()
+
+        students_with_info.append({
+            'student': student,
+            'parent_phone': parent_phone,
+            'total_answers': total_answers,
+            'correct_answers': correct_answers,
+            'wrong_answers': total_answers - correct_answers,
+            'percentage': round((correct_answers / total_answers * 100)) if total_answers > 0 else 0,
+        })
+
+    context = {
+        'classroom': classroom,
+        'students_with_info': students_with_info,
+        'total_students': len(students_with_info),
+        'title': f'دانش‌آموزان کلاس {classroom.name}',
+    }
+    return render(request, 'dashboard/teacher/class_students.html', context)
+
+
+@teacher_required
+def teacher_request_results(request, request_id):
+    """
+    نتایج یک درخواست حضور و غیاب / سوال
+    """
+    attendance_request = get_object_or_404(
+        AttendanceRequest,
+        id=request_id,
+        teacher=request.user
+    )
+
+    classroom = attendance_request.classroom
+    session = attendance_request.session
+
+    # دریافت پاسخ‌ها
+    responses = attendance_request.responses.select_related(
+        'student', 'student__profile'
+    ).order_by('student__last_name', 'student__first_name')
+
+    # آمار حضور و غیاب
+    total_students = responses.count()
+    present_count = responses.filter(final_status='present').count()
+    absent_count = responses.filter(final_status='absent').count()
+    pending_count = responses.filter(final_status='pending').count()
+
+    # آمار سوالات
+    request_questions = attendance_request.request_questions.select_related(
+        'question'
+    ).order_by('order')
+
+    questions_stats = []
+    for rq in request_questions:
+        question = rq.question
+        answers = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            question=question
+        )
+        total_answers = answers.count()
+        correct_count = answers.filter(is_correct=True).count()
+        wrong_count = total_answers - correct_count
+        no_answer_count = total_students - total_answers
+
+        questions_stats.append({
+            'request_question': rq,
+            'question': question,
+            'total_answers': total_answers,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'no_answer_count': no_answer_count,
+            'correct_percentage': round((correct_count / total_students * 100)) if total_students > 0 else 0,
+        })
+
+    # لیست دانش‌آموزان با جزئیات
+    students_detail = []
+    for response in responses:
+        student = response.student
+
+        # پاسخ‌های این دانش‌آموز در این درخواست
+        student_answers = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).select_related('question')
+
+        correct = student_answers.filter(is_correct=True).count()
+        wrong = student_answers.filter(is_correct=False).count()
+        total = student_answers.count()
+
+        students_detail.append({
+            'response': response,
+            'student': student,
+            'correct': correct,
+            'wrong': wrong,
+            'total': total,
+            'no_answer': len(request_questions) - total if request_questions else 0,
+            'answers': student_answers,
+        })
+
+    # فیلترها
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'present':
+        students_detail = [s for s in students_detail if s['response'].final_status == 'present']
+    elif status_filter == 'absent':
+        students_detail = [s for s in students_detail if s['response'].final_status == 'absent']
+    elif status_filter == 'pending':
+        students_detail = [s for s in students_detail if s['response'].final_status == 'pending']
+
+    context = {
+        'attendance_request': attendance_request,
+        'classroom': classroom,
+        'session': session,
+        'responses': responses,
+        'total_students': total_students,
+        'present_count': present_count,
+        'absent_count': absent_count,
+        'pending_count': pending_count,
+        'request_questions': request_questions,
+        'questions_stats': questions_stats,
+        'students_detail': students_detail,
+        'status_filter': status_filter,
+        'title': f'نتایج درخواست {request_id}',
+    }
+    return render(request, 'dashboard/teacher/request_results.html', context)
+
+
+@teacher_required
+def teacher_finish_request(request, request_id):
+    """
+    پایان دادن به یک درخواست فعال
+    """
+    attendance_request = get_object_or_404(
+        AttendanceRequest,
+        id=request_id,
+        teacher=request.user,
+        status='active'
+    )
+
+    if request.method == 'POST':
+        # علامت‌گذاری دانش‌آموزانی که پاسخ ندادن
+        for response in attendance_request.responses.filter(auto_status='pending'):
+            response.mark_no_response()
+
+        attendance_request.status = 'finished'
+        attendance_request.save()
+
+        messages.success(request, 'درخواست با موفقیت پایان یافت.')
+        return redirect(
+            'dashboard:teacher_request_results',
+            request_id=attendance_request.id
+        )
+
+    return redirect('dashboard:teacher_request_results', request_id=request_id)
 
 
 # ========== پنل معاون ==========

@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% block title %}کلاس‌های فعال - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .ac-page {
+        --ac-primary: #1a237e;
+        --ac-secondary: #ffc107;
+        --ac-success: #16a34a;
+        --ac-danger: #dc2626;
+        --ac-info: #0284c7;
+    }
+
+    .ac-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .ac-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .ac-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .ac-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .ac-hero-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--ac-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--ac-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .ac-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.75rem;
+        font-weight: 900;
+    }
+
+    .ac-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .ac-stats {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .ac-stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 15px;
+        padding: 14px 22px;
+        text-align: center;
+    }
+
+    .ac-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .ac-stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    .ac-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+    }
+
+    .ac-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        transition: all 0.25s ease;
+        position: relative;
+    }
+
+    .ac-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        background: linear-gradient(180deg, var(--ac-primary), var(--ac-secondary));
+    }
+
+    .ac-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+    }
+
+    .ac-card-body {
+        padding: 22px;
+    }
+
+    .ac-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+
+    .ac-card-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 4px 0;
+    }
+
+    .ac-card-subject {
+        font-size: 0.85rem;
+        color: #7b8494;
+    }
+
+    .ac-active-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .ac-active-badge.active {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .ac-active-badge.inactive {
+        background: rgba(148, 163, 184, 0.15);
+        color: #64748b;
+    }
+
+    .ac-card-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .ac-mini-stat {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .ac-mini-stat-value {
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: #17224a;
+        display: block;
+    }
+
+    .ac-mini-stat-label {
+        font-size: 0.72rem;
+        color: #7b8494;
+    }
+
+    .ac-card-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ac-btn {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .ac-btn.primary {
+        background: var(--ac-primary);
+        color: white;
+    }
+
+    .ac-btn.primary:hover {
+        background: #303f9f;
+        color: white;
+    }
+
+    .ac-btn.success {
+        background: var(--ac-success);
+        color: white;
+    }
+
+    .ac-btn.success:hover {
+        background: #15803d;
+        color: white;
+    }
+
+    .ac-btn.info {
+        background: var(--ac-info);
+        color: white;
+    }
+
+    .ac-btn.info:hover {
+        background: #0369a1;
+        color: white;
+    }
+
+    .ac-empty {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #dbe3ef;
+    }
+
+    .ac-empty-icon {
+        width: 90px;
+        height: 90px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 767px) {
+        .ac-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ac-hero {
+            padding: 22px;
+        }
+    }
+</style>
+
+<div class="ac-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-play-circle-fill"></i>
+            کلاس‌های فعال
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>کلاس‌های فعال</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="ac-hero">
+        <div class="ac-hero-content">
+            <div class="ac-hero-title">
+                <div class="ac-hero-icon">
+                    <i class="bi bi-play-circle-fill"></i>
+                </div>
+                <div class="ac-hero-text">
+                    <h2>کلاس‌های فعال شما</h2>
+                    <p>شروع جلسه، حضور و غیاب و پرسش از دانش‌آموزان</p>
+                </div>
+            </div>
+            <div class="ac-stats">
+                <div class="ac-stat-box">
+                    <span class="ac-stat-value">{{ total_classrooms }}</span>
+                    <span class="ac-stat-label">کلاس فعال</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Grid -->
+    {% if classrooms %}
+    <div class="ac-grid">
+        {% for classroom in classrooms %}
+        <div class="ac-card">
+            <div class="ac-card-body">
+                <div class="ac-card-header">
+                    <div>
+                        <h4 class="ac-card-title">{{ classroom.name }}</h4>
+                        <div class="ac-card-subject">{{ classroom.subject }}</div>
+                    </div>
+                    {% if classroom.active_requests > 0 %}
+                        <span class="ac-active-badge active">
+                            <i class="bi bi-broadcast"></i>
+                            در حال اجرا
+                        </span>
+                    {% else %}
+                        <span class="ac-active-badge inactive">
+                            <i class="bi bi-pause-circle"></i>
+                            آماده
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="ac-card-stats">
+                    <div class="ac-mini-stat">
+                        <span class="ac-mini-stat-value">{{ classroom.students_count }}</span>
+                        <span class="ac-mini-stat-label">دانش‌آموز</span>
+                    </div>
+                    <div class="ac-mini-stat">
+                        <span class="ac-mini-stat-value">{{ classroom.sessions_count }}</span>
+                        <span class="ac-mini-stat-label">جلسه</span>
+                    </div>
+                    <div class="ac-mini-stat">
+                        <span class="ac-mini-stat-value">{{ classroom.get_grade_display }}</span>
+                        <span class="ac-mini-stat-label">{{ classroom.get_field_display }}</span>
+                    </div>
+                </div>
+
+                <div class="ac-card-actions">
+                    <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}" class="ac-btn primary">
+                        <i class="bi bi-play-fill"></i>
+                        مدیریت کلاس
+                    </a>
+                    <a href="{% url 'dashboard:teacher_class_students' classroom.id %}" class="ac-btn info">
+                        <i class="bi bi-people-fill"></i>
+                        دانش‌آموزان
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="ac-empty">
+        <div class="ac-empty-icon">
+            <i class="bi bi-journal-x"></i>
+        </div>
+        <h5 style="color: #17224a; font-weight: 800;">هیچ کلاسی برای شما ثبت نشده است</h5>
+        <p class="text-muted">لطفاً با معاون مدرسه هماهنگ کنید تا کلاس‌های شما را ثبت کند.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% block title %}{{ classroom.name }} - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .cd-page {
+        --cd-primary: #1a237e;
+        --cd-secondary: #ffc107;
+        --cd-success: #16a34a;
+        --cd-danger: #dc2626;
+        --cd-info: #0284c7;
+    }
+
+    .cd-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .cd-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .cd-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cd-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .cd-hero-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--cd-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--cd-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .cd-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.6rem;
+        font-weight: 900;
+    }
+
+    .cd-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    .cd-hero-stats {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .cd-stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 15px;
+        padding: 14px 22px;
+        text-align: center;
+    }
+
+    .cd-stat-value {
+        font-size: 1.6rem;
+        font-weight: 950;
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .cd-stat-label {
+        font-size: 0.78rem;
+        opacity: 0.9;
+    }
+
+    .cd-section {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .cd-section-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f2f5fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+
+    .cd-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #17224a;
+    }
+
+    .cd-section-title i {
+        color: var(--cd-secondary);
+        font-size: 1.2rem;
+    }
+
+    .cd-section-body {
+        padding: 22px;
+    }
+
+    .cd-session-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 14px;
+        margin-bottom: 12px;
+        border: 1px solid #edf1f8;
+        transition: all 0.2s ease;
+    }
+
+    .cd-session-item:hover {
+        background: #f1f5f9;
+        transform: translateX(-3px);
+    }
+
+    .cd-session-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .cd-session-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        background: rgba(26, 35, 126, 0.08);
+        color: var(--cd-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .cd-session-title {
+        font-weight: 700;
+        color: #17224a;
+        margin: 0 0 3px 0;
+    }
+
+    .cd-session-date {
+        font-size: 0.78rem;
+        color: #7b8494;
+    }
+
+    .cd-session-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .cd-btn {
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .cd-btn.success {
+        background: var(--cd-success);
+        color: white;
+    }
+
+    .cd-btn.success:hover {
+        background: #15803d;
+        color: white;
+    }
+
+    .cd-btn.info {
+        background: var(--cd-info);
+        color: white;
+    }
+
+    .cd-btn.info:hover {
+        background: #0369a1;
+        color: white;
+    }
+
+    .cd-btn.outline {
+        background: white;
+        border: 1px solid #dfe6f2;
+        color: #364152;
+    }
+
+    .cd-btn.outline:hover {
+        background: #f2f5fa;
+    }
+
+    .cd-request-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #edf1f8;
+    }
+
+    .cd-request-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cd-request-type {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .cd-request-type.face_only {
+        background: rgba(2, 132, 199, 0.10);
+        color: #0369a1;
+    }
+
+    .cd-request-type.question_only {
+        background: rgba(124, 58, 237, 0.10);
+        color: #7c3aed;
+    }
+
+    .cd-request-type.face_and_question {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .cd-status-badge {
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .cd-status-badge.active {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+
+    .cd-status-badge.finished {
+        background: rgba(148, 163, 184, 0.15);
+        color: #64748b;
+    }
+
+    .cd-start-form {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .cd-start-form input {
+        flex: 1;
+    }
+
+    .cd-empty {
+        text-align: center;
+        padding: 30px;
+        color: #94a3b8;
+    }
+
+    @media (max-width: 767px) {
+        .cd-session-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .cd-start-form {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="cd-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            {{ classroom.name }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_active_classes' %}">کلاس‌های فعال</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ classroom.name }}</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="cd-hero">
+        <div class="cd-hero-content">
+            <div class="cd-hero-title">
+                <div class="cd-hero-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <div class="cd-hero-text">
+                    <h2>{{ classroom.name }} - {{ classroom.subject }}</h2>
+                    <p>پایه {{ classroom.get_grade_display }} - رشته {{ classroom.get_field_display }}</p>
+                </div>
+            </div>
+            <div class="cd-hero-stats">
+                <div class="cd-stat-box">
+                    <span class="cd-stat-value">{{ students_count }}</span>
+                    <span class="cd-stat-label">دانش‌آموز</span>
+                </div>
+                <div class="cd-stat-box">
+                    <span class="cd-stat-value">{{ sessions_count }}</span>
+                    <span class="cd-stat-label">جلسه</span>
+                </div>
+                <div class="cd-stat-box">
+                    <span class="cd-stat-value">{{ questions_count }}</span>
+                    <span class="cd-stat-label">سوال تاییدشده</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start New Session -->
+    <div class="cd-section">
+        <div class="cd-section-header">
+            <h3 class="cd-section-title">
+                <i class="bi bi-play-circle-fill"></i>
+                شروع جلسه جدید
+            </h3>
+        </div>
+        <div class="cd-section-body">
+            <form method="post" action="{% url 'dashboard:teacher_start_session' classroom.id %}" class="cd-start-form">
+                {% csrf_token %}
+                {{ start_form.topic }}
+                <button type="submit" class="cd-btn success">
+                    <i class="bi bi-play-fill"></i>
+                    شروع جلسه
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Requests -->
+    {% if active_requests %}
+    <div class="cd-section">
+        <div class="cd-section-header">
+            <h3 class="cd-section-title">
+                <i class="bi bi-broadcast"></i>
+                درخواست‌های فعال
+            </h3>
+        </div>
+        <div class="cd-section-body">
+            {% for req in active_requests %}
+            <div class="cd-request-item">
+                <div class="cd-request-info">
+                    <span class="cd-request-type {{ req.request_type }}">
+                        {{ req.get_request_type_display }}
+                    </span>
+                    <span class="cd-status-badge active">
+                        <i class="bi bi-broadcast"></i>
+                        فعال
+                    </span>
+                </div>
+                <a href="{% url 'dashboard:teacher_request_results' req.id %}" class="cd-btn info">
+                    <i class="bi bi-eye-fill"></i>
+                    مشاهده نتایج
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sessions List -->
+    <div class="cd-section">
+        <div class="cd-section-header">
+            <h3 class="cd-section-title">
+                <i class="bi bi-calendar-check-fill"></i>
+                جلسات اخیر
+            </h3>
+        </div>
+        <div class="cd-section-body">
+            {% if sessions %}
+                {% for session in sessions %}
+                <div class="cd-session-item">
+                    <div class="cd-session-info">
+                        <div class="cd-session-icon">
+                            <i class="bi bi-calendar-event-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="cd-session-title">
+                                جلسه {{ session.id }}
+                                {% if session.topic %}
+                                    - {{ session.topic }}
+                                {% endif %}
+                            </h6>
+                            <span class="cd-session-date">
+                                {{ session.session_date|date:"Y/m/d - H:i" }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="cd-session-actions">
+                        <a href="{% url 'dashboard:teacher_create_attendance_request' classroom.id session.id %}" class="cd-btn success">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            درخواست حضور / سوال
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="cd-empty">
+                <i class="bi bi-calendar-x" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                <p class="mt-2 mb-0">هنوز جلسه‌ای شروع نشده است. از بخش بالا یک جلسه جدید شروع کنید.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Requests -->
+    <div class="cd-section">
+        <div class="cd-section-header">
+            <h3 class="cd-section-title">
+                <i class="bi bi-clock-history"></i>
+                درخواست‌های اخیر
+            </h3>
+        </div>
+        <div class="cd-section-body">
+            {% if recent_requests %}
+                {% for req in recent_requests %}
+                <div class="cd-request-item">
+                    <div class="cd-request-info">
+                        <span class="cd-request-type {{ req.request_type }}">
+                            {{ req.get_request_type_display }}
+                        </span>
+                        <span class="cd-status-badge {% if req.status == 'active' %}active{% else %}finished{% endif %}">
+                            {% if req.status == 'active' %}
+                                <i class="bi bi-broadcast"></i>
+                                فعال
+                            {% else %}
+                                <i class="bi bi-check-circle"></i>
+                                {{ req.get_status_display }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <a href="{% url 'dashboard:teacher_request_results' req.id %}" class="cd-btn outline">
+                        <i class="bi bi-eye"></i>
+                        نتایج
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="cd-empty">
+                <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                <p class="mt-2 mb-0">هنوز درخواستی ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

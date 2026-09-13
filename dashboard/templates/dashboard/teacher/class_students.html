@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% block title %}دانش‌آموزان {{ classroom.name }} - پنل معلم{% endblock %}
+{% block content %}
+<style>
+    .cs-page {
+        --cs-primary: #1a237e;
+        --cs-secondary: #ffc107;
+        --cs-success: #16a34a;
+        --cs-danger: #dc2626;
+    }
+
+    .cs-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+
+    .cs-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+
+    .cs-hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .cs-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .cs-hero-icon {
+        width: 76px;
+        height: 76px;
+        background: var(--cs-secondary);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: var(--cs-primary);
+        box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .cs-hero-text h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.6rem;
+        font-weight: 900;
+    }
+
+    .cs-hero-text p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    .cs-stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 15px;
+        padding: 14px 22px;
+        text-align: center;
+    }
+
+    .cs-stat-value {
+        font-size: 1.8rem;
+        font-weight: 950;
+        display: block;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .cs-stat-label {
+        font-size: 0.78rem;
+        opacity: 0.9;
+    }
+
+    .cs-table-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .cs-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .cs-table thead th {
+        background: #f8fafd;
+        color: #7b8494;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 14px 16px;
+        border-bottom: 1px solid #e8edf6;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .cs-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f3f6fa;
+        vertical-align: middle;
+        color: #3f4a5a;
+        font-size: 0.88rem;
+    }
+
+    .cs-table tbody tr:hover {
+        background: #fbfcff;
+    }
+
+    .cs-student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .cs-student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--cs-secondary);
+        color: var(--cs-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .cs-student-name {
+        font-weight: 700;
+        color: #17224a;
+        margin: 0;
+    }
+
+    .cs-phone-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        background: rgba(22, 163, 74, 0.08);
+        color: #15803d;
+        font-size: 0.78rem;
+        font-weight: 700;
+        direction: ltr;
+    }
+
+    .cs-phone-badge.empty {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .cs-progress-bar {
+        height: 8px;
+        background: #f2f5fa;
+        border-radius: 999px;
+        overflow: hidden;
+        min-width: 80px;
+    }
+
+    .cs-progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--cs-success), #4ade80);
+    }
+
+    .cs-empty {
+        text-align: center;
+        padding: 50px 20px;
+    }
+
+    @media (max-width: 767px) {
+        .cs-hero {
+            padding: 22px;
+        }
+    }
+</style>
+
+<div class="cs-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-people-fill"></i>
+            دانش‌آموزان {{ classroom.name }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_active_classes' %}">کلاس‌های فعال</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:teacher_class_detail' classroom.id %}">{{ classroom.name }}</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>دانش‌آموزان</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="cs-hero">
+        <div class="cs-hero-content">
+            <div class="cs-hero-title">
+                <div class="cs-hero-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="cs-hero-text">
+                    <h2>دانش‌آموزان کلاس {{ classroom.name }}</h2>
+                    <p>{{ classroom.subject }} - پایه {{ classroom.get_grade_display }} - {{ classroom.get_field_display }}</p>
+                </div>
+            </div>
+            <div class="cs-stat-box">
+                <span class="cs-stat-value">{{ total_students }}</span>
+                <span class="cs-stat-label">دانش‌آموز</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="cs-table-card">
+        {% if students_with_info %}
+        <div class="table-responsive">
+            <table class="cs-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>دانش‌آموز</th>
+                        <th>شماره والدین</th>
+                        <th>پاسخ صحیح</th>
+                        <th>پاسخ غلط</th>
+                        <th>درصد موفقیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in students_with_info %}
+                    <tr>
+                        <td><strong>{{ forloop.counter }}</strong></td>
+                        <td>
+                            <div class="cs-student-info">
+                                <div class="cs-student-avatar">
+                                    {{ item.student.username|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="cs-student-name">
+                                        {{ item.student.get_full_name|default:item.student.username }}
+                                    </p>
+                                    {% if item.student.national_id %}
+                                    <small class="text-muted">کد ملی: {{ item.student.national_id }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if item.parent_phone %}
+                                <span class="cs-phone-badge">
+                                    <i class="bi bi-telephone-fill"></i>
+                                    {{ item.parent_phone }}
+                                </span>
+                            {% else %}
+                                <span class="cs-phone-badge empty">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    ثبت نشده
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="color: var(--cs-success); font-weight: 700;">
+                                {{ item.correct_answers }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: var(--cs-danger); font-weight: 700;">
+                                {{ item.wrong_answers }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="cs-progress-bar">
+                                    <div class="cs-progress-fill" style="width: {{ item.percentage }}%"></div>
+                                </div>
+                                <strong>{{ item.percentage }}٪</strong>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="cs-empty">
+            <i class="bi bi-people" style="font-size: 3rem; color: #94a3b8; opacity: 0.4;"></i>
+            <h5 class="mt-3" style="color: #17224a; font-weight: 800;">دانش‌آموزی ثبت نشده است</h5>
+            <p class="text-muted">این کلاس هنوز دانش‌آموزی ندارد.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
