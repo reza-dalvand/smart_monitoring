@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% block title %}ثبت چهره - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.fe-page { --fe-primary: #1a237e; --fe-secondary: #ffc107; --fe-success: #16a34a; --fe-danger: #dc2626; }
+.fe-hero { background: linear-gradient(135deg, #1a237e 0%, #283593 55%, #1a237e 100%); color: white; border-radius: 22px; padding: 32px; margin-bottom: 28px; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22); }
+.fe-hero::before { content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255, 193, 7, 0.12); top: -120px; right: -100px; }
+.fe-hero-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.fe-hero-title { display: flex; align-items: center; gap: 18px; }
+.fe-hero-icon { width: 76px; height: 76px; background: var(--fe-secondary); border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: var(--fe-primary); box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3); }
+.fe-hero-text h2 { margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 900; }
+.fe-hero-text p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+.fe-status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); color: white; }
+.fe-status-badge.enrolled { background: rgba(22, 163, 74, 0.2); color: #bbf7d0; }
+.fe-status-badge.pending { background: rgba(217, 119, 6, 0.2); color: #fef3c7; }
+.fe-card { background: white; border-radius: 18px; border: 1px solid #edf1f8; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); overflow: hidden; margin-bottom: 24px; }
+.fe-card-header { padding: 20px 24px; border-bottom: 1px solid #f2f5fa; background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%); }
+.fe-card-title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.05rem; font-weight: 800; color: #17224a; }
+.fe-card-title i { color: var(--fe-secondary); font-size: 1.2rem; }
+.fe-card-body { padding: 24px; }
+.fe-upload-area { border: 2px dashed #dfe6f2; border-radius: 16px; padding: 40px; text-align: center; transition: all 0.3s ease; cursor: pointer; background: #fbfcfe; }
+.fe-upload-area:hover { border-color: var(--fe-primary); background: rgba(26, 35, 126, 0.02); }
+.fe-upload-icon { font-size: 3rem; color: var(--fe-primary); margin-bottom: 16px; }
+.fe-upload-text { font-size: 1rem; color: #364152; margin-bottom: 8px; }
+.fe-upload-hint { font-size: 0.85rem; color: #8a94a6; }
+.fe-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+.fe-preview-item { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid #edf1f8; background: white; transition: all 0.3s ease; }
+.fe-preview-item.valid { border-color: var(--fe-success); }
+.fe-preview-item.invalid { border-color: var(--fe-danger); }
+.fe-preview-image { width: 100%; height: 200px; object-fit: cover; }
+.fe-preview-status { padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; }
+.fe-preview-status.valid { background: rgba(22, 163, 74, 0.08); color: var(--fe-success); }
+.fe-preview-status.invalid { background: rgba(220, 38, 38, 0.08); color: var(--fe-danger); }
+.fe-preview-remove { position: absolute; top: 8px; left: 8px; width: 30px; height: 30px; border-radius: 50%; background: rgba(220, 38, 38, 0.9); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+.fe-preview-remove:hover { background: var(--fe-danger); transform: scale(1.1); }
+.fe-progress-container { margin-top: 20px; }
+.fe-progress-bar { height: 8px; background: #f2f5fa; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+.fe-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--fe-primary), var(--fe-secondary)); transition: width 0.5s ease; }
+.fe-progress-text { font-size: 0.8rem; color: #7b8494; text-align: center; }
+.fe-result-card { border-radius: 16px; padding: 30px; text-align: center; margin-top: 24px; }
+.fe-result-card.success { background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.2); }
+.fe-result-card.error { background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.2); }
+.fe-result-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.fe-result-card.success .fe-result-icon { color: var(--fe-success); }
+.fe-result-card.error .fe-result-icon { color: var(--fe-danger); }
+.fe-result-title { font-size: 1.3rem; font-weight: 900; color: #17224a; margin-bottom: 10px; }
+.fe-result-message { color: #667085; font-size: 0.95rem; line-height: 1.8; }
+.fe-btn { padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s ease; text-decoration: none; }
+.fe-btn.primary { background: var(--fe-primary); color: white; }
+.fe-btn.primary:hover { background: #303f9f; color: white; transform: translateY(-2px); }
+.fe-btn.outline { background: white; border: 2px solid #dfe6f2; color: #364152; }
+.fe-btn.outline:hover { background: #f2f5fa; }
+.fe-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
+.fe-error-list { list-style: none; padding: 0; margin: 16px 0 0 0; }
+.fe-error-list li { padding: 10px 14px; background: rgba(220, 38, 38, 0.05); border-radius: 10px; margin-bottom: 8px; font-size: 0.85rem; color: #b91c1c; display: flex; align-items: center; gap: 8px; }
+@media (max-width: 767px) { .fe-hero { padding: 22px; } .fe-preview-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+</style>
+
+<div class="fe-page">
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-person-badge-fill"></i>
+            ثبت چهره
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>ثبت چهره</span>
+        </div>
+    </div>
+
+    <div class="fe-hero">
+        <div class="fe-hero-content">
+            <div class="fe-hero-title">
+                <div class="fe-hero-icon">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div class="fe-hero-text">
+                    <h2>ثبت چهره برای احراز هویت</h2>
+                    <p>برای استفاده از سیستم حضور و غیاب هوشمند، باید چهره خود را ثبت کنید</p>
+                </div>
+            </div>
+            {% if face_profile.enrollment_status == 'enrolled' %}
+            <span class="fe-status-badge enrolled">
+                <i class="bi bi-check-circle-fill"></i>
+                چهره ثبت شده
+            </span>
+            {% else %}
+            <span class="fe-status-badge pending">
+                <i class="bi bi-hourglass-split"></i>
+                در انتظار ثبت چهره
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="fe-card">
+        <div class="fe-card-header">
+            <h3 class="fe-card-title">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                آپلود تصاویر چهره
+            </h3>
+        </div>
+        <div class="fe-card-body">
+            <div id="uploadSection">
+                <div class="fe-upload-area" id="uploadArea">
+                    <div class="fe-upload-icon">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                    </div>
+                    <div class="fe-upload-text">تصاویر را اینجا بکشید یا کلیک کنید</div>
+                    <div class="fe-upload-hint">حداقل ۳ و حداکثر ۵ تصویر</div>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+
+                <div class="fe-preview-grid" id="previewGrid" style="display: none;"></div>
+
+                <div class="fe-progress-container" id="progressContainer" style="display: none;">
+                    <div class="fe-progress-bar">
+                        <div class="fe-progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="fe-progress-text" id="progressText">در حال پردازش...</div>
+                </div>
+
+                <div class="fe-actions">
+                    <button type="button" class="fe-btn primary" id="submitBtn" disabled>
+                        <i class="bi bi-check-circle-fill"></i>
+                        ثبت چهره
+                    </button>
+                    <button type="button" class="fe-btn outline" id="clearBtn" style="display: none;">
+                        <i class="bi bi-x-circle"></i>
+                        پاک کردن
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultSection" style="display: none;">
+                <div class="fe-result-card" id="resultCard">
+                    <div class="fe-result-icon" id="resultIcon"></div>
+                    <div class="fe-result-title" id="resultTitle"></div>
+                    <div class="fe-result-message" id="resultMessage"></div>
+                    <ul class="fe-error-list" id="errorList" style="display: none;"></ul>
+                </div>
+                <div class="fe-actions">
+                    <button type="button" class="fe-btn primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        ثبت مجدد
+                    </button>
+                    <a href="{% url 'dashboard:home' %}" class="fe-btn outline">
+                        <i class="bi bi-house-fill"></i>
+                        بازگشت به داشبورد
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultSection = document.getElementById('resultSection');
+    const uploadSection = document.getElementById('uploadSection');
+
+    let selectedFiles = [];
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFiles);
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#1a237e';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#dfe6f2';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#dfe6f2';
+        handleFiles(e);
+    });
+
+    function handleFiles(e) {
+        const files = e.target.files || e.dataTransfer.files;
+        for (let file of files) {
+            if (selectedFiles.length >= 5) { alert('حداکثر ۵ تصویر مجاز است.'); break; }
+            if (!file.type.startsWith('image/')) { alert('فقط تصاویر مجاز هستند.'); continue; }
+            selectedFiles.push(file);
+        }
+        updatePreview();
+    }
+
+    function updatePreview() {
+        previewGrid.innerHTML = '';
+        if (selectedFiles.length === 0) {
+            previewGrid.style.display = 'none';
+            submitBtn.disabled = true;
+            clearBtn.style.display = 'none';
+            return;
+        }
+        previewGrid.style.display = 'grid';
+        submitBtn.disabled = selectedFiles.length < 3;
+        clearBtn.style.display = 'block';
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'fe-preview-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" class="fe-preview-image" alt="تصویر ${index + 1}">
+                    <div class="fe-preview-status" id="status-${index}">
+                        <i class="bi bi-hourglass-split"></i>
+                        در انتظار اعتبارسنجی
+                    </div>
+                    <button class="fe-preview-remove" onclick="removeFile(${index})">
+                        <i class="bi bi-x-fill"></i>
+                    </button>
+                `;
+                previewGrid.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    window.removeFile = function(index) {
+        selectedFiles.splice(index, 1);
+        updatePreview();
+    };
+
+    clearBtn.addEventListener('click', () => {
+        selectedFiles = [];
+        updatePreview();
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        if (selectedFiles.length < 3) {
+            alert('حداقل ۳ تصویر لازم است.');
+            return;
+        }
+
+        progressContainer.style.display = 'block';
+        submitBtn.disabled = true;
+        progressText.textContent = 'در حال ثبت چهره...';
+        progressFill.style.width = '50%';
+
+        try {
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('images', file));
+            formData.append('replace_existing', 'true');
+
+            const response = await fetch('/face/api/enrollment/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+
+            const data = await response.json();
+            progressFill.style.width = '100%';
+
+            if (data.success) {
+                showResult(true, 'ثبت چهره موفقیت‌آمیز بود', data.message, data.errors || []);
+            } else {
+                showResult(false, 'ثبت چهره ناموفق بود', data.message, data.errors || []);
+            }
+        } catch (error) {
+            showResult(false, 'خطای سیستمی', 'خطا در ارتباط با سرور.', [error.message]);
+        }
+
+        progressContainer.style.display = 'none';
+    });
+
+    function showResult(success, title, message, errors) {
+        uploadSection.style.display = 'none';
+        resultSection.style.display = 'block';
+        const resultCard = document.getElementById('resultCard');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultMessage = document.getElementById('resultMessage');
+        const errorList = document.getElementById('errorList');
+
+        if (success) {
+            resultCard.className = 'fe-result-card success';
+            resultIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+        } else {
+            resultCard.className = 'fe-result-card error';
+            resultIcon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+        }
+
+        resultTitle.textContent = title;
+        resultMessage.textContent = message;
+
+        if (errors && errors.length > 0) {
+            errorList.style.display = 'block';
+            errorList.innerHTML = errors.map(e => `
+                <li><i class="bi bi-exclamation-circle-fill"></i> ${e.error_message || e}</li>
+            `).join('');
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

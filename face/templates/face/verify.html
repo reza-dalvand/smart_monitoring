@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}احراز هویت چهره{% endblock %}
+{% block content %}
+<style>
+  :root {
+    --fv-primary: #1a237e;
+    --fv-success: #10b981;
+    --fv-danger: #ef4444;
+    --fv-warn: #f59e0b;
+  }
+
+  /* کانتینر اصلی تمام‌صفحه (بدون اسکرول) */
+  .fv-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* مودال مرکزی */
+  .fv-modal {
+    width: 100%;
+    max-width: 440px;
+    height: 90vh;
+    max-height: 720px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* هدر */
+  .fv-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--fv-primary), #303f9f);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .fv-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fv-close {
+    color: white;
+    text-decoration: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: background 0.2s;
+  }
+  .fv-close:hover { background: rgba(255,255,255,0.25); }
+
+  /* بخش ویدیو (انعطاف‌پذیر برای پر کردن فضای خالی) */
+  .fv-body {
+    flex: 1;
+    position: relative;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-height: 0; /* کلید جلوگیری از بیرون‌زدگی در Flex */
+  }
+
+  #fv-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* آینه‌ای کردن ویدیو برای دید طبیعی کاربر */
+  }
+
+  /* کادر راهنما */
+  .fv-guide {
+    position: absolute;
+    width: 65%;
+    aspect-ratio: 3/4;
+    max-height: 80%;
+    border: 3px dashed rgba(255,255,255,0.6);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  .fv-guide.ok { border: 4px solid var(--fv-success); box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+  .fv-guide.warn { border: 4px solid var(--fv-warn); }
+  .fv-guide.err { border: 4px solid var(--fv-danger); }
+
+  /* فوتر (کنترل‌ها) */
+  .fv-footer {
+    background: white;
+    padding: 18px;
+    flex-shrink: 0;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fv-msg {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #374151;
+    min-height: 24px;
+  }
+
+  .fv-challenge {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .fv-progress-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .fv-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 0.85rem; color: #9ca3af;
+    transition: all 0.3s;
+  }
+  .fv-dot.active { background: #dbeafe; color: #1d4ed8; border: 2px solid #3b82f6; transform: scale(1.1); }
+  .fv-dot.done { background: var(--fv-success); color: white; }
+
+  .fv-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-align: center;
+    color: #1f2937;
+    direction: ltr;
+  }
+
+  /* مودال نتیجه نهایی */
+  .fv-result-overlay {
+    position: absolute;
+    inset: 0;
+    background: white;
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    border-radius: 24px;
+  }
+  .fv-result-overlay.show { display: flex; }
+  .fv-result-icon { font-size: 5rem; margin-bottom: 20px; }
+  .fv-result-icon.success { color: var(--fv-success); }
+  .fv-result-icon.error { color: var(--fv-danger); }
+  
+  .fv-btn {
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.1s;
+    width: 100%;
+  }
+  .fv-btn:active { transform: scale(0.98); }
+  .fv-btn-primary { background: var(--fv-primary); color: white; }
+  .fv-btn-secondary { background: #f3f4f6; color: #374151; }
+
+  .fv-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+    gap: 15px;
+  }
+  .fv-spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="fv-backdrop">
+  <div class="fv-modal">
+    <div class="fv-header">
+      <h3><i class="bi bi-person-check-fill"></i> احراز هویت چهره</h3>
+      <a href="{% url 'dashboard:home' %}" class="fv-close"><i class="bi bi-x-lg"></i></a>
+    </div>
+    
+    <div class="fv-body">
+      <video id="fv-video" autoplay playsinline muted></video>
+      <div class="fv-guide" id="fv-guide"></div>
+      
+      <div class="fv-loading" id="fv-loading">
+        <div class="fv-spinner"></div>
+        <div style="font-weight:700;" id="fv-loading-text">در حال آماده‌سازی...</div>
+      </div>
+      
+      <div class="fv-result-overlay" id="fv-result">
+        <div class="fv-result-icon" id="fv-result-icon"></div>
+        <h2 id="fv-result-title" style="margin-bottom:10px;"></h2>
+        <p id="fv-result-msg" style="color:#6b7280;margin-bottom:25px;font-size:1.05rem;line-height:1.7;"></p>
+        <div style="display:flex;gap:10px;width:100%;">
+          <a href="{% url 'dashboard:home' %}" class="fv-btn fv-btn-secondary" style="text-decoration:none;">بازگشت به خانه</a>
+          <button class="fv-btn fv-btn-primary" id="fv-retry" style="display:none;" onclick="location.reload()">تلاش مجدد</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="fv-footer">
+      <div class="fv-msg" id="fv-msg">لطفاً صورت خود را در کادر تنظیم کنید</div>
+      <div class="fv-challenge" id="fv-challenge" style="display:none;"></div>
+      <div class="fv-progress-row" id="fv-progress">
+        <div class="fv-dot">۱</div>
+        <div class="fv-dot">۲</div>
+        <div class="fv-dot">۳</div>
+      </div>
+      <div class="fv-timer" id="fv-timer">--:--</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.FV_CONFIG = {
+    requestId: "{{ attendance_request.id }}",
+    startUrl: "{% url 'face:api_verification_start' attendance_request.id %}",
+    completeUrlBase: "{% url 'face:api_verification_complete' '00000000-0000-0000-0000-000000000000' %}",
+    csrfToken: "{{ csrf_token }}",
+    mpModule: "{{ mediapipe_module_url }}",
+    mpWasm: "{{ mediapipe_wasm_base }}",
+    mpModel: "{{ mediapipe_model_url }}"
+  };
+</script>
+<script src="{% static 'face/js/face_verification.js' %}"></script>
+{% endblock %}

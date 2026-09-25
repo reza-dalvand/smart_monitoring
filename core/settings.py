@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-sh%rgv3)_otk3jg=gp+vfh41x2-4m$n-oy2o12$pnu*_ya5@7x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', '192.168.1.20', 'localhost']
 
 
 # Application definition
@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     
     # پکیج‌های جانبی
     'django_bootstrap5',
+
+    'face.apps.FaceConfig',
 ]
 
 MIDDLEWARE = [
@@ -73,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.csrf',
             ],
         },
     },
@@ -155,3 +158,96 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
+
+
+# =====================================================================
+# تنظیمات جدید احراز هویت چهره برای حضور و غیاب
+# =====================================================================
+
+# فعال/غیرفعال کردن کل سرویس چهره
+FACE_AI_ENABLED = True
+
+# حالت ماک برای توسعه/تست بدون مدل واقعی
+# برای تست بدون دانلود مدل، مقدار را True کنید.
+FACE_AI_MOCK = False
+
+# دایرکتوری مدل‌ها
+FACE_MODEL_DIR = BASE_DIR / 'models'
+
+# مدل‌های تشخیص/بازشناسی
+FACE_DETECTION_MODEL = 'buffalo_l'
+FACE_RECOGNITION_MODEL = 'buffalo_l'
+
+# آستانه تطبیق چهره
+# این مقدار صرفاً برای توسعه/تست است و بعداً باید با داده واقعی کالیبره شود.
+FACE_MATCH_THRESHOLD = 0.45
+
+# حداقل/حداکثر تصاویر مرجع
+FACE_MIN_REFERENCE_IMAGES = 3
+FACE_MAX_REFERENCE_IMAGES = 5
+
+# حداقل اندازه چهره و تنظیمات کیفیت
+FACE_MIN_FACE_SIZE = 80
+FACE_MAX_BLUR_THRESHOLD = 100.0
+FACE_MIN_BRIGHTNESS = 40.0
+FACE_MAX_BRIGHTNESS = 220.0
+
+# لایونس
+FACE_LIVENESS_ENABLED = True
+FACE_MIN_FRAMES_FOR_LIVENESS = 3
+
+# روش تجمیع تطبیق:
+# MAX | TOP_K_MEAN | CENTROID
+# مقادیر فارسی قبلی هم همچنان پشتیبانی می‌شوند.
+FACE_MATCH_AGGREGATION_METHOD = 'MAX'
+FACE_MATCH_TOP_K = 2
+
+# محدودیت‌های جدید اسکن حضور
+FACE_MAX_ATTEMPTS = 3
+FACE_MIN_FRAMES = 5
+FACE_MAX_FRAMES = 15
+FACE_MAX_FRAME_SIZE_MB = 2
+
+# ذخیره تصویر دیباگ فقط برای توسعه
+# در تولید نباید فعال شود.
+STORE_FACE_DEBUG_IMAGES = False
+
+# برای تست ماک می‌توانید این دو را تغییر دهید:
+# FACE_AI_MOCK_SIMILARITY = 0.93
+# FACE_AI_MOCK_LIVENESS_PASS = True
+
+
+# =====================================================================
+# تنظیمات جدید نشست احراز هویت چهره
+# =====================================================================
+FACE_VERIFICATION_TIMEOUT_SECONDS = 60
+
+FACE_GUIDE_MIN_X = 0.20
+FACE_GUIDE_MAX_X = 0.80
+FACE_GUIDE_MIN_Y = 0.12
+FACE_GUIDE_MAX_Y = 0.88
+
+FACE_GUIDE_MIN_WIDTH = 0.22
+FACE_GUIDE_MAX_WIDTH = 0.70
+FACE_GUIDE_MIN_HEIGHT = 0.22
+FACE_GUIDE_MAX_HEIGHT = 0.85
+
+FACE_STABLE_DURATION_MS = 700
+FACE_INFERENCE_FPS = 15
+
+HEAD_YAW_TURN_MIN_DEG = 18
+HEAD_TURN_HOLD_MS = 250
+
+BLINK_CLOSURE_THRESHOLD = 0.55
+BLINK_OPEN_THRESHOLD = 0.25
+BLINK_MIN_DURATION_MS = 60
+BLINK_MAX_DURATION_MS = 900
+
+FACE_EVIDENCE_MIN_FRAMES = 5
+FACE_EVIDENCE_MAX_FRAMES = 12
+FACE_EVIDENCE_CAPTURE_INTERVAL_MS = 130
+
+
+FACE_MEDIAPIPE_MODULE_URL = 'face/mediapipe/vision_bundle.mjs'
+FACE_MEDIAPIPE_WASM_BASE = 'face/mediapipe/wasm'
+FACE_MEDIAPIPE_MODEL = 'face/mediapipe/face_landmarker.task'

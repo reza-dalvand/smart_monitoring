@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.db.models import Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
-
+from django.conf import settings
+from face.models import FaceProfile, FaceEmbedding
 from .models import (
     Classroom,
     ClassSession,
@@ -76,16 +77,20 @@ def dashboard_home(request):
 def student_dashboard(request):
     """داشبورد مخصوص دانش‌آموز"""
     student = request.user
+
     classrooms = student.enrolled_classes.all()
 
     total_sessions = ClassSession.objects.filter(classroom__students=student).count()
-    total_attendance_checks = AttendanceCheck.objects.filter(session__classroom__students=student).count()
+    total_attendance_checks = AttendanceCheck.objects.filter(
+        session__classroom__students=student
+    ).count()
 
     present_count = AttendanceRecord.objects.filter(
         student=student,
         status='present',
         attendance_check__session__classroom__students=student
     ).count()
+
     absent_count = max(total_attendance_checks - present_count, 0)
 
     attendance_percentage = 0
@@ -93,7 +98,11 @@ def student_dashboard(request):
         attendance_percentage = round((present_count / total_attendance_checks) * 100)
 
     total_questions = Question.objects.filter(classroom__students=student).count()
-    answers = StudentAnswer.objects.filter(student=student, question__classroom__students=student)
+    answers = StudentAnswer.objects.filter(
+        student=student,
+        question__classroom__students=student
+    )
+
     answered_questions = answers.count()
     correct_answers = answers.filter(is_correct=True).count()
     wrong_answers = answered_questions - correct_answers
@@ -103,13 +112,16 @@ def student_dashboard(request):
     if answered_questions > 0:
         answer_percentage = round((correct_answers / answered_questions) * 100)
 
-    sessions = ClassSession.objects.filter(classroom__students=student).order_by('id')
+    sessions = ClassSession.objects.filter(
+        classroom__students=student
+    ).order_by('id')
 
     attendance_chart_data = {
         'labels': [],
         'present': [],
         'absent': []
     }
+
     for session in sessions:
         session_present = AttendanceRecord.objects.filter(
             attendance_check__session=session,
@@ -128,24 +140,70 @@ def student_dashboard(request):
         'values': [correct_answers, wrong_answers, unanswered_questions]
     }
 
+    # ------------------------------------------------------------------
+    # بخش جدید: درخواست‌های فعال حضور و غیاب چهره
+    # ------------------------------------------------------------------
+    active_face_requests = AttendanceRequest.objects.filter(
+        classroom__students=student,
+        status='active',
+        request_type__in=['face_only', 'face_and_question']
+    ).filter(
+        Q(face_deadline_at__isnull=True) | Q(face_deadline_at__gt=timezone.now())
+    ).select_related(
+        'classroom',
+        'session',
+        'teacher'
+    ).order_by('-created_at')
+
+    active_face_items = []
+    for attendance_request in active_face_requests:
+        response = AttendanceResponse.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).first()
+
+        active_face_items.append({
+            'request': attendance_request,
+            'response': response,
+        })
+
+    face_profile = FaceProfile.objects.filter(student=student).first()
+    reference_images_count = FaceEmbedding.objects.filter(
+        student_id=student.id,
+        is_active=True
+    ).count()
+
+    face_enrolled = reference_images_count >= settings.FACE_MIN_REFERENCE_IMAGES
+
     context = {
         'welcome_message': 'به داشبورد پایش هوشمند خوش آمدید',
         'student': student,
         'classrooms': classrooms,
+
         'total_sessions': total_sessions,
         'total_attendance_checks': total_attendance_checks,
         'present_count': present_count,
         'absent_count': absent_count,
         'attendance_percentage': attendance_percentage,
+
         'total_questions': total_questions,
         'answered_questions': answered_questions,
         'correct_answers': correct_answers,
         'wrong_answers': wrong_answers,
         'unanswered_questions': unanswered_questions,
         'answer_percentage': answer_percentage,
+
         'attendance_chart_data': attendance_chart_data,
         'answer_chart_data': answer_chart_data,
+
+        # داده‌های جدید برای اسکن چهره
+        'active_face_items': active_face_items,
+        'face_profile': face_profile,
+        'reference_images_count': reference_images_count,
+        'face_enrolled': face_enrolled,
+        'face_max_attempts': settings.FACE_MAX_ATTEMPTS,
     }
+
     return render(request, 'dashboard/student_dashboard.html', context)
 
 

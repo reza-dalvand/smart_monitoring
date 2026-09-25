@@ -1,0 +1,107 @@
+# ═══════════════════════════════════════════════════════════════════
+# .gitignore - پروژه سامانه پایش هوشمند (smart_monitoring)
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+*.manifest
+*.spec
+
+# ── Virtual Environments ────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.conda/
+
+# ── Django Core ─────────────────────────────────────────────────────
+db.sqlite3
+db.sqlite3-journal
+db.sqlite3-shm
+db.sqlite3-wal
+*.sqlite3
+media/
+staticfiles/
+*.log
+local_settings.py
+
+# ── AI / ML Models (باینری‌های حجیم - قابل دانلود مجدد) ────────────
+models/
+*.onnx
+*.wasm
+*.task
+*.bin
+*.pt
+*.pth
+*.h5
+*.pb
+*.tflite
+*.caffemodel
+
+# ── MediaPipe (با دستور python download_mediapipe.py دانلود می‌شود) ─
+face/static/face/mediapipe/
+
+# ── IDE / Editor ────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# ── OS Files ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ── Environment / Secrets ──────────────────────────────────────────
+.env
+.env.*
+.env.local
+*.pem
+*.key
+
+# ── Testing / Cache ────────────────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+coverage.xml
+
+# ── Generated / Output Files ───────────────────────────────────────
+smart_structure.txt
+smart_code.txt
+code.py
+
+# ── Lock Files ──────────────────────────────────────────────────────
+package-lock.json
+yarn.lock
+poetry.lock
+Pipfile.lock
+
+# ── Temp / Misc ─────────────────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+*.rej
+.cache/
+tmp/
+temp/

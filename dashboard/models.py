@@ -572,46 +572,94 @@ class AttendanceResponse(models.Model):
         blank=True,
         verbose_name="زمان بررسی"
     )
+
+        # فیلدهای جدید برای تشخیص چهره
+    face_verified = models.BooleanField(
+        null=True, blank=True,
+        verbose_name='چهره تایید شده'
+    )
+    face_status = models.CharField(
+        max_length=20, blank=True,
+        verbose_name='وضعیت چهره'
+    )
+    similarity_score = models.FloatField(
+        null=True, blank=True,
+        verbose_name='امتیاز تطبیق'
+    )
+    liveness_score = models.FloatField(
+        null=True, blank=True,
+        verbose_name='امتیاز لایونس'
+    )
+
+    liveness_status = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        verbose_name='وضعیت لایونس'
+    )
+
+    failure_reason = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name='دلیل ناموفق بودن'
+    )
+
+    attempts = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='تعداد تلاش‌ها'
+    )
+
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به‌روزرسانی")
 
-    def apply_face_result(self, confidence, face_image=None):
+
+    def register_face_verification(
+        self,
+        face_status,
+        similarity_score=None,
+        liveness_status='',
+        failure_reason='',
+        increment_attempt=True
+    ):
         """
-        اعمال نتیجه ارسالی از اپ دانش‌آموز
-
-        قرارداد:
-        - اگر درصد 90 یا بیشتر باشد: حاضر
-        - اگر بین 70 تا 89 باشد: مشکوک
-        - اگر کمتر از 70 باشد: عدم تطابق / غایب
+        ثبت نتیجه استاندارد احراز هویت چهره
         """
+        from face.constants import FaceStatus
 
-        confidence = float(confidence or 0)
-
-        # اگر اپ به اشتباه عدد بین 0 و 1 فرستاد، آن را به درصد تبدیل می‌کنیم.
-        if confidence <= 1:
-            confidence = confidence * 100
-
-        confidence = max(0.0, min(100.0, confidence))
-
-        self.confidence = confidence
-
-        if face_image:
-            self.face_image = face_image
+        if increment_attempt:
+            self.attempts = (self.attempts or 0) + 1
 
         self.face_submitted_at = timezone.now()
+        self.face_status = face_status
 
-        if confidence >= 90:
+        if similarity_score is not None:
+            self.similarity_score = similarity_score
+
+        self.liveness_status = liveness_status or ''
+        self.failure_reason = failure_reason or ''
+
+        if face_status == FaceStatus.VERIFIED:
+            self.face_verified = True
             self.auto_status = 'present'
             self.final_status = 'present'
-        elif confidence >= 70:
+
+        elif face_status == FaceStatus.SUSPICIOUS:
+            self.face_verified = False
             self.auto_status = 'suspicious'
             self.final_status = 'pending'
+
         else:
-            self.auto_status = 'absent_mismatch'
-            self.final_status = 'absent'
+            self.face_verified = False
+            if self.auto_status in ('pending', ''):
+                self.auto_status = 'suspicious'
+            if self.final_status == '':
+                self.final_status = 'pending'
 
         self.save()
         return self
+
 
     def mark_no_response(self):
         """
