@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.pd-page { --pd-primary: #1a237e; --pd-secondary: #ffc107; }
+.pd-hero {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white; border-radius: 20px; padding: 28px;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.pd-hero::before {
+    content: ''; position: absolute; width: 250px; height: 250px;
+    border-radius: 50%; background: rgba(255,193,7,0.1);
+    top: -100px; right: -80px;
+}
+.pd-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 16px;
+    position: relative; z-index: 1;
+}
+.pd-breadcrumb a { color: rgba(255,255,255,0.9); text-decoration: none; }
+.pd-breadcrumb a:hover { color: var(--pd-secondary); }
+.pd-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+}
+.pd-kpi {
+    background: white; border-radius: 14px; padding: 18px;
+    text-align: center; border: 1px solid #edf1f8;
+    box-shadow: 0 3px 10px rgba(15,23,42,0.04);
+}
+.pd-kpi-value { font-size: 1.6rem; font-weight: 950; color: #17224a; }
+.pd-kpi-label { font-size: 0.8rem; color: #7b8494; margin-top: 4px; }
+.pd-section {
+    background: white; border-radius: 16px; border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.04); overflow: hidden; margin-bottom: 20px;
+}
+.pd-section-header {
+    padding: 16px 20px; border-bottom: 1px solid #f2f5fa;
+    font-weight: 800; color: #17224a; display: flex; align-items: center; gap: 10px;
+}
+.pd-section-header i { color: var(--pd-secondary); }
+.pd-section-body { padding: 20px; }
+.pd-district-card {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px; background: #f8fafc; border-radius: 12px;
+    margin-bottom: 10px; border: 1px solid #edf1f8; cursor: pointer;
+    transition: all 0.2s;
+}
+.pd-district-card:hover { background: #f0f4ff; border-color: #c7d2fe; transform: translateX(-3px); }
+</style>
+
+<div class="pd-page">
+    <div class="pd-hero">
+        <div class="pd-breadcrumb">
+            <a href="{% url 'national:dashboard' %}">داشبورد کشوری</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>استان {{ province.name }}</span>
+        </div>
+        <h2 style="margin: 0; font-weight: 900; position: relative; z-index: 1;">
+            <i class="bi bi-geo-alt-fill me-2" style="color: var(--pd-secondary);"></i>
+            استان {{ province.name }}
+        </h2>
+    </div>
+
+    <!-- KPIs -->
+    <div class="pd-kpi-grid">
+        <div class="pd-kpi">
+            <div class="pd-kpi-value">{{ overview.students|default:"-" }}</div>
+            <div class="pd-kpi-label">دانش‌آموزان</div>
+        </div>
+        <div class="pd-kpi">
+            <div class="pd-kpi-value">{{ overview.teachers|default:"-" }}</div>
+            <div class="pd-kpi-label">معلمان</div>
+        </div>
+        <div class="pd-kpi">
+            <div class="pd-kpi-value">{{ overview.schools|default:"-" }}</div>
+            <div class="pd-kpi-label">مدارس</div>
+        </div>
+        <div class="pd-kpi">
+            <div class="pd-kpi-value">{{ overview.classrooms|default:"-" }}</div>
+            <div class="pd-kpi-label">کلاس‌ها</div>
+        </div>
+        <div class="pd-kpi">
+            <div class="pd-kpi-value">
+                {% if overview.attendance_rate is not None %}{{ overview.attendance_rate }}٪{% else %}-{% endif %}
+            </div>
+            <div class="pd-kpi-label">نرخ حضور</div>
+        </div>
+    </div>
+
+    <!-- Districts -->
+    <div class="pd-section">
+        <div class="pd-section-header">
+            <i class="bi bi-diagram-3-fill"></i>
+            مناطق آموزشی استان ({{ districts|length }})
+        </div>
+        <div class="pd-section-body">
+            {% for district in districts %}
+            <div class="pd-district-card" onclick="window.location='{% url 'national:district_detail' district.id %}'">
+                <div>
+                    <strong>{{ district.name }}</strong>
+                    <small class="text-muted d-block">{{ district.schools_count }} مدرسه</small>
+                </div>
+                <i class="bi bi-chevron-left text-muted"></i>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center">منطقه‌ای ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Schools -->
+    <div class="pd-section">
+        <div class="pd-section-header">
+            <i class="bi bi-building"></i>
+            مدارس استان ({{ schools|length }})
+        </div>
+        <div class="pd-section-body">
+            {% if schools %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>نام مدرسه</th>
+                            <th>منطقه</th>
+                            <th>نوع</th>
+                            <th>کلاس‌ها</th>
+                            <th>نرخ حضور</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for school in schools %}
+                        <tr style="cursor:pointer;" onclick="window.location='{% url 'national:school_detail' school.id %}'">
+                            <td><strong>{{ school.name }}</strong></td>
+                            <td>{{ school.district }}</td>
+                            <td>{{ school.school_type }}</td>
+                            <td>{{ school.classrooms_count }}</td>
+                            <td>
+                                {% if school.attendance_rate is not None %}
+                                {{ school.attendance_rate }}٪
+                                {% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">مدرسه‌ای ثبت نشده است.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

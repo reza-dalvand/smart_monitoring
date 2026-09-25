@@ -1,0 +1,728 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.na-page {
+    --na-primary: #1a237e;
+    --na-secondary: #ffc107;
+    --na-success: #16a34a;
+    --na-danger: #dc2626;
+    --na-warning: #d97706;
+    --na-info: #0284c7;
+    --na-purple: #7c3aed;
+}
+
+.na-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: white;
+    border-radius: 22px;
+    padding: 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.3);
+}
+
+.na-hero::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(255, 193, 7, 0.08);
+    top: -120px;
+    right: -100px;
+}
+
+.na-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.na-hero-title {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.na-hero-icon {
+    width: 76px;
+    height: 76px;
+    background: var(--na-secondary);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: var(--na-primary);
+    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+}
+
+.na-hero-text h2 { margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 900; }
+.na-hero-text p { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+
+/* Scope Selector */
+.na-scope-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.na-scope-label {
+    font-weight: 800;
+    color: #17224a;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.na-scope-label i { color: var(--na-secondary); }
+
+/* KPI Grid */
+.na-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.na-kpi-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+
+.na-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.na-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--na-primary), var(--na-secondary));
+}
+
+.na-kpi-card.success::before { background: var(--na-success); }
+.na-kpi-card.danger::before { background: var(--na-danger); }
+.na-kpi-card.warning::before { background: var(--na-warning); }
+.na-kpi-card.info::before { background: var(--na-info); }
+.na-kpi-card.purple::before { background: var(--na-purple); }
+
+.na-kpi-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+.na-kpi-card .na-kpi-icon { background: rgba(26, 35, 126, 0.08); color: var(--na-primary); }
+.na-kpi-card.success .na-kpi-icon { background: rgba(22, 163, 74, 0.1); color: var(--na-success); }
+.na-kpi-card.danger .na-kpi-icon { background: rgba(220, 38, 38, 0.1); color: var(--na-danger); }
+.na-kpi-card.warning .na-kpi-icon { background: rgba(217, 119, 6, 0.1); color: var(--na-warning); }
+.na-kpi-card.info .na-kpi-icon { background: rgba(2, 132, 199, 0.1); color: var(--na-info); }
+.na-kpi-card.purple .na-kpi-icon { background: rgba(124, 58, 237, 0.1); color: var(--na-purple); }
+
+.na-kpi-value {
+    font-size: 1.8rem;
+    font-weight: 950;
+    color: #17224a;
+    line-height: 1.2;
+}
+
+.na-kpi-title {
+    font-size: 0.8rem;
+    color: #7b8494;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.na-kpi-null {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Sections */
+.na-section {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.na-section-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2f5fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+}
+
+.na-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #17224a;
+}
+
+.na-section-title i { color: var(--na-secondary); font-size: 1.1rem; }
+.na-section-body { padding: 24px; }
+
+/* Charts */
+.na-chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+/* Province Table */
+.na-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.na-table thead th {
+    background: #f8fafd;
+    color: #7b8494;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e8edf6;
+    text-align: right;
+    white-space: nowrap;
+}
+.na-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f3f6fa;
+    color: #3f4a5a;
+    font-size: 0.85rem;
+}
+.na-table tbody tr:hover { background: #fbfcff; }
+.na-table tbody tr { cursor: pointer; transition: background 0.2s; }
+
+/* Alerts */
+.na-alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #edf1f8;
+}
+.na-alert-item.warning { background: rgba(217, 119, 6, 0.04); border-color: rgba(217, 119, 6, 0.2); }
+.na-alert-item.danger { background: rgba(220, 38, 38, 0.04); border-color: rgba(220, 38, 38, 0.2); }
+.na-alert-icon { font-size: 1.3rem; margin-top: 2px; }
+.na-alert-item.warning .na-alert-icon { color: var(--na-warning); }
+.na-alert-item.danger .na-alert-icon { color: var(--na-danger); }
+
+/* Empty State */
+.na-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #94a3b8;
+}
+.na-empty-icon { font-size: 3rem; opacity: 0.4; margin-bottom: 12px; }
+
+/* Breadcrumb */
+.na-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #7b8494;
+    margin-bottom: 16px;
+}
+.na-breadcrumb a { color: var(--na-primary); text-decoration: none; }
+.na-breadcrumb a:hover { text-decoration: underline; }
+
+@media (max-width: 767px) {
+    .na-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .na-hero { padding: 22px; }
+    .na-hero-text h2 { font-size: 1.3rem; }
+}
+</style>
+
+<div class="na-page">
+    <!-- Breadcrumb -->
+    <div class="na-breadcrumb">
+        <a href="{% url 'national:dashboard' %}"><i class="bi bi-globe2"></i> داشبورد کشوری</a>
+        {% if province %}
+        <i class="bi bi-chevron-left"></i>
+        <span>استان {{ province.name }}</span>
+        {% endif %}
+    </div>
+
+    <!-- Hero -->
+    <div class="na-hero">
+        <div class="na-hero-content">
+            <div class="na-hero-title">
+                <div class="na-hero-icon">
+                    <i class="bi bi-globe2"></i>
+                </div>
+                <div class="na-hero-text">
+                    <h2>
+                        {% if province %}
+                        استان {{ province.name }}
+                        {% else %}
+                        داشبورد مسئول کشوری
+                        {% endif %}
+                    </h2>
+                    <p>پایش هوشمند وضعیت آموزشی در سطح {% if province %}استان{% else %}ملی{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scope Selector -->
+    <div class="na-scope-card">
+        <div class="na-scope-label">
+            <i class="bi bi-geo-alt-fill"></i>
+            محدوده گزارش:
+        </div>
+        <form method="get" class="d-flex gap-3 align-items-center flex-wrap" id="scopeForm">
+            <select name="scope" class="form-select form-select-sm" style="width: 160px;"
+                    onchange="handleScopeChange(this)">
+                <option value="national" {% if scope == 'national' %}selected{% endif %}>کل کشور</option>
+                {% for p in provinces %}
+                <option value="province" data-province-id="{{ p.id }}"
+                        {% if scope == 'province' and province and province.id == p.id %}selected{% endif %}>
+                    استان {{ p.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="province" id="provinceInput"
+                   value="{% if province %}{{ province.id }}{% endif %}">
+
+            <select name="period" class="form-select form-select-sm" style="width: 140px;">
+                <option value="today" {% if period == 'today' %}selected{% endif %}>امروز</option>
+                <option value="week" {% if period == 'week' %}selected{% endif %}>این هفته</option>
+                <option value="month" {% if period == 'month' %}selected{% endif %}>این ماه</option>
+                <option value="year" {% if period == 'year' %}selected{% endif %}>سال تحصیلی</option>
+            </select>
+
+            <button type="submit" class="btn btn-sm btn-primary">
+                <i class="bi bi-funnel-fill me-1"></i>
+                اعمال فیلتر
+            </button>
+        </form>
+    </div>
+
+    {% if not has_data %}
+    <!-- Empty State -->
+    <div class="na-section">
+        <div class="na-section-body">
+            <div class="na-empty">
+                <div class="na-empty-icon"><i class="bi bi-inbox-fill"></i></div>
+                <h5>داده‌ای برای این بازه وجود ندارد</h5>
+                <p>هنوز اطلاعاتی در محدوده انتخابی ثبت نشده است.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- KPI Cards -->
+    <div class="na-kpi-grid">
+        <div class="na-kpi-card">
+            <div class="na-kpi-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="na-kpi-value">{{ overview.students|default:"-" }}</div>
+            <div class="na-kpi-title">دانش‌آموزان</div>
+        </div>
+        <div class="na-kpi-card">
+            <div class="na-kpi-icon"><i class="bi bi-person-workspace"></i></div>
+            <div class="na-kpi-value">{{ overview.teachers|default:"-" }}</div>
+            <div class="na-kpi-title">معلمان</div>
+        </div>
+        <div class="na-kpi-card">
+            <div class="na-kpi-icon"><i class="bi bi-building"></i></div>
+            <div class="na-kpi-value">{{ overview.schools|default:"-" }}</div>
+            <div class="na-kpi-title">مدارس</div>
+        </div>
+        <div class="na-kpi-card">
+            <div class="na-kpi-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <div class="na-kpi-value">{{ overview.classrooms|default:"-" }}</div>
+            <div class="na-kpi-title">کلاس‌ها</div>
+        </div>
+        <div class="na-kpi-card success">
+            <div class="na-kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+            {% if overview.attendance_rate is not None %}
+            <div class="na-kpi-value">{{ overview.attendance_rate }}٪</div>
+            {% else %}
+            <div class="na-kpi-null">داده‌ای موجود نیست</div>
+            {% endif %}
+            <div class="na-kpi-title">نرخ حضور</div>
+        </div>
+        <div class="na-kpi-card danger">
+            <div class="na-kpi-icon"><i class="bi bi-person-x-fill"></i></div>
+            {% if overview.absence_rate is not None %}
+            <div class="na-kpi-value">{{ overview.absence_rate }}٪</div>
+            {% else %}
+            <div class="na-kpi-null">داده‌ای موجود نیست</div>
+            {% endif %}
+            <div class="na-kpi-title">نرخ غیبت</div>
+        </div>
+        <div class="na-kpi-card info">
+            <div class="na-kpi-icon"><i class="bi bi-graph-up"></i></div>
+            {% if overview.participation_rate is not None %}
+            <div class="na-kpi-value">{{ overview.participation_rate }}٪</div>
+            {% else %}
+            <div class="na-kpi-null">داده‌ای موجود نیست</div>
+            {% endif %}
+            <div class="na-kpi-title">نرخ مشارکت</div>
+        </div>
+        <div class="na-kpi-card purple">
+            <div class="na-kpi-icon"><i class="bi bi-award-fill"></i></div>
+            {% if overview.performance_rate is not None %}
+            <div class="na-kpi-value">{{ overview.performance_rate }}٪</div>
+            {% else %}
+            <div class="na-kpi-null">داده‌ای موجود نیست</div>
+            {% endif %}
+            <div class="na-kpi-title">عملکرد تحصیلی</div>
+        </div>
+    </div>
+
+    <!-- Attendance Trend Chart -->
+    <div class="na-section">
+        <div class="na-section-header">
+            <h3 class="na-section-title">
+                <i class="bi bi-graph-up-arrow"></i>
+                روند حضور و غیاب (۳۰ روز اخیر)
+            </h3>
+        </div>
+        <div class="na-section-body">
+            {% if attendance_trend %}
+            <div class="na-chart-wrapper">
+                <canvas id="attendanceTrendChart"></canvas>
+            </div>
+            {% else %}
+            <div class="na-empty">
+                <div class="na-empty-icon"><i class="bi bi-bar-chart"></i></div>
+                <p>داده‌ای برای نمایش نمودار وجود ندارد.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Province Comparison (only in national scope) -->
+    {% if scope == 'national' and province_comparison %}
+    <div class="na-section">
+        <div class="na-section-header">
+            <h3 class="na-section-title">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                مقایسه استان‌ها
+            </h3>
+        </div>
+        <div class="na-section-body">
+            <div class="table-responsive">
+                <table class="na-table">
+                    <thead>
+                        <tr>
+                            <th>استان</th>
+                            <th>دانش‌آموزان</th>
+                            <th>مدارس</th>
+                            <th>کلاس‌ها</th>
+                            <th>نرخ حضور</th>
+                            <th>مشارکت</th>
+                            <th>عملکرد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in province_comparison %}
+                        <tr onclick="window.location='{% url 'national:province_detail' p.id %}'">
+                            <td><strong>{{ p.name }}</strong></td>
+                            <td>{{ p.students|default:"-" }}</td>
+                            <td>{{ p.schools|default:"-" }}</td>
+                            <td>{{ p.classrooms|default:"-" }}</td>
+                            <td>
+                                {% if p.attendance_rate is not None %}
+                                {{ p.attendance_rate }}٪
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.participation_rate is not None %}
+                                {{ p.participation_rate }}٪
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.performance_rate is not None %}
+                                {{ p.performance_rate }}٪
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Two Column: Face + AI Stats -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="na-section h-100">
+                <div class="na-section-header">
+                    <h3 class="na-section-title">
+                        <i class="bi bi-person-check-fill"></i>
+                        آمار احراز هویت چهره
+                    </h3>
+                </div>
+                <div class="na-section-body">
+                    {% if face_stats.has_data %}
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-success);">
+                                    {{ face_stats.verified }}
+                                </div>
+                                <small class="text-muted">تایید شده</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-danger);">
+                                    {{ face_stats.failed }}
+                                </div>
+                                <small class="text-muted">ناموفق</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-warning);">
+                                    {{ face_stats.suspicious }}
+                                </div>
+                                <small class="text-muted">مشکوک</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-info);">
+                                    {{ face_stats.success_rate|default:"-" }}٪
+                                </div>
+                                <small class="text-muted">نرخ موفقیت</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="na-empty">
+                        <p>داده‌ای برای احراز هویت وجود ندارد.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="na-section h-100">
+                <div class="na-section-header">
+                    <h3 class="na-section-title">
+                        <i class="bi bi-robot"></i>
+                        آمار هوش مصنوعی
+                    </h3>
+                </div>
+                <div class="na-section-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-purple);">
+                                    {{ ai_stats.total_ai_questions|default:"0" }}
+                                </div>
+                                <small class="text-muted">سوالات تولیدشده</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-success);">
+                                    {{ ai_stats.approved|default:"0" }}
+                                </div>
+                                <small class="text-muted">تایید شده</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-danger);">
+                                    {{ ai_stats.rejected|default:"0" }}
+                                </div>
+                                <small class="text-muted">رد شده</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded-3">
+                                <div style="font-size: 1.5rem; font-weight: 900; color: var(--na-info);">
+                                    {{ ai_stats.total_jobs|default:"0" }}
+                                </div>
+                                <small class="text-muted">درخواست AI</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    {% if alerts %}
+    <div class="na-section">
+        <div class="na-section-header">
+            <h3 class="na-section-title">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                هشدارها و ناهنجاری‌ها
+            </h3>
+            <span class="badge bg-warning text-dark">{{ alerts|length }}</span>
+        </div>
+        <div class="na-section-body">
+            {% for alert in alerts %}
+            <div class="na-alert-item {{ alert.severity }}">
+                <div class="na-alert-icon">
+                    <i class="bi {% if alert.severity == 'danger' %}bi-exclamation-octagon-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+                </div>
+                <div>
+                    <strong>{{ alert.message }}</strong>
+                    <div class="small text-muted mt-1">
+                        محدوده: {{ alert.scope }} | {{ alert.province }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity -->
+    <div class="na-section">
+        <div class="na-section-header">
+            <h3 class="na-section-title">
+                <i class="bi bi-clock-history"></i>
+                فعالیت‌های اخیر
+            </h3>
+        </div>
+        <div class="na-section-body">
+            {% if recent_activity %}
+            {% for activity in recent_activity %}
+            <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(26,35,126,0.06); display: flex; align-items: center; justify-content: center;">
+                    <i class="bi {{ activity.icon }}" style="color: var(--na-primary);"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold" style="font-size: 0.9rem;">{{ activity.title }}</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">{{ activity.description }}</div>
+                </div>
+                <small class="text-muted">{{ activity.date|timesince }} پیش</small>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="na-empty">
+                <p>فعالیت اخیری ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+{% if attendance_trend %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('attendanceTrendChart');
+    if (!ctx) return;
+
+    const data = {{ attendance_trend|safe }};
+    const labels = data.map(d => d.date);
+    const rates = data.map(d => d.rate);
+
+    new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'نرخ حضور (%)',
+                data: rates,
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#16a34a',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    rtl: true,
+                    textDirection: 'rtl',
+                    backgroundColor: '#1e293b',
+                    cornerRadius: 12,
+                    padding: 12,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    ticks: { callback: v => v + '٪' },
+                    grid: { color: '#f0f3f8' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+
+<script>
+function handleScopeChange(select) {
+    const provinceInput = document.getElementById('provinceInput');
+    const selectedOption = select.options[select.selectedIndex];
+    const provinceId = selectedOption.dataset.provinceId;
+
+    if (select.value === 'province' && provinceId) {
+        provinceInput.value = provinceId;
+    } else {
+        provinceInput.value = '';
+        select.value = 'national';
+    }
+}
+</script>
+{% endblock %}

@@ -57,6 +57,16 @@ class Classroom(models.Model):
         blank=True,
         verbose_name="دانش‌آموزان"
     )
+
+    school = models.ForeignKey(
+        'national.School',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='classrooms',
+        verbose_name="مدرسه"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

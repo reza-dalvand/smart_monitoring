@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('dashboard.urls', namespace='dashboard')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('face/', include('face.urls', namespace='face')),  # ← خط جدید
+    path('national/', include('national.urls', namespace='national')),
 ]
 
 if settings.DEBUG:

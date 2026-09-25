@@ -151,6 +151,8 @@ def dashboard_home(request):
         return teacher_dashboard(request)
     elif user.role == 'assistant':
         return assistant_dashboard(request)
+    elif user.role == 'country_admin':
+        return redirect('national:dashboard')
     else:
         return admin_dashboard(request)
 
@@ -1179,53 +1181,6 @@ def student_list_view(request):
 # ========== فاز ۲: تولید سوال با هوش مصنوعی ==========
 
 @teacher_required
-def teacher_ai_new(request):
-    """
-    صفحه ساخت درخواست تولید سوال با هوش مصنوعی
-    """
-    classrooms = get_teacher_classrooms(request.user)
-    if not classrooms.exists():
-        messages.warning(
-            request,
-            'هیچ کلاسی برای شما ثبت نشده است. لطفاً با معاون مدرسه هماهنگ کنید.'
-        )
-
-    if request.method == 'POST':
-        form = AIGenerationForm(request.POST, request.FILES, teacher=request.user)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.teacher = request.user
-            job.status = 'pending'
-            job.save()
-
-            generate_questions_for_job(job)
-            job.refresh_from_db()
-
-            if job.status == 'completed':
-                generated_count = job.generated_questions.count()
-                messages.success(
-                    request,
-                    f'{generated_count} سوال پیش‌نویس توسط هوش مصنوعی ماک تولید شد. '
-                    f'حالا می‌توانید آن‌ها را بررسی، تایید یا رد کنید.'
-                )
-            else:
-                messages.error(
-                    request,
-                    f'خطا در تولید سوال: {job.error_message}'
-                )
-            return redirect('dashboard:teacher_ai_review', job_id=job.id)
-    else:
-        form = AIGenerationForm(teacher=request.user)
-
-    context = {
-        'form': form,
-        'classrooms_count': classrooms.count(),
-        'title': 'تولید سوال با هوش مصنوعی',
-    }
-    return render(request, 'dashboard/teacher/ai_generate_form.html', context)
-
-
-@teacher_required
 def teacher_ai_review(request, job_id):
     """
     صفحه بررسی سوال‌های تولیدشده توسط هوش مصنوعی
@@ -1289,16 +1244,21 @@ def teacher_ai_question_reject(request, pk):
 
 @teacher_required
 def teacher_ai_regenerate_rejected(request, job_id):
-    """
-    تولید مجدد سوال‌های ردشده
-    """
+    """تولید مجدد سوال‌های ردشده"""
     job = get_object_or_404(
         AIGenerationJob,
         id=job_id,
         teacher=request.user
     )
     if request.method == 'POST':
-        regenerated_count = regenerate_rejected_questions(job)
+        # ✅ اصلاح: استفاده از تابع موجود
+        rejected_questions = job.generated_questions.filter(review_status='rejected')
+        regenerated_count = 0
+        for question in rejected_questions:
+            success = regenerate_rejected_question(job, question)
+            if success:
+                regenerated_count += 1
+
         if regenerated_count > 0:
             messages.success(
                 request,
@@ -1306,7 +1266,8 @@ def teacher_ai_regenerate_rejected(request, job_id):
             )
         else:
             messages.info(request, 'سوال ردشده‌ای برای تولید مجدد وجود ندارد.')
-        return redirect('dashboard:teacher_ai_review', job_id=job.id)
+    return redirect('dashboard:teacher_ai_review', job_id=job.id)
+
 
 
 # ========== فاز ۲: بانک سوال و سوال دستی ==========

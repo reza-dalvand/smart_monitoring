@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django_bootstrap5',
 
     'face.apps.FaceConfig',
+
+    'national.apps.NationalConfig',
 ]
 
 MIDDLEWARE = [

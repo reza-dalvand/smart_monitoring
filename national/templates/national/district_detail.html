@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.dd-page { --dd-primary: #1a237e; --dd-secondary: #ffc107; }
+.dd-hero {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white; border-radius: 20px; padding: 28px;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.dd-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 16px;
+}
+.dd-breadcrumb a { color: rgba(255,255,255,0.9); text-decoration: none; }
+.dd-breadcrumb a:hover { color: var(--dd-secondary); }
+.dd-section {
+    background: white; border-radius: 16px; border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.04); overflow: hidden; margin-bottom: 20px;
+}
+.dd-section-header {
+    padding: 16px 20px; border-bottom: 1px solid #f2f5fa;
+    font-weight: 800; color: #17224a; display: flex; align-items: center; gap: 10px;
+}
+.dd-section-header i { color: var(--dd-secondary); }
+.dd-section-body { padding: 20px; }
+.dd-school-card {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px; background: #f8fafc; border-radius: 12px;
+    margin-bottom: 10px; border: 1px solid #edf1f8; cursor: pointer;
+    transition: all 0.2s;
+}
+.dd-school-card:hover { background: #f0f4ff; border-color: #c7d2fe; transform: translateX(-3px); }
+</style>
+<div class="dd-page">
+    <div class="dd-hero">
+        <div class="dd-breadcrumb">
+            <a href="{% url 'national:dashboard' %}">داشبورد کشوری</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'national:province_detail' province.id %}">استان {{ province.name }}</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ district.name }}</span>
+        </div>
+        <h2 style="margin: 0; font-weight: 900; position: relative;">
+            <i class="bi bi-diagram-3-fill me-2" style="color: var(--dd-secondary);"></i>
+            {{ province.name }} - {{ district.name }}
+        </h2>
+    </div>
+
+    <div class="dd-section">
+        <div class="dd-section-header">
+            <i class="bi bi-building"></i>
+            مدارس منطقه ({{ schools|length }})
+        </div>
+        <div class="dd-section-body">
+            {% for school in schools %}
+            <div class="dd-school-card" onclick="window.location='{% url 'national:school_detail' school.id %}'">
+                <div>
+                    <strong>{{ school.name }}</strong>
+                    <small class="text-muted d-block">
+                        {{ school.get_school_type_display }} | {{ school.classrooms_count }} کلاس
+                    </small>
+                </div>
+                <i class="bi bi-chevron-left text-muted"></i>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size: 2rem; opacity: 0.4;"></i>
+                <p class="mt-2">مدرسه‌ای در این منطقه ثبت نشده است.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

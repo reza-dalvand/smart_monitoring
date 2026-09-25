@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.rp-page { --rp-primary: #1a237e; --rp-secondary: #ffc107; }
+.rp-hero {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white; border-radius: 20px; padding: 28px;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.rp-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.rp-card {
+    background: white; border-radius: 16px; padding: 24px;
+    border: 1px solid #edf1f8; box-shadow: 0 4px 12px rgba(15,23,42,0.04);
+    transition: all 0.25s; cursor: pointer; text-align: center;
+}
+.rp-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(15,23,42,0.1); }
+.rp-card-icon {
+    width: 60px; height: 60px; border-radius: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; margin-bottom: 14px;
+}
+.rp-card-icon.blue { background: rgba(26,35,126,0.08); color: var(--rp-primary); }
+.rp-card-icon.green { background: rgba(22,163,74,0.1); color: #16a34a; }
+.rp-card-icon.purple { background: rgba(124,58,237,0.1); color: #7c3aed; }
+.rp-card-icon.orange { background: rgba(217,119,6,0.1); color: #d97706; }
+.rp-card-title { font-size: 1rem; font-weight: 800; color: #17224a; margin-bottom: 6px; }
+.rp-card-desc { font-size: 0.82rem; color: #7b8494; }
+.rp-scope-bar {
+    background: white; border-radius: 14px; padding: 16px 20px;
+    border: 1px solid #edf1f8; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+</style>
+<div class="rp-page">
+    <div class="rp-hero">
+        <h2 style="margin: 0; font-weight: 900; position: relative;">
+            <i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--rp-secondary);"></i>
+            گزارشات ملی
+        </h2>
+        <p style="margin: 8px 0 0; opacity: 0.85; font-size: 0.9rem;">
+            تولید گزارش بر اساس محدوده و بازه زمانی انتخابی
+        </p>
+    </div>
+
+    <div class="rp-scope-bar">
+        <strong><i class="bi bi-geo-alt-fill me-1" style="color: var(--rp-secondary);"></i> محدوده:</strong>
+        <span>
+            {% if scope == 'national' %}
+                کل کشور
+            {% else %}
+                استان انتخابی
+            {% endif %}
+        </span>
+        <a href="{% url 'national:dashboard' %}" class="btn btn-sm btn-outline-primary me-auto">
+            <i class="bi bi-arrow-right me-1"></i>
+            بازگشت به داشبورد
+        </a>
+    </div>
+
+    <div class="rp-grid">
+        <div class="rp-card">
+            <div class="rp-card-icon blue"><i class="bi bi-person-check-fill"></i></div>
+            <div class="rp-card-title">گزارش حضور و غیاب</div>
+            <div class="rp-card-desc">آمار حضور، غیبت و روند آن در بازه زمانی</div>
+        </div>
+        <div class="rp-card">
+            <div class="rp-card-icon green"><i class="bi bi-graph-up"></i></div>
+            <div class="rp-card-title">گزارش مشارکت</div>
+            <div class="rp-card-desc">نرخ پاسخ‌دهی و مشارکت دانش‌آموزان</div>
+        </div>
+        <div class="rp-card">
+            <div class="rp-card-icon purple"><i class="bi bi-award-fill"></i></div>
+            <div class="rp-card-title">گزارش عملکرد تحصیلی</div>
+            <div class="rp-card-desc">درصد پاسخ صحیح و عملکرد به تفکیک درس</div>
+        </div>
+        <div class="rp-card">
+            <div class="rp-card-icon orange"><i class="bi bi-building"></i></div>
+            <div class="rp-card-title">گزارش وضعیت مدارس</div>
+            <div class="rp-card-desc">وضعیت فعالیت مدارس و کلاس‌ها</div>
+        </div>
+        <div class="rp-card">
+            <div class="rp-card-icon blue"><i class="bi bi-person-check-fill"></i></div>
+            <div class="rp-card-title">گزارش احراز هویت</div>
+            <div class="rp-card-desc">آمار تطبیق چهره و موارد مشکوک</div>
+        </div>
+        <div class="rp-card">
+            <div class="rp-card-icon purple"><i class="bi bi-robot"></i></div>
+            <div class="rp-card-title">گزارش هوش مصنوعی</div>
+            <div class="rp-card-desc">آمار تولید سوال و وضعیت درخواست‌ها</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

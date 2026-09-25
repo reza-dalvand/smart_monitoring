@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+.sd-page { --sd-primary: #1a237e; --sd-secondary: #ffc107; }
+.sd-hero {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    color: white; border-radius: 20px; padding: 28px;
+    margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.sd-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 16px;
+}
+.sd-breadcrumb a { color: rgba(255,255,255,0.9); text-decoration: none; }
+.sd-breadcrumb a:hover { color: var(--sd-secondary); }
+.sd-section {
+    background: white; border-radius: 16px; border: 1px solid #edf1f8;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.04); overflow: hidden; margin-bottom: 20px;
+}
+.sd-section-header {
+    padding: 16px 20px; border-bottom: 1px solid #f2f5fa;
+    font-weight: 800; color: #17224a; display: flex; align-items: center; gap: 10px;
+}
+.sd-section-header i { color: var(--sd-secondary); }
+.sd-section-body { padding: 20px; }
+.sd-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.sd-table thead th {
+    background: #f8fafd; color: #7b8494; font-size: 0.78rem; font-weight: 800;
+    padding: 12px 14px; border-bottom: 1px solid #e8edf6; text-align: right;
+}
+.sd-table tbody td {
+    padding: 12px 14px; border-bottom: 1px solid #f3f6fa; color: #3f4a5a; font-size: 0.88rem;
+}
+.sd-table tbody tr:hover { background: #fbfcff; }
+</style>
+<div class="sd-page">
+    <div class="sd-hero">
+        <div class="sd-breadcrumb">
+            <a href="{% url 'national:dashboard' %}">داشبورد کشوری</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'national:province_detail' school.district.province.id %}">
+                استان {{ school.district.province.name }}
+            </a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'national:district_detail' school.district.id %}">
+                {{ school.district.name }}
+            </a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ school.name }}</span>
+        </div>
+        <h2 style="margin: 0; font-weight: 900; position: relative;">
+            <i class="bi bi-building me-2" style="color: var(--sd-secondary);"></i>
+            {{ school.name }}
+        </h2>
+        <p style="margin: 8px 0 0; opacity: 0.85; font-size: 0.9rem;">
+            {{ school.get_school_type_display }} |
+            {{ school.district.province.name }} - {{ school.district.name }}
+        </p>
+    </div>
+
+    <div class="sd-section">
+        <div class="sd-section-header">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            کلاس‌های مدرسه ({{ classrooms|length }})
+        </div>
+        <div class="sd-section-body">
+            {% if classrooms %}
+            <div class="table-responsive">
+                <table class="sd-table">
+                    <thead>
+                        <tr>
+                            <th>نام کلاس</th>
+                            <th>درس</th>
+                            <th>پایه</th>
+                            <th>رشته</th>
+                            <th>معلم</th>
+                            <th>دانش‌آموزان</th>
+                            <th>جلسات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for classroom in classrooms %}
+                        <tr>
+                            <td><strong>{{ classroom.name }}</strong></td>
+                            <td>{{ classroom.subject }}</td>
+                            <td>{{ classroom.get_grade_display }}</td>
+                            <td>{{ classroom.get_field_display }}</td>
+                            <td>{{ classroom.teacher_name }}</td>
+                            <td>{{ classroom.students_count }}</td>
+                            <td>{{ classroom.sessions_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size: 2rem; opacity: 0.4;"></i>
+                <p class="mt-2">کلاسی در این مدرسه ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
