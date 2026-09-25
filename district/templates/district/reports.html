@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,#1a237e,#283593);color:#fff;
+    border-radius:20px;padding:28px;margin-bottom:24px;">
+    <h2 style="margin:0;font-weight:900;">
+        <i class="bi bi-file-earmark-bar-graph me-2" style="color:#ffc107;"></i>
+        گزارشات منطقه {{ district.name }}
+    </h2>
+    <p style="margin:8px 0 0;opacity:.85;">استان {{ province.name }}</p>
+</div>
+<div class="row g-3">
+    <div class="col-md-4">
+        <a href="{% url 'district:export_schools_csv' %}" class="btn btn-outline-primary w-100 py-3">
+            <i class="bi bi-download d-block mb-2" style="font-size:1.5rem;"></i>
+            خروجی CSV مدارس
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'district:export_classes_csv' %}" class="btn btn-outline-success w-100 py-3">
+            <i class="bi bi-download d-block mb-2" style="font-size:1.5rem;"></i>
+            خروجی CSV کلاس‌ها
+        </a>
+    </div>
+</div>
+{% endblock %}

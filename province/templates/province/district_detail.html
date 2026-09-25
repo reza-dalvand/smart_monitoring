@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<style>
+.dd-hero {
+  background:linear-gradient(135deg,#1a237e,#283593);
+  color:#fff;border-radius:20px;padding:28px;margin-bottom:24px;
+}
+.dd-breadcrumb { display:flex;align-items:center;gap:8px;
+  font-size:.85rem;color:rgba(255,255,255,.7);margin-bottom:16px; }
+.dd-breadcrumb a { color:rgba(255,255,255,.9);text-decoration:none; }
+.dd-breadcrumb a:hover { color:#ffc107; }
+.dd-section { background:#fff;border-radius:16px;border:1px solid #edf1f8;
+  box-shadow:0 4px 12px rgba(15,23,42,.04);overflow:hidden;margin-bottom:20px; }
+.dd-section-header { padding:16px 20px;border-bottom:1px solid #f2f5fa;
+  font-weight:800;color:#17224a;display:flex;align-items:center;gap:10px; }
+.dd-section-header i { color:#ffc107; }
+.dd-section-body { padding:20px; }
+.dd-school-card { display:flex;justify-content:space-between;align-items:center;
+  padding:14px;background:#f8fafc;border-radius:12px;margin-bottom:10px;
+  border:1px solid #edf1f8;cursor:pointer;transition:all .2s; }
+.dd-school-card:hover { background:#f0f4ff;border-color:#c7d2fe;transform:translateX(-3px); }
+</style>
+<div>
+  <div class="dd-hero">
+    <div class="dd-breadcrumb">
+      <a href="{% url 'province:dashboard' %}">داشبورد استان {{ province.name }}</a>
+      <i class="bi bi-chevron-left"></i>
+      <span>منطقه {{ district.name }}</span>
+    </div>
+    <h2 style="margin:0;font-weight:900;">
+      <i class="bi bi-diagram-3-fill me-2" style="color:#ffc107;"></i>
+      استان {{ province.name }} / منطقه {{ district.name }}
+    </h2>
+  </div>
+
+  <div class="dd-section">
+    <div class="dd-section-header">
+      <i class="bi bi-building"></i> مدارس منطقه ({{ schools|length }})
+    </div>
+    <div class="dd-section-body">
+      {% for school in schools %}
+      <div class="dd-school-card"
+           onclick="window.location='{% url 'province:school_detail' school.id %}'">
+        <div>
+          <strong>{{ school.name }}</strong>
+          <small class="text-muted d-block">
+            {{ school.school_type }} | {{ school.classrooms_count }} کلاس
+          </small>
+        </div>
+        <i class="bi bi-chevron-left text-muted"></i>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted py-4">
+        <i class="bi bi-inbox" style="font-size:2rem;opacity:.4;"></i>
+        <p class="mt-2">مدرسه‌ای در این منطقه ثبت نشده است.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

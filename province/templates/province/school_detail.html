@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<style>
+.sd-hero { background:linear-gradient(135deg,#1a237e,#283593);
+  color:#fff;border-radius:20px;padding:28px;margin-bottom:24px; }
+.sd-breadcrumb { display:flex;align-items:center;gap:8px;
+  font-size:.85rem;color:rgba(255,255,255,.7);margin-bottom:16px; }
+.sd-breadcrumb a { color:rgba(255,255,255,.9);text-decoration:none; }
+.sd-section { background:#fff;border-radius:16px;border:1px solid #edf1f8;
+  box-shadow:0 4px 12px rgba(15,23,42,.04);overflow:hidden;margin-bottom:20px; }
+.sd-section-header { padding:16px 20px;border-bottom:1px solid #f2f5fa;
+  font-weight:800;color:#17224a;display:flex;align-items:center;gap:10px; }
+.sd-section-header i { color:#ffc107; }
+.sd-section-body { padding:20px; }
+</style>
+<div>
+  <div class="sd-hero">
+    <div class="sd-breadcrumb">
+      <a href="{% url 'province:dashboard' %}">استان {{ province.name }}</a>
+      <i class="bi bi-chevron-left"></i>
+      <a href="{% url 'province:district_detail' school.district.id %}">منطقه {{ school.district.name }}</a>
+      <i class="bi bi-chevron-left"></i>
+      <span>{{ school.name }}</span>
+    </div>
+    <h2 style="margin:0;font-weight:900;">
+      <i class="bi bi-building me-2" style="color:#ffc107;"></i>{{ school.name }}
+    </h2>
+    <p style="margin:8px 0 0;opacity:.85;font-size:.9rem;">
+      {{ school.get_school_type_display }} |
+      {{ school.district.province.name }} - {{ school.district.name }}
+    </p>
+  </div>
+
+  <div class="sd-section">
+    <div class="sd-section-header">
+      <i class="bi bi-journal-bookmark-fill"></i>
+      کلاس‌های مدرسه ({{ classrooms|length }})
+    </div>
+    <div class="sd-section-body">
+      {% if classrooms %}
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead><tr>
+            <th>نام کلاس</th><th>درس</th><th>پایه</th><th>رشته</th>
+            <th>معلم</th><th>دانش‌آموزان</th><th>جلسات</th>
+          </tr></thead>
+          <tbody>
+          {% for c in classrooms %}
+          <tr>
+            <td><strong>{{ c.name }}</strong></td>
+            <td>{{ c.subject }}</td>
+            <td>{{ c.get_grade_display }}</td>
+            <td>{{ c.get_field_display }}</td>
+            <td>{{ c.teacher_name }}</td>
+            <td>{{ c.students_count }}</td>
+            <td>{{ c.sessions_count }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center text-muted py-4">
+        <i class="bi bi-inbox" style="font-size:2rem;opacity:.4;"></i>
+        <p class="mt-2">کلاسی در این مدرسه ثبت نشده است.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

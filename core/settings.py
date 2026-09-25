@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'face.apps.FaceConfig',
 
     'national.apps.NationalConfig',
+    'province.apps.ProvinceConfig',
+    'district.apps.DistrictConfig',
 ]
 
 MIDDLEWARE = [

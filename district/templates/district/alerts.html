@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,#1a237e,#283593);color:#fff;
+    border-radius:20px;padding:28px;margin-bottom:24px;">
+    <h2 style="margin:0;font-weight:900;">
+        <i class="bi bi-exclamation-triangle-fill me-2" style="color:#ffc107;"></i>
+        هشدارهای منطقه {{ district.name }}
+    </h2>
+</div>
+<div class="card">
+    <div class="card-body">
+        {% if alerts %}
+        {% for alert in alerts %}
+        <div class="d-flex align-items-start gap-3 p-3 mb-2 rounded-3
+            {% if alert.severity == 'danger' %}bg-danger bg-opacity-10{% else %}bg-warning bg-opacity-10{% endif %}">
+            <i class="bi {% if alert.severity == 'danger' %}bi-exclamation-octagon-fill text-danger{% else %}bi-exclamation-triangle-fill text-warning{% endif %}"
+               style="font-size:1.3rem;margin-top:2px;"></i>
+            <div>
+                <strong>{{ alert.message }}</strong>
+                <div class="small text-muted mt-1">
+                    نوع: {{ alert.type }} | محدوده: {{ alert.scope }} | تاریخ: {{ alert.date }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-check-circle" style="font-size:3rem;opacity:.4;"></i>
+            <p class="mt-3">هشداری وجود ندارد.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

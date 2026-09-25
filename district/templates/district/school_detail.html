@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<style>
+.sdd-hero { background:linear-gradient(135deg,#1a237e,#283593);
+    color:#fff;border-radius:20px;padding:28px;margin-bottom:24px; }
+.sdd-breadcrumb { display:flex;align-items:center;gap:8px;
+    font-size:.85rem;color:rgba(255,255,255,.7);margin-bottom:16px; }
+.sdd-breadcrumb a { color:rgba(255,255,255,.9);text-decoration:none; }
+.sdd-section { background:#fff;border-radius:16px;border:1px solid #edf1f8;
+    box-shadow:0 4px 12px rgba(15,23,42,.04);overflow:hidden;margin-bottom:20px; }
+.sdd-section-header { padding:16px 20px;border-bottom:1px solid #f2f5fa;
+    font-weight:800;color:#17224a;display:flex;align-items:center;gap:10px; }
+.sdd-section-header i { color:#ffc107; }
+.sdd-section-body { padding:20px; }
+.sdd-kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;margin-bottom:24px; }
+.sdd-kpi { background:#fff;border-radius:14px;padding:18px;text-align:center;
+    border:1px solid #edf1f8;box-shadow:0 3px 10px rgba(15,23,42,.04); }
+.sdd-kpi-value { font-size:1.6rem;font-weight:950;color:#17224a; }
+.sdd-kpi-label { font-size:.8rem;color:#7b8494;margin-top:4px; }
+</style>
+<div>
+    <div class="sdd-hero">
+        <div class="sdd-breadcrumb">
+            <a href="{% url 'district:dashboard' %}">داشبورد منطقه {{ district.name }}</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>{{ school.name }}</span>
+        </div>
+        <h2 style="margin:0;font-weight:900;">
+            <i class="bi bi-building me-2" style="color:#ffc107;"></i>
+            {{ school.name }}
+        </h2>
+        <p style="margin:8px 0 0;opacity:.85;font-size:.9rem;">
+            {{ school.get_school_type_display }} |
+            {{ district.name }} - {{ province.name }}
+        </p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="sdd-kpi-grid">
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">{{ overview.students|default:"-" }}</div>
+            <div class="sdd-kpi-label">دانش‌آموزان</div>
+        </div>
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">{{ overview.teachers|default:"-" }}</div>
+            <div class="sdd-kpi-label">معلمان</div>
+        </div>
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">{{ overview.classrooms|default:"-" }}</div>
+            <div class="sdd-kpi-label">کلاس‌ها</div>
+        </div>
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">
+                {% if overview.attendance_rate is not None %}{{ overview.attendance_rate }}٪{% else %}-{% endif %}
+            </div>
+            <div class="sdd-kpi-label">نرخ حضور</div>
+        </div>
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">
+                {% if overview.participation_rate is not None %}{{ overview.participation_rate }}٪{% else %}-{% endif %}
+            </div>
+            <div class="sdd-kpi-label">مشارکت</div>
+        </div>
+        <div class="sdd-kpi">
+            <div class="sdd-kpi-value">
+                {% if overview.performance_rate is not None %}{{ overview.performance_rate }}٪{% else %}-{% endif %}
+            </div>
+            <div class="sdd-kpi-label">عملکرد</div>
+        </div>
+    </div>
+
+    <!-- Class List -->
+    <div class="sdd-section">
+        <div class="sdd-section-header">
+            <i class="bi bi-journal-bookmark-fill"></i>
+            کلاس‌های مدرسه ({{ class_analytics|length }})
+        </div>
+        <div class="sdd-section-body">
+            {% if class_analytics %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead><tr>
+                        <th>کلاس</th><th>درس</th><th>پایه</th><th>رشته</th>
+                        <th>معلم</th><th>دانش‌آموز</th><th>جلسات</th>
+                        <th>حضور</th><th>مشارکت</th><th>عملکرد</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for c in class_analytics %}
+                        <tr>
+                            <td><strong>{{ c.name }}</strong></td>
+                            <td>{{ c.subject }}</td>
+                            <td>{{ c.grade }}</td>
+                            <td>{{ c.field }}</td>
+                            <td>{{ c.teacher_name }}</td>
+                            <td>{{ c.students_count }}</td>
+                            <td>{{ c.sessions_count }}</td>
+                            <td>{% if c.attendance_rate is not None %}{{ c.attendance_rate }}٪{% else %}-{% endif %}</td>
+                            <td>{% if c.participation_rate is not None %}{{ c.participation_rate }}٪{% else %}-{% endif %}</td>
+                            <td>{% if c.performance_rate is not None %}{{ c.performance_rate }}٪{% else %}-{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size:2rem;opacity:.4;"></i>
+                <p class="mt-2">کلاسی در این مدرسه ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

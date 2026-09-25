@@ -155,6 +155,78 @@
         </a>
     </div>
 
+    {% elif user.role == 'province_admin' %}
+        <div class="menu-section">
+        <div class="menu-section-title">پنل استانی</div>
+        <a href="{% url 'province:dashboard' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'dashboard' and 'province' in request.resolver_match.namespace %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+            <span class="menu-item-text">داشبورد استان</span>
+        </a>
+        <a href="{% url 'province:reports' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <span class="menu-item-text">گزارشات</span>
+        </a>
+        <a href="{% url 'province:district_admins' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'district_admins' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
+            <span class="menu-item-text">مسئولان مناطق</span>
+        </a>
+        <a href="{% url 'province:settings' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-gear-fill"></i></div>
+            <span class="menu-item-text">تنظیمات استانی</span>
+        </a>
+        <a href="{% url 'province:audit_log' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-clock-history"></i></div>
+            <span class="menu-item-text">گزارش فعالیت‌ها</span>
+        </a>
+        </div>
+    {% elif user.role == 'district_admin' %}
+        <div class="menu-section">
+            <div class="menu-section-title">پنل منطقه</div>
+            <a href="{% url 'district:dashboard' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'dashboard' and 'district' in request.resolver_match.namespace %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+                <span class="menu-item-text">داشبورد منطقه</span>
+            </a>
+            <a href="{% url 'district:schools' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'schools' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-building"></i></div>
+                <span class="menu-item-text">مدارس</span>
+            </a>
+            <a href="{% url 'district:reports' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                <span class="menu-item-text">گزارش‌ها</span>
+            </a>
+            <a href="{% url 'district:alerts' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <span class="menu-item-text">هشدارها</span>
+            </a>
+        </div>
+        <div class="menu-section">
+            <div class="menu-section-title">مدیریت</div>
+            <a href="{% url 'district:school_admins' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'school_admins' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
+                <span class="menu-item-text">مدیران مدارس</span>
+            </a>
+            <a href="{% url 'district:settings' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-gear-fill"></i></div>
+                <span class="menu-item-text">تنظیمات منطقه</span>
+            </a>
+            <a href="{% url 'district:audit_log' %}"
+            class="menu-item {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-clock-history"></i></div>
+                <span class="menu-item-text">گزارش فعالیت‌ها</span>
+            </a>
+        </div>
+
     {% else %}
     <div class="menu-section">
         <div class="menu-section-title">مدیریت سیستم</div>

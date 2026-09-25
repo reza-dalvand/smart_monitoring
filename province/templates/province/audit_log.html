@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,#1a237e,#283593);color:#fff;
+  border-radius:20px;padding:28px;margin-bottom:24px;">
+  <h2 style="margin:0;font-weight:900;">
+    <i class="bi bi-clock-history me-2" style="color:#ffc107;"></i> گزارش فعالیت‌ها
+  </h2>
+</div>
+<div class="card">
+  <div class="card-body">
+    {% if logs %}
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead><tr>
+          <th>کاربر</th><th>عملیات</th><th>محدوده</th><th>زمان</th>
+        </tr></thead>
+        <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.user.username }}</td>
+          <td>{{ log.get_action_display }}</td>
+          <td>{{ log.scope_name }}</td>
+          <td><small>{{ log.created_at }}</small></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <nav>
+      <ul class="pagination justify-content-center">
+        {% if logs.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.previous_page_number }}">قبلی</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+          <span class="page-link">{{ logs.number }} از {{ logs.paginator.num_pages }}</span>
+        </li>
+        {% if logs.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ logs.next_page_number }}">بعدی</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <p>فعالیتی ثبت نشده است.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

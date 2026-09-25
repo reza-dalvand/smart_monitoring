@@ -6,6 +6,9 @@ from django.db import models
 from django.utils import timezone
 
 
+# accounts/models.py
+# فقط بخش تغییر‌یافته نمایش داده می‌شود
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('student', 'دانش آموز'),
@@ -17,14 +20,25 @@ class User(AbstractUser):
         ('province_admin', 'مسئول استان'),
         ('country_admin', 'مسئول کشور'),
     )
-
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
     national_id = models.CharField(
-        max_length=10,
-        unique=True,
-        null=True,
-        blank=True,
+        max_length=10, unique=True, null=True, blank=True,
         verbose_name="کد ملی"
+    )
+    province = models.ForeignKey(
+        'national.Province',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='admin_users',
+        verbose_name="استان اختصاصی (برای مسئول استانی)"
+    )
+    # ✅ فیلد جدید
+    district = models.ForeignKey(
+        'national.District',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='admin_users',
+        verbose_name="منطقه اختصاصی (برای مسئول منطقه)"
     )
 
     def __str__(self):
@@ -34,6 +48,7 @@ class User(AbstractUser):
         verbose_name = "کاربر"
         verbose_name_plural = "کاربران"
 
+        
 
 class StudentProfile(models.Model):
     """پروفایل کامل دانش‌آموز با اطلاعات والدین"""

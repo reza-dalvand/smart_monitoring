@@ -7,8 +7,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls', namespace='dashboard')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
-    path('face/', include('face.urls', namespace='face')),  # ← خط جدید
+    path('face/', include('face.urls', namespace='face')),  
     path('national/', include('national.urls', namespace='national')),
+    path('province/', include('province.urls', namespace='province')),
+    path('district/', include('district.urls', namespace='district')),
 ]
 
 if settings.DEBUG:
