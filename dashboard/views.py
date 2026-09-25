@@ -1,4 +1,5 @@
 from functools import wraps
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -223,8 +224,10 @@ def student_dashboard(request):
     }
 
     # ------------------------------------------------------------------
-    # بخش جدید: درخواست‌های فعال حضور و غیاب چهره
+    # بخش جدید: درخواست‌های فعال (حضور و غیاب + سوال)
     # ------------------------------------------------------------------
+    
+    # درخواست‌های فعال حضور و غیاب
     active_face_requests = AttendanceRequest.objects.filter(
         classroom__students=student,
         status='active',
@@ -247,6 +250,50 @@ def student_dashboard(request):
         active_face_items.append({
             'request': attendance_request,
             'response': response,
+        })
+    
+    # درخواست‌های فعال سوال
+    active_question_requests = AttendanceRequest.objects.filter(
+        classroom__students=student,
+        status='active',
+        request_type__in=['question_only', 'face_and_question']
+    ).select_related(
+        'classroom',
+        'session',
+        'teacher'
+    ).prefetch_related(
+        'request_questions__question'
+    ).order_by('-created_at')
+
+    active_question_items = []
+    for attendance_request in active_question_requests:
+        # بررسی وضعیت احراز هویت
+        response = AttendanceResponse.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).first()
+        
+        requires_face = attendance_request.requires_face
+        face_verified = False
+        if response and response.face_verified and response.final_status == 'present':
+            face_verified = True
+        
+        can_answer = not requires_face or face_verified
+        
+        # شمارش سوالات
+        total_questions = attendance_request.request_questions.count()
+        answered_count = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).count()
+
+        active_question_items.append({
+            'request': attendance_request,
+            'response': response,
+            'total_questions': total_questions,
+            'answered_count': answered_count,
+            'can_answer': can_answer,
+            'all_answered': answered_count >= total_questions,
         })
 
     face_profile = FaceProfile.objects.filter(student=student).first()
@@ -278,12 +325,15 @@ def student_dashboard(request):
         'attendance_chart_data': attendance_chart_data,
         'answer_chart_data': answer_chart_data,
 
-        # داده‌های جدید برای اسکن چهره
+        # داده‌های اسکن چهره
         'active_face_items': active_face_items,
         'face_profile': face_profile,
         'reference_images_count': reference_images_count,
         'face_enrolled': face_enrolled,
         'face_max_attempts': settings.FACE_MAX_ATTEMPTS,
+        
+        # داده‌های سوالات فعال
+        'active_question_items': active_question_items,
     }
 
     return render(request, 'dashboard/student_dashboard.html', context)
@@ -1394,8 +1444,283 @@ def teacher_question_delete(request, pk):
 
 
 
-# این کد را به انتهای views.py اضافه کنید
 
+# ========== سیستم پاسخ‌دهی دانش‌آموز به سوالات ==========
+
+@login_required
+def student_active_questions(request):
+    """
+    نمایش درخواست‌های فعال سوال برای دانش‌آموز
+    """
+    if request.user.role != 'student':
+        messages.error(request, 'دسترسی غیرمجاز')
+        return redirect('dashboard:home')
+    
+    student = request.user
+    
+    # درخواست‌های فعالی که شامل سوال هستند
+    active_question_requests = AttendanceRequest.objects.filter(
+        classroom__students=student,
+        status='active',
+        request_type__in=['question_only', 'face_and_question']
+    ).select_related(
+        'classroom',
+        'session',
+        'teacher'
+    ).prefetch_related(
+        'request_questions__question'
+    ).order_by('-created_at')
+    
+    question_items = []
+    for attendance_request in active_question_requests:
+        # بررسی اینکه آیا دانش‌آموز همه سوالات را پاسخ داده
+        total_questions = attendance_request.request_questions.count()
+        answered_count = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).count()
+        
+        # بررسی وضعیت احراز هویت (اگر لازم باشد)
+        response = AttendanceResponse.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).first()
+        
+        # اگر نیاز به احراز هویت دارد و هنوز تایید نشده
+        requires_face = attendance_request.requires_face
+        face_verified = False
+        if response and response.face_verified and response.final_status == 'present':
+            face_verified = True
+        
+        # اگر فقط سوال است یا احراز هویت تایید شده، می‌تواند پاسخ دهد
+        can_answer = not requires_face or face_verified
+        
+        question_items.append({
+            'request': attendance_request,
+            'response': response,
+            'total_questions': total_questions,
+            'answered_count': answered_count,
+            'can_answer': can_answer,
+            'all_answered': answered_count >= total_questions,
+        })
+    
+    context = {
+        'question_items': question_items,
+        'title': 'سوالات فعال',
+    }
+    
+    return render(request, 'dashboard/student/student_questions.html', context)
+
+
+@login_required
+def student_answer_questions(request, request_id):
+    """
+    صفحه پاسخ به سوالات یک درخواست خاص
+    """
+    if request.user.role != 'student':
+        messages.error(request, 'دسترسی غیرمجاز')
+        return redirect('dashboard:home')
+    
+    student = request.user
+    
+    # بررسی دسترسی به درخواست
+    attendance_request = get_object_or_404(
+        AttendanceRequest,
+        id=request_id,
+        classroom__students=student,
+        status='active',
+        request_type__in=['question_only', 'face_and_question']
+    )
+    
+    # بررسی احراز هویت اگر لازم باشد
+    if attendance_request.requires_face:
+        response = AttendanceResponse.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).first()
+        
+        if not response or not response.face_verified or response.final_status != 'present':
+            messages.warning(request, 'لطفاً ابتدا احراز هویت چهره را تکمیل کنید.')
+            return redirect('dashboard:student_active_questions')
+    
+    # دریافت سوالات به ترتیب
+    request_questions = attendance_request.request_questions.select_related(
+        'question'
+    ).order_by('order')
+    
+    # دریافت پاسخ‌های قبلی
+    existing_answers = {
+        answer.question_id: answer 
+        for answer in StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        )
+    }
+    
+    questions_with_answers = []
+    for rq in request_questions:
+        questions_with_answers.append({
+            'request_question': rq,
+            'question': rq.question,
+            'answer': existing_answers.get(rq.question.id),
+        })
+    
+    context = {
+        'attendance_request': attendance_request,
+        'questions': questions_with_answers,
+        'total_questions': len(questions_with_answers),
+        'answered_count': len(existing_answers),
+        'title': f'پاسخ به سوالات - {attendance_request.classroom.name}',
+    }
+    
+    return render(request, 'dashboard/student/answer_questions.html', context)
+
+
+@login_required
+def student_submit_answer(request, request_id, question_id):
+    """
+    ثبت پاسخ یک سوال توسط دانش‌آموز
+    """
+    if request.user.role != 'student':
+        return JsonResponse({
+            'success': False,
+            'message': 'دسترسی غیرمجاز'
+        }, status=403)
+    
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'درخواست نامعتبر'
+        }, status=400)
+    
+    student = request.user
+    
+    # بررسی دسترسی
+    try:
+        attendance_request = AttendanceRequest.objects.get(
+            id=request_id,
+            classroom__students=student,
+            status='active'
+        )
+    except AttendanceRequest.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'درخواست یافت نشد'
+        }, status=404)
+    
+    # بررسی احراز هویت
+    if attendance_request.requires_face:
+        response = AttendanceResponse.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).first()
+        
+        if not response or not response.face_verified:
+            return JsonResponse({
+                'success': False,
+                'message': 'احراز هویت لازم است'
+            }, status=403)
+    
+    # دریافت سوال
+    try:
+        question = Question.objects.get(
+            id=question_id,
+            attendance_requests=attendance_request
+        )
+    except Question.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'سوال یافت نشد'
+        }, status=404)
+    
+    # دریافت پاسخ
+    selected_choice = request.POST.get('choice')
+    if selected_choice not in ['a', 'b', 'c', 'd']:
+        return JsonResponse({
+            'success': False,
+            'message': 'پاسخ نامعتبر'
+        }, status=400)
+    
+    # بررسی صحت پاسخ
+    is_correct = selected_choice == question.correct_answer
+    
+    # ایجاد یا به‌روزرسانی پاسخ
+    answer, created = StudentAnswer.objects.update_or_create(
+        question=question,
+        student=student,
+        attendance_request=attendance_request,
+        defaults={
+            'selected_choice': selected_choice,
+            'is_correct': is_correct,
+        }
+    )
+    
+    # بررسی اینکه آیا همه سوالات پاسخ داده شده‌اند
+    total_questions = attendance_request.request_questions.count()
+    answered_count = StudentAnswer.objects.filter(
+        attendance_request=attendance_request,
+        student=student
+    ).count()
+    
+    all_completed = answered_count >= total_questions
+    
+    return JsonResponse({
+        'success': True,
+        'is_correct': is_correct,
+        'answered_count': answered_count,
+        'total_questions': total_questions,
+        'all_completed': all_completed,
+        'message': 'پاسخ با موفقیت ثبت شد'
+    })
+
+
+@login_required
+def student_question_result(request, request_id):
+    """
+    نمایش نتیجه پاسخ به سوالات
+    """
+    if request.user.role != 'student':
+        messages.error(request, 'دسترسی غیرمجاز')
+        return redirect('dashboard:home')
+    
+    student = request.user
+    
+    attendance_request = get_object_or_404(
+        AttendanceRequest,
+        id=request_id,
+        classroom__students=student
+    )
+    
+    # دریافت پاسخ‌های دانش‌آموز
+    answers = StudentAnswer.objects.filter(
+        attendance_request=attendance_request,
+        student=student
+    ).select_related('question')
+    
+    total_questions = attendance_request.request_questions.count()
+    answered_count = answers.count()
+    correct_count = answers.filter(is_correct=True).count()
+    wrong_count = answers.filter(is_correct=False).count()
+    
+    percentage = 0
+    if answered_count > 0:
+        percentage = round((correct_count / answered_count) * 100)
+    
+    context = {
+        'attendance_request': attendance_request,
+        'answers': answers,
+        'total_questions': total_questions,
+        'answered_count': answered_count,
+        'correct_count': correct_count,
+        'wrong_count': wrong_count,
+        'percentage': percentage,
+        'title': 'نتیجه سوالات',
+    }
+    
+    return render(request, 'dashboard/student/question_result.html', context)
+
+
+    
 # ========== آمار مشارکت ==========
 
 @teacher_required

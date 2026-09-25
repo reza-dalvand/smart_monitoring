@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+    .aq-page {
+        --aq-primary: #1a237e;
+        --aq-secondary: #ffc107;
+        --aq-success: #16a34a;
+        --aq-danger: #dc2626;
+    }
+    
+    .aq-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .aq-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+    
+    .aq-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .aq-progress-bar {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        height: 12px;
+        overflow: hidden;
+        margin-top: 16px;
+    }
+    
+    .aq-progress-fill {
+        height: 100%;
+        background: var(--aq-secondary);
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+    
+    .aq-question-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+    
+    .aq-question-header {
+        background: linear-gradient(135deg, #1a237e 0%, #303f9f 100%);
+        padding: 20px 24px;
+        color: white;
+    }
+    
+    .aq-question-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    
+    .aq-question-text {
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1.8;
+        margin: 0;
+    }
+    
+    .aq-question-body {
+        padding: 24px;
+    }
+    
+    .aq-choices {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .aq-choice {
+        position: relative;
+    }
+    
+    .aq-choice input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    .aq-choice label {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f9fafb;
+    }
+    
+    .aq-choice label:hover {
+        border-color: #1a237e;
+        background: #f0f4ff;
+    }
+    
+    .aq-choice input[type="radio"]:checked + label {
+        border-color: #1a237e;
+        background: rgba(26, 35, 126, 0.05);
+        box-shadow: 0 4px 12px rgba(26, 35, 126, 0.1);
+    }
+    
+    .aq-choice-letter {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1rem;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+    
+    .aq-choice input[type="radio"]:checked + label .aq-choice-letter {
+        background: #1a237e;
+        color: white;
+    }
+    
+    .aq-choice-text {
+        flex: 1;
+        font-size: 0.95rem;
+        color: #374151;
+        line-height: 1.6;
+    }
+    
+    .aq-choice-status {
+        font-size: 1.3rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .aq-choice.answered .aq-choice-status {
+        opacity: 1;
+    }
+    
+    .aq-choice.correct .aq-choice-status {
+        color: var(--aq-success);
+    }
+    
+    .aq-choice.wrong .aq-choice-status {
+        color: var(--aq-danger);
+    }
+    
+    .aq-btn-submit {
+        width: 100%;
+        padding: 14px 24px;
+        background: var(--aq-primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .aq-btn-submit:hover:not(:disabled) {
+        background: #303f9f;
+        transform: translateY(-2px);
+    }
+    
+    .aq-btn-submit:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    .aq-feedback {
+        padding: 16px;
+        border-radius: 12px;
+        margin-top: 16px;
+        display: none;
+    }
+    
+    .aq-feedback.success {
+        background: rgba(22, 163, 74, 0.1);
+        border: 1px solid rgba(22, 163, 74, 0.3);
+        color: #15803d;
+    }
+    
+    .aq-feedback.error {
+        background: rgba(220, 38, 38, 0.1);
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        color: #b91c1c;
+    }
+    
+    .aq-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    
+    .aq-btn {
+        flex: 1;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .aq-btn.primary {
+        background: var(--aq-primary);
+        color: white;
+    }
+    
+    .aq-btn.primary:hover {
+        background: #303f9f;
+    }
+    
+    .aq-btn.outline {
+        background: white;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .aq-btn.outline:hover {
+        background: #f9fafb;
+    }
+</style>
+
+<div class="aq-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-pencil-square"></i>
+            پاسخ به سوالات
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <a href="{% url 'dashboard:student_active_questions' %}">سوالات فعال</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>پاسخ‌دهی</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="aq-hero">
+        <div class="aq-hero-content">
+            <h2 style="margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 900;">
+                {{ attendance_request.classroom.name }} - {{ attendance_request.classroom.subject }}
+            </h2>
+            <p style="margin: 0; opacity: 0.9;">
+                {% if attendance_request.session.topic %}
+                    موضوع: {{ attendance_request.session.topic }} |
+                {% endif %}
+                {{ answered_count }} از {{ total_questions }} سوال پاسخ داده شده
+            </p>
+            <div class="aq-progress-bar">
+                <div class="aq-progress-fill" style="width: {% widthratio answered_count total_questions 100 %}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <form id="questionsForm">
+        {% csrf_token %}
+        {% for item in questions %}
+            <div class="aq-question-card" data-question-id="{{ item.question.id }}">
+                <div class="aq-question-header">
+                    <div class="aq-question-number">
+                        <i class="bi bi-hash"></i>
+                        سوال {{ forloop.counter }} از {{ total_questions }}
+                    </div>
+                    <p class="aq-question-text">{{ item.question.text }}</p>
+                </div>
+                <div class="aq-question-body">
+                    <div class="aq-choices">
+                        {% with choices="a,b,c,d"|split:"," %}
+                            {% for choice in choices %}
+                                <div class="aq-choice {% if item.answer and item.answer.selected_choice == choice %}answered {% if item.answer.is_correct %}correct{% else %}wrong{% endif %}{% endif %}">
+                                    <input type="radio" 
+                                           name="question_{{ item.question.id }}" 
+                                           id="q{{ item.question.id }}_{{ choice }}" 
+                                           value="{{ choice }}"
+                                           {% if item.answer and item.answer.selected_choice == choice %}checked{% endif %}>
+                                    <label for="q{{ item.question.id }}_{{ choice }}">
+                                        <div class="aq-choice-letter">
+                                            {% if choice == 'a' %}الف{% elif choice == 'b' %}ب{% elif choice == 'c' %}ج{% else %}د{% endif %}
+                                        </div>
+                                        <div class="aq-choice-text">
+                                            {% if choice == 'a' %}{{ item.question.choice_a }}
+                                            {% elif choice == 'b' %}{{ item.question.choice_b }}
+                                            {% elif choice == 'c' %}{{ item.question.choice_c }}
+                                            {% else %}{{ item.question.choice_d }}{% endif %}
+                                        </div>
+                                        <div class="aq-choice-status">
+                                            {% if item.answer and item.answer.selected_choice == choice %}
+                                                {% if item.answer.is_correct %}
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-x-circle-fill"></i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                    
+                    <!-- 🔧 اصلاح: URL کامل در data-submit-url -->
+                    <button type="button" class="aq-btn-submit" 
+                            data-question-id="{{ item.question.id }}"
+                            data-submit-url="{% url 'dashboard:student_submit_answer' attendance_request.id item.question.id %}">
+                        <i class="bi bi-check-circle"></i>
+                        {% if item.answer %}
+                            تغییر پاسخ
+                        {% else %}
+                            ثبت پاسخ
+                        {% endif %}
+                    </button>
+                    <div class="aq-feedback" id="feedback_{{ item.question.id }}"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+
+    <!-- Actions -->
+    <div class="aq-actions">
+        <a href="{% url 'dashboard:student_active_questions' %}" class="aq-btn outline">
+            <i class="bi bi-arrow-right"></i>
+            بازگشت
+        </a>
+        {% if answered_count == total_questions %}
+            <a href="{% url 'dashboard:student_question_result' attendance_request.id %}" class="aq-btn primary">
+                <i class="bi bi-eye-fill"></i>
+                مشاهده نتیجه
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = '{{ csrf_token }}';
+    const resultUrl = "{% url 'dashboard:student_question_result' attendance_request.id %}";
+    
+    document.querySelectorAll('.aq-btn-submit').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            // 🔧 اصلاح: خواندن URL از data-submit-url
+            const submitUrl = this.dataset.submitUrl;
+            const questionId = this.dataset.questionId;
+            const selectedChoice = document.querySelector(`input[name="question_${questionId}"]:checked`);
+            
+            if (!selectedChoice) {
+                alert('لطفاً یک گزینه را انتخاب کنید');
+                return;
+            }
+            
+            // غیرفعال کردن دکمه هنگام ارسال
+            this.disabled = true;
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> در حال ثبت...';
+            
+            const formData = new FormData();
+            formData.append('choice', selectedChoice.value);
+            
+            try {
+                const response = await fetch(submitUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData
+                });
+                
+                // بررسی وضعیت HTTP
+                if (!response.ok) {
+                    let errorMsg = `خطای سرور (${response.status})`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {
+                        // پاسخ HTML است
+                        errorMsg = 'خطا در ارتباط با سرور';
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    throw new Error('پاسخ نامعتبر از سرور');
+                }
+                
+                if (data.success) {
+                    // نمایش بازخورد
+                    const feedback = document.getElementById(`feedback_${questionId}`);
+                    feedback.style.display = 'block';
+                    
+                    if (data.is_correct) {
+                        feedback.className = 'aq-feedback success';
+                        feedback.innerHTML = '<i class="bi bi-check-circle-fill"></i> پاسخ صحیح است!';
+                    } else {
+                        feedback.className = 'aq-feedback error';
+                        feedback.innerHTML = '<i class="bi bi-x-circle-fill"></i> پاسخ اشتباه است';
+                    }
+                    
+                    // به‌روزرسانی وضعیت گزینه‌ها
+                    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                    questionCard.querySelectorAll('.aq-choice').forEach(choice => {
+                        choice.classList.remove('answered', 'correct', 'wrong');
+                        choice.querySelector('.aq-choice-status').innerHTML = '';
+                    });
+                    
+                    const selectedChoiceDiv = selectedChoice.closest('.aq-choice');
+                    selectedChoiceDiv.classList.add('answered');
+                    
+                    if (data.is_correct) {
+                        selectedChoiceDiv.classList.add('correct');
+                        selectedChoiceDiv.querySelector('.aq-choice-status').innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+                    } else {
+                        selectedChoiceDiv.classList.add('wrong');
+                        selectedChoiceDiv.querySelector('.aq-choice-status').innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+                    }
+                    
+                    // تغییر متن دکمه
+                    this.innerHTML = '<i class="bi bi-arrow-repeat"></i> تغییر پاسخ';
+                    this.disabled = false;
+                    
+                    // اگر همه سوالات پاسخ داده شده
+                    if (data.all_completed) {
+                        setTimeout(() => {
+                            if (confirm('همه سوالات پاسخ داده شد. آیا می‌خواهید نتیجه را مشاهده کنید؟')) {
+                                window.location.href = resultUrl;
+                            }
+                        }, 1500);
+                    }
+                } else {
+                    alert('خطا در ثبت پاسخ: ' + (data.message || 'خطای نامشخص'));
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'خطا در ارتباط با سرور');
+                this.disabled = false;
+                this.innerHTML = originalText;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

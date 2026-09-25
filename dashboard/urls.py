@@ -9,6 +9,12 @@ urlpatterns = [
 
     # برنامه هفتگی دانش‌آموز
     path('weekly-schedule/', views.weekly_schedule_view, name='weekly_schedule'),
+    
+    # ========== سیستم پاسخ‌دهی دانش‌آموز ==========
+    path('student/questions/', views.student_active_questions, name='student_active_questions'),
+    path('student/questions/<int:request_id>/answer/', views.student_answer_questions, name='student_answer_questions'),
+    path('student/questions/<int:request_id>/question/<int:question_id>/submit/', views.student_submit_answer, name='student_submit_answer'),
+    path('student/questions/<int:request_id>/result/', views.student_question_result, name='student_question_result'),
 
     # ========== پنل معلم - کلاس‌های فعال ==========
     path('teacher/schedule/', views.teacher_weekly_schedule, name='teacher_weekly_schedule'),

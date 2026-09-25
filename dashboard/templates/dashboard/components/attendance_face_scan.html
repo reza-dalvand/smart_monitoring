@@ -3,11 +3,11 @@
     <div class="content-card-header">
         <h3 class="content-card-title">
             <i class="bi bi-person-check-fill"></i>
-            حضور و غیاب هوشمند
+            حضور و غیاب و سوالات
         </h3>
         <span class="header-badge">
             <i class="bi bi-shield-check"></i>
-            احراز هویت چهره
+            احراز هویت و پاسخ‌دهی
         </span>
     </div>
     <div class="content-card-body">
@@ -23,7 +23,14 @@
                     ثبت چهره
                 </a>
             </div>
-        {% elif active_face_items %}
+        {% endif %}
+        
+        <!-- درخواست‌های حضور و غیاب -->
+        {% if active_face_items %}
+            <h5 style="margin-bottom: 16px; font-weight: 700; color: #17224a;">
+                <i class="bi bi-camera-fill me-2"></i>
+                احراز هویت چهره
+            </h5>
             {% for item in active_face_items %}
                 <div class="border rounded p-3 mb-3" data-face-request-card="{{ item.request.id }}">
                     <div class="row align-items-center">
@@ -74,19 +81,71 @@
                     </div>
                 </div>
             {% endfor %}
-        {% else %}
+        {% endif %}
+        
+        <!-- درخواست‌های سوال -->
+        {% if active_question_items %}
+            <h5 style="margin: {% if active_face_items %}24px{% else %}0{% endif %} 0 16px 0; font-weight: 700; color: #17224a;">
+                <i class="bi bi-question-circle-fill me-2"></i>
+                سوالات فعال
+            </h5>
+            {% for item in active_question_items %}
+                <div class="border rounded p-3 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold mb-2">
+                                <i class="bi bi-journal-text me-1"></i>
+                                {{ item.request.classroom.name }} - {{ item.request.classroom.subject }}
+                            </h6>
+                            <div class="small text-muted">
+                                <div>
+                                    <i class="bi bi-list-check me-1"></i>
+                                    {{ item.answered_count }} از {{ item.total_questions }} سوال پاسخ داده شده
+                                </div>
+                                <div>
+                                    <i class="bi bi-person-workspace me-1"></i>
+                                    معلم: {{ item.request.teacher.get_full_name|default:item.request.teacher.username }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            {% if item.all_answered %}
+                                <a href="{% url 'dashboard:student_question_result' item.request.id %}" class="btn btn-success">
+                                    <i class="bi bi-eye-fill me-1"></i>
+                                    مشاهده نتیجه
+                                </a>
+                            {% elif item.can_answer %}
+                                <a href="{% url 'dashboard:student_answer_questions' item.request.id %}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    {% if item.answered_count > 0 %}
+                                        ادامه
+                                    {% else %}
+                                        شروع
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="bi bi-lock-fill me-1"></i>
+                                    نیاز به احراز هویت
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if not active_face_items and not active_question_items %}
             <div class="empty-state">
                 <div class="empty-icon"><i class="bi bi-bell-slash-fill"></i></div>
                 <h5>درخواست فعال وجود ندارد</h5>
-                <p>در حال حاضر درخواست حضور و غیاب فعالی برای شما وجود ندارد.</p>
+                <p>در حال حاضر درخواست حضور و غیاب یا سوالی برای شما وجود ندارد.</p>
             </div>
         {% endif %}
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- مدال احراز هویت چهره - طراحی جدید بدون اسکرول -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- مدال احراز هویت چهره - بدون تغییر -->
 <div class="modal fade" id="faceVerificationModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
         <div class="modal-content" style="border: none; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
@@ -109,36 +168,29 @@
                 </div>
             </div>
 
-            <!-- بدنه مودال - فشرده و بدون اسکرول -->
+            <!-- بدنه مودال -->
             <div class="modal-body" style="padding: 20px; background: #0f172a;">
-
-                <!-- ناحیه ویدیو -->
                 <div id="fv-root" style="position: relative;">
                     <div style="position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 16px; overflow: hidden; background: #000; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
                         <video id="fv-video" autoplay playsinline muted
                                style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
 
-                        <!-- کادر راهنمای بیضی -->
                         <div id="fv-guide" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 55%; height: 72%; border: 3px dashed rgba(255,255,255,0.7); border-radius: 50% / 42%; box-shadow: 0 0 0 9999px rgba(0,0,0,0.25); transition: all 0.3s ease; pointer-events: none;"></div>
 
-                        <!-- اورلی بارگذاری -->
                         <div id="fv-overlay" style="position: absolute; inset: 0; background: rgba(15,23,42,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; gap: 12px;">
                             <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #ffc107; border-radius: 50%; animation: fv-spin 1s linear infinite;"></div>
                             <span id="fv-overlay-text" style="color: white; font-weight: 700; font-size: 0.9rem;">در حال آماده‌سازی...</span>
                         </div>
                     </div>
 
-                    <!-- نوار وضعیت -->
                     <div id="fv-status" class="fv-message info" style="margin-top: 14px; min-height: 44px; border-radius: 12px; padding: 10px 14px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; text-align: center; background: #1e3a5f; color: #93c5fd;">
                         در حال آماده‌سازی دوربین و مدل تشخیص چهره...
                     </div>
 
-                    <!-- دستور چالش -->
                     <div id="fv-instruction" class="fv-hidden" style="margin-top: 10px; border-radius: 12px; background: linear-gradient(135deg, rgba(255,193,7,0.15), rgba(255,193,7,0.05)); border: 1px solid rgba(255,193,7,0.3); color: #ffc107; font-weight: 800; font-size: 0.95rem; padding: 12px 16px; display: flex; align-items: center; justify-content: center; text-align: center;">
                         لطفاً صبر کنید
                     </div>
 
-                    <!-- پیشرفت و تایمر -->
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
                         <div class="d-inline-flex align-items-center gap-2" id="fv-progress">
                             <span class="fv-dot" style="width: 32px; height: 32px; border-radius: 50%; background: #334155; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; border: 2px solid transparent; transition: all 0.3s;">۱</span>
@@ -148,7 +200,6 @@
                         <div id="fv-timer" style="font-size: 1.3rem; font-weight: 950; color: white; font-family: 'Courier New', monospace; direction: ltr;">--:--</div>
                     </div>
 
-                    <!-- نتیجه -->
                     <div id="fv-result" class="fv-result-card" style="display: none; margin-top: 16px; border-radius: 16px; padding: 24px; text-align: center;">
                         <div class="fv-result-icon" id="fv-result-icon" style="font-size: 2.8rem; margin-bottom: 10px;"></div>
                         <div class="fv-result-title" id="fv-result-title" style="font-size: 1.15rem; font-weight: 900; margin-bottom: 6px;"></div>

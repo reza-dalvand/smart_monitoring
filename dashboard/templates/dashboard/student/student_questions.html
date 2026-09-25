@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - سامانه پایش هوشمند{% endblock %}
+{% block content %}
+<style>
+    .sq-page {
+        --sq-primary: #1a237e;
+        --sq-secondary: #ffc107;
+        --sq-success: #16a34a;
+        --sq-danger: #dc2626;
+    }
+    
+    .sq-hero {
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        color: white;
+        border-radius: 22px;
+        padding: 32px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(26, 35, 126, 0.22);
+    }
+    
+    .sq-hero::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 193, 7, 0.12);
+        top: -120px;
+        right: -100px;
+    }
+    
+    .sq-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .sq-hero-title {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 12px;
+    }
+    
+    .sq-hero-icon {
+        width: 70px;
+        height: 70px;
+        background: var(--sq-secondary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--sq-primary);
+    }
+    
+    .sq-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+    }
+    
+    .sq-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid #edf1f8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+    
+    .sq-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+    }
+    
+    .sq-card-body {
+        padding: 22px;
+    }
+    
+    .sq-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+    
+    .sq-card-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #17224a;
+        margin: 0 0 6px 0;
+    }
+    
+    .sq-card-subtitle {
+        font-size: 0.85rem;
+        color: #7b8494;
+    }
+    
+    .sq-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    
+    .sq-badge.success {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+    }
+    
+    .sq-badge.warning {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+    
+    .sq-badge.danger {
+        background: rgba(220, 38, 38, 0.10);
+        color: #b91c1c;
+    }
+    
+    .sq-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin: 16px 0;
+    }
+    
+    .sq-stat {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .sq-stat-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #17224a;
+    }
+    
+    .sq-stat-label {
+        font-size: 0.75rem;
+        color: #7b8494;
+        margin-top: 4px;
+    }
+    
+    .sq-btn {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .sq-btn.primary {
+        background: var(--sq-primary);
+        color: white;
+    }
+    
+    .sq-btn.primary:hover {
+        background: #303f9f;
+        transform: translateY(-2px);
+    }
+    
+    .sq-btn.success {
+        background: var(--sq-success);
+        color: white;
+    }
+    
+    .sq-btn.disabled {
+        background: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    .sq-empty {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #dbe3ef;
+    }
+    
+    .sq-empty-icon {
+        width: 90px;
+        height: 90px;
+        background: #f2f5fa;
+        color: #93a1b6;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="sq-page">
+    <!-- Breadcrumb -->
+    <div class="page-breadcrumb">
+        <h1 class="breadcrumb-title">
+            <i class="bi bi-question-circle-fill"></i>
+            {{ title }}
+        </h1>
+        <div class="breadcrumb-nav">
+            <a href="{% url 'dashboard:home' %}">خانه</a>
+            <i class="bi bi-chevron-left"></i>
+            <span>سوالات فعال</span>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="sq-hero">
+        <div class="sq-hero-content">
+            <div class="sq-hero-title">
+                <div class="sq-hero-icon">
+                    <i class="bi bi-question-circle-fill"></i>
+                </div>
+                <div>
+                    <h2>سوالات فعال</h2>
+                    <p style="margin: 0; opacity: 0.9;">سوالاتی که معلم برای شما ارسال کرده است</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions Grid -->
+    {% if question_items %}
+        <div class="sq-grid">
+            {% for item in question_items %}
+                <div class="sq-card">
+                    <div class="sq-card-body">
+                        <div class="sq-card-header">
+                            <div>
+                                <h4 class="sq-card-title">{{ item.request.classroom.name }}</h4>
+                                <div class="sq-card-subtitle">
+                                    {{ item.request.classroom.subject }}
+                                    {% if item.request.session.topic %}
+                                        - {{ item.request.session.topic }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if item.all_answered %}
+                                <span class="sq-badge success">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    تکمیل شده
+                                </span>
+                            {% elif not item.can_answer %}
+                                <span class="sq-badge warning">
+                                    <i class="bi bi-clock-fill"></i>
+                                    منتظر احراز هویت
+                                </span>
+                            {% else %}
+                                <span class="sq-badge warning">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    در انتظار پاسخ
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="sq-stats">
+                            <div class="sq-stat">
+                                <div class="sq-stat-value">{{ item.answered_count }}</div>
+                                <div class="sq-stat-label">پاسخ داده شده</div>
+                            </div>
+                            <div class="sq-stat">
+                                <div class="sq-stat-value">{{ item.total_questions }}</div>
+                                <div class="sq-stat-label">کل سوالات</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 12px; font-size: 0.85rem; color: #667085;">
+                            <i class="bi bi-person-workspace me-1"></i>
+                            معلم: {{ item.request.teacher.get_full_name|default:item.request.teacher.username }}
+                        </div>
+
+                        {% if item.all_answered %}
+                            <a href="{% url 'dashboard:student_question_result' item.request.id %}" class="sq-btn success">
+                                <i class="bi bi-eye-fill"></i>
+                                مشاهده نتیجه
+                            </a>
+                        {% elif item.can_answer %}
+                            <a href="{% url 'dashboard:student_answer_questions' item.request.id %}" class="sq-btn primary">
+                                <i class="bi bi-pencil-square"></i>
+                                {% if item.answered_count > 0 %}
+                                    ادامه پاسخ‌دهی
+                                {% else %}
+                                    شروع پاسخ‌دهی
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <button class="sq-btn disabled" disabled>
+                                <i class="bi bi-lock-fill"></i>
+                                نیاز به احراز هویت
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sq-empty">
+            <div class="sq-empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h4 style="color: #17224a; font-weight: 800; margin-bottom: 10px;">سوال فعالی وجود ندارد</h4>
+            <p style="color: #8a94a6; margin: 0;">در حال حاضر هیچ سوالی برای پاسخ‌دهی وجود ندارد.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
