@@ -531,19 +531,6 @@
                     <div class="ar-info-label">زمان هر سوال</div>
                     <div class="ar-info-value">{{ job.default_timer_seconds }} ثانیه</div>
                 </div>
-                <div class="ar-info-item">
-                    <div class="ar-info-label">فایل PDF</div>
-                    <div class="ar-info-value">
-                        {% if job.pdf_file %}
-                            <a href="{{ job.pdf_file.url }}" target="_blank" style="color: var(--ar-purple); text-decoration: none;">
-                                <i class="bi bi-file-earmark-pdf-fill me-1"></i>
-                                مشاهده فایل
-                            </a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </div>
-                </div>
             </div>
 
             {% if job.prompt %}

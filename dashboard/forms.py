@@ -81,7 +81,6 @@ class AIGenerationForm(forms.ModelForm):
         model = AIGenerationJob
         fields = [
             'classroom',
-            'pdf_file',
             'topic',
             'prompt',
             'requested_count',
@@ -90,10 +89,6 @@ class AIGenerationForm(forms.ModelForm):
         widgets = {
             'classroom': forms.Select(attrs={
                 'class': 'form-select'
-            }),
-            'pdf_file': forms.ClearableFileInput(attrs={
-                'class': 'form-control',
-                'accept': 'application/pdf'
             }),
             'topic': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -126,7 +121,6 @@ class AIGenerationForm(forms.ModelForm):
             self.fields['classroom'].queryset = Classroom.objects.none()
 
         self.fields['classroom'].empty_label = 'یک کلاس انتخاب کنید'
-        self.fields['pdf_file'].help_text = 'فقط فایل PDF، حداکثر ۲۰ مگابایت'
         self.fields['requested_count'].help_text = 'بین ۱ تا ۲۰ سوال'
         self.fields['default_timer_seconds'].help_text = 'زمان پاسخ هر سوال به ثانیه؛ پیش‌فرض ۳۰۰ ثانیه معادل ۵ دقیقه'
 

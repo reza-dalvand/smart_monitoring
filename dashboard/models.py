@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from accounts.models import User
-from .validators import validate_pdf_file, validate_image_file
+from .validators import validate_image_file
 
 
 class Classroom(models.Model):
@@ -113,11 +113,7 @@ class AIGenerationJob(models.Model):
         related_name='ai_generation_jobs',
         verbose_name="کلاس"
     )
-    pdf_file = models.FileField(
-        upload_to='ai_pdfs/',
-        validators=[validate_pdf_file],
-        verbose_name="فایل PDF"
-    )
+
     prompt = models.TextField(blank=True, verbose_name="پرامپت معلم")
     topic = models.CharField(max_length=200, blank=True, verbose_name="مبحث")
     requested_count = models.PositiveSmallIntegerField(

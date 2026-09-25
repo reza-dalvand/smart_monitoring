@@ -248,7 +248,7 @@
                 <i class="bi bi-stars"></i>
             </div>
             <h2>تولید سوال هوشمند</h2>
-            <p>فایل PDF و مبحث را وارد کنید، هوش مصنوعی سوالات را می‌سازد</p>
+            <p>مبحث را وارد کنید، هوش مصنوعی سوالات را می‌سازد</p>
         </div>
 
         <!-- Body -->
@@ -262,7 +262,7 @@
                 </p>
             </div>
 
-            <form method="post" enctype="multipart/form-data" novalidate>
+            <form method="post" novalidate>
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -277,8 +277,6 @@
                     <label for="{{ field.id_for_label }}" class="ai-form-label">
                         {% if field.name == 'classroom' %}
                             <i class="bi bi-journal-bookmark-fill"></i>
-                        {% elif field.name == 'pdf_file' %}
-                            <i class="bi bi-file-earmark-pdf-fill"></i>
                         {% elif field.name == 'topic' %}
                             <i class="bi bi-tag-fill"></i>
                         {% elif field.name == 'prompt' %}
@@ -293,9 +291,7 @@
                         {{ field.label }}
                     </label>
 
-                    {% if field.name == 'pdf_file' %}
-                        {{ field }}
-                    {% elif field.name == 'prompt' %}
+                    {% if field.name == 'prompt' %}
                         <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="ai-form-control" rows="5" placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}">{{ field.value|default:'' }}</textarea>
                     {% elif field.name == 'classroom' %}
                         <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="ai-form-control">
@@ -311,10 +307,10 @@
                             {% endfor %}
                         </select>
                     {% else %}
-                        <input type="{{ field.field.widget.input_type|default:'text' }}" 
-                               name="{{ field.name }}" 
-                               id="{{ field.id_for_label }}" 
-                               class="ai-form-control" 
+                        <input type="{{ field.field.widget.input_type|default:'text' }}"
+                               name="{{ field.name }}"
+                               id="{{ field.id_for_label }}"
+                               class="ai-form-control"
                                value="{{ field.value|default:'' }}"
                                placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
                                {% if field.field.widget.attrs.min %}min="{{ field.field.widget.attrs.min }}"{% endif %}
