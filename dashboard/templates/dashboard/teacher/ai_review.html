@@ -671,6 +671,7 @@
                         <i class="bi bi-clock-fill"></i>
                         زمان پاسخ: {{ question.timer_seconds }} ثانیه
                     </div>
+                    <!-- در ai_review.html برای هر سوال -->
                     <div class="ar-question-actions">
                         {% if question.review_status != 'approved' %}
                         <form method="post" action="{% url 'dashboard:teacher_ai_question_approve' question.id %}" style="display: inline;">
@@ -681,15 +682,18 @@
                             </button>
                         </form>
                         {% endif %}
+                        
                         {% if question.review_status != 'rejected' %}
-                        <form method="post" action="{% url 'dashboard:teacher_ai_question_reject' question.id %}" style="display: inline;">
+                        <form method="post" action="{% url 'dashboard:teacher_ai_question_reject_regenerate' question.id %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" class="ar-action-btn reject">
-                                <i class="bi bi-x-circle"></i>
-                                رد
+                            <button type="submit" class="ar-action-btn reject" 
+                                    onclick="return confirm('آیا مطمئن هستید؟ سوال رد شده و سوال جدیدی تولید می‌شود.');">
+                                <i class="bi bi-arrow-repeat"></i>
+                                رد و تولید مجدد
                             </button>
                         </form>
                         {% endif %}
+                        
                         <a href="{% url 'dashboard:teacher_question_edit' question.id %}" class="ar-action-btn edit">
                             <i class="bi bi-pencil"></i>
                             ویرایش

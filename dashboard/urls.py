@@ -19,6 +19,11 @@ urlpatterns = [
     path('teacher/classes/<int:classroom_id>/students/', views.teacher_class_students, name='teacher_class_students'),
     path('teacher/requests/<int:request_id>/results/', views.teacher_request_results, name='teacher_request_results'),
     path('teacher/requests/<int:request_id>/finish/', views.teacher_finish_request, name='teacher_finish_request'),
+    path(
+        'teacher/ai/question/<int:pk>/reject-regenerate/',
+        views.teacher_ai_question_reject_and_regenerate,
+        name='teacher_ai_question_reject_regenerate'
+    ),
 
     # ========== پنل معلم - آمار مشارکت ==========
     path('teacher/participation/', views.teacher_participation_stats, name='teacher_participation_stats'),

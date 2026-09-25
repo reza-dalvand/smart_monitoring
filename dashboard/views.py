@@ -2,6 +2,7 @@ from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .ai.exceptions import TopicValidationError, InsufficientContentError
 from django.db.models import Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
@@ -33,7 +34,7 @@ from .forms import (
 )
 from .services import (
     generate_questions_for_job,
-    regenerate_rejected_questions,
+    regenerate_rejected_question,
 )
 
 
@@ -50,6 +51,87 @@ def teacher_required(view_func):
             return redirect('dashboard:home')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+
+@teacher_required
+def teacher_ai_new(request):
+    """صفحه ساخت درخواست تولید سوال با هوش مصنوعی"""
+    classrooms = get_teacher_classrooms(request.user)
+    
+    if not classrooms.exists():
+        messages.warning(
+            request,
+            'هیچ کلاسی برای شما ثبت نشده است. لطفاً با معاون مدرسه هماهنگ کنید.'
+        )
+    
+    if request.method == 'POST':
+        form = AIGenerationForm(request.POST, teacher=request.user)
+        
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.teacher = request.user
+            job.status = 'pending'
+            job.save()
+            
+            # Generate questions
+            generated_count = generate_questions_for_job(job)
+            job.refresh_from_db()
+            
+            if job.status == 'completed':
+                if generated_count > 0:
+                    messages.success(
+                        request,
+                        f'{generated_count} سوال پیش‌نویس توسط هوش مصنوعی تولید شد. '
+                        f'حالا می‌توانید آن‌ها را بررسی، تایید یا رد کنید.'
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        f'هشدار: {job.error_message}'
+                    )
+            else:
+                messages.error(
+                    request,
+                    f'خطا در تولید سوال: {job.error_message}'
+                )
+            
+            return redirect('dashboard:teacher_ai_review', job_id=job.id)
+    else:
+        form = AIGenerationForm(teacher=request.user)
+    
+    context = {
+        'form': form,
+        'classrooms_count': classrooms.count(),
+        'title': 'تولید سوال با هوش مصنوعی',
+    }
+    
+    return render(request, 'dashboard/teacher/ai_generate_form.html', context)
+
+@teacher_required
+def teacher_ai_question_reject_and_regenerate(request, pk):
+    """رد یک سوال و تولید سوال جایگزین"""
+    question = get_object_or_404(
+        Question,
+        pk=pk,
+        ai_job__teacher=request.user
+    )
+    
+    if request.method == 'POST':
+        job = question.ai_job
+        
+        # Generate replacement
+        success = regenerate_rejected_question(job, question)
+        
+        if success:
+            messages.success(request, 'سوال رد شد و سوال جایگزین تولید شد.')
+        else:
+            messages.error(request, 'سوال رد شد اما تولید سوال جایگزین با خطا مواجه شد.')
+        
+        return redirect('dashboard:teacher_ai_review', job_id=job.id)
+    
+    return redirect('dashboard:teacher_ai_review', job_id=question.ai_job.id)
+
 
 
 def get_teacher_classrooms(user):

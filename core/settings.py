@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -251,3 +251,27 @@ FACE_EVIDENCE_CAPTURE_INTERVAL_MS = 130
 FACE_MEDIAPIPE_MODULE_URL = 'face/mediapipe/vision_bundle.mjs'
 FACE_MEDIAPIPE_WASM_BASE = 'face/mediapipe/wasm'
 FACE_MEDIAPIPE_MODEL = 'face/mediapipe/face_landmarker.task'
+
+
+# تنظیمات AI Question Generation
+AI_QUESTION_GENERATION = {
+    'API_KEY': os.getenv('GAPGPT_API_KEY', 'sk-unnYOTaD7sy4gF5jNc01hkRtE89glT7zRB0nl440MoeucyvN'),
+    'BASE_URL': 'https://api.gapgpt.app/v1',
+    'MODEL': 'gapgpt-qwen-3.6',
+    'MAX_TOKENS': 4096,
+    'TEMPERATURE': 0.7,
+    'TOP_P': 0.9,
+    'TIMEOUT': 120,
+    'MAX_RETRIES': 3,
+    'RETRY_DELAY': 2,
+    'MAX_QUESTIONS_PER_REQUEST': 20,
+    'MIN_QUESTIONS_PER_REQUEST': 1,
+    'ENABLE_TOPIC_VALIDATION': True,
+    'ENABLE_JSON_VALIDATION': True,
+}
+
+# Rate Limiting
+AI_RATE_LIMIT = {
+    'REQUESTS_PER_MINUTE': 10,
+    'REQUESTS_PER_HOUR': 100,
+}
