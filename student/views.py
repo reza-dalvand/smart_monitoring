@@ -7,7 +7,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Q, Prefetch
+from .services.face_service import StudentFaceService
 
+from core import settings
 from dashboard.models import (
     Classroom, ClassSession, Question, StudentAnswer,
     AttendanceRequest, AttendanceResponse, WeeklySchedule,
@@ -44,9 +46,18 @@ def student_dashboard(request):
     service = StudentDashboardService(scope)
     data = service.get_dashboard_data()
 
+    # ── جدید: احراز هویت چهره ──
+    from .services.face_service import StudentFaceService
+    face_service = StudentFaceService(scope)
+    face_data = face_service.get_face_enrollment_status()
+    active_face_count = face_service.get_active_face_count()
+    # ──────────────────────────────
+
     context = {
         'title': 'داشبورد من',
         **data,
+        'face_enrolled': face_data['is_enrolled'],
+        'active_face_count': active_face_count,
     }
     return render(request, 'student/dashboard.html', context)
 
@@ -244,38 +255,28 @@ def student_session_detail(request, session_id):
     return render(request, 'student/session_detail.html', context)
 
 
-# ══════════════════════════════════════════════════════════
-#  Attendance
-# ══════════════════════════════════════════════════════════
-
 @student_required
 def student_attendance(request):
-    """حضور و غیاب دانش‌آموز"""
     scope = request.student_scope
+    face_service = StudentFaceService(scope)
+    active_face_items = face_service.get_active_face_requests()
+    face_data = face_service.get_face_enrollment_status()
 
-    # درخواست‌های حضور فعال
-    active_requests = scope.filter_attendance_requests().filter(
-        status='active',
-        request_type__in=['face_only', 'face_and_question'],
-    ).filter(
-        Q(face_deadline_at__isnull=True) | Q(face_deadline_at__gt=timezone.now())
-    ).select_related('classroom', 'session', 'teacher')
+    base_responses = scope.filter_attendance_responses()
+    total = base_responses.count()
+    present = base_responses.filter(final_status='present').count()
+    absent = base_responses.filter(final_status='absent').count()
+    pending = base_responses.filter(final_status='pending').count()
 
-    # وضعیت‌های حضور
-    responses = scope.filter_attendance_responses().select_related(
+    responses = base_responses.select_related(
         'attendance_request__classroom',
         'attendance_request__session',
     ).order_by('-created_at')[:30]
 
-    # آمار کلی
-    total = responses.count()
-    present = responses.filter(final_status='present').count()
-    absent = responses.filter(final_status='absent').count()
-    pending = responses.filter(final_status='pending').count()
-
     context = {
         'title': 'حضور و غیاب',
-        'active_requests': active_requests,
+        'active_face_items': active_face_items,
+        'face_enrolled': face_data['is_enrolled'],
         'responses': responses,
         'total': total,
         'present': present,
@@ -285,7 +286,6 @@ def student_attendance(request):
     }
     return render(request, 'student/attendance.html', context)
 
-
 # ══════════════════════════════════════════════════════════
 #  Questions
 # ══════════════════════════════════════════════════════════
@@ -294,6 +294,12 @@ def student_attendance(request):
 def student_questions(request):
     """سوالات فعال"""
     scope = request.student_scope
+
+    # ── جدید: شمارش درخواست‌های احراز هویت فعال ──
+    from .services.face_service import StudentFaceService
+    face_service = StudentFaceService(scope)
+    active_face_count = face_service.get_active_face_count()
+    face_data = face_service.get_face_enrollment_status()
 
     active_requests = scope.filter_attendance_requests().filter(
         status='active',
@@ -319,7 +325,6 @@ def student_questions(request):
         face_verified = False
         if response and response.face_verified and response.final_status == 'present':
             face_verified = True
-
         can_answer = not requires_face or face_verified
 
         question_items.append({
@@ -329,14 +334,18 @@ def student_questions(request):
             'answered_count': answered_count,
             'can_answer': can_answer,
             'all_answered': answered_count >= total_questions,
+            'requires_face': requires_face,
+            'face_verified': face_verified,
         })
 
     context = {
         'title': 'سوالات و فعالیت‌ها',
         'question_items': question_items,
+        # ── جدید ──
+        'active_face_count': active_face_count,
+        'face_enrolled': face_data['is_enrolled'],
     }
     return render(request, 'student/questions.html', context)
-
 
 # ══════════════════════════════════════════════════════════
 #  Assessments

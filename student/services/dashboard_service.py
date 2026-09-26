@@ -36,6 +36,7 @@ class StudentDashboardService:
             'educational_status': EducationalStatusLevel.NORMAL,
             'status_reasons': [],
             'classes_count': 0,
+            'active_face_count': 0,
         }
 
         # ── Attendance ──
@@ -92,6 +93,17 @@ class StudentDashboardService:
             session_date__gte=now
         ).order_by('session_date').select_related('classroom').first()
         result['next_session'] = next_session
+
+        # ── Educational Status ──
+        status, reasons = self._calculate_educational_status(result)
+        result['educational_status'] = status
+        result['status_reasons'] = reasons
+
+            # ── جدید: شمارش درخواست‌های فعال احراز هویت ──
+        from .face_service import StudentFaceService
+        face_service = StudentFaceService(self.scope)
+        result['active_face_count'] = face_service.get_active_face_count()
+        # ──────────────────────────────────────────────
 
         # ── Educational Status ──
         status, reasons = self._calculate_educational_status(result)

@@ -6,6 +6,40 @@
     سلام، {{ user.get_full_name|default:user.username }} 👋
 </div>
 
+<!-- هشدار ثبت چهره -->
+{% if not face_enrolled %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-warning);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+            <strong>ثبت چهره تکمیل نشده</strong>
+            <br><small class="text-muted">برای حضور و غیاب هوشمند، چهره خود را ثبت کنید.</small>
+        </div>
+        <a href="{% url 'face:enrollment' %}" class="s-btn s-btn-primary">
+            <i class="bi bi-person-badge-fill"></i> ثبت چهره
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- هشدار احراز هویت فعال -->
+{% if active_face_count > 0 %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-success);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="s-badge success mb-2"><i class="bi bi-camera-fill"></i> احراز هویت فعال</span>
+            <div style="font-size:.9rem;">
+                شما <strong>{{ active_face_count }}</strong> درخواست اسکن چهره دارید.
+            </div>
+        </div>
+        <a href="{% url 'student:attendance' %}" class="s-btn s-btn-success">
+            <i class="bi bi-camera-fill"></i> اسکن چهره
+        </a>
+    </div>
+</div>
+{% endif %}
+
+
 <!-- KPI Cards -->
 <div class="s-kpi-grid">
     <div class="s-kpi success">
@@ -109,4 +143,23 @@
         </div>
     </div>
 </div>
+
+<!-- هشدار احراز هویت فعال -->
+{% if active_face_count > 0 %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-success);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="s-badge success mb-2">
+                <i class="bi bi-camera-fill"></i> احراز هویت فعال
+            </span>
+            <div style="font-size:.9rem;">
+                شما <strong>{{ active_face_count }}</strong> درخواست احراز هویت فعال دارید.
+            </div>
+        </div>
+        <a href="{% url 'student:attendance' %}" class="s-btn s-btn-success">
+            <i class="bi bi-camera-fill"></i> مراجعه به احراز هویت
+        </a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

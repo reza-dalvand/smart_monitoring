@@ -20,8 +20,9 @@ class AIQuestionService:
         self.client = AIClient()
         self.prompt_builder = PromptBuilder()
         self.validator = ResponseValidator()
-        self.enable_topic_validation = settings.AI_QUESTION_GENERATION['ENABLE_TOPIC_VALIDATION']
-
+        ai_settings = getattr(settings, 'AI_QUESTION_GENERATION', {})
+        self.enable_topic_validation = ai_settings.get('ENABLE_TOPIC_VALIDATION', True)
+        
     def validate_topic(
         self,
         grade: str,

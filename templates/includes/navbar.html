@@ -16,7 +16,14 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>تنظیمات پروفایل</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>خروج</a></li>
+                    <li>
+                        <form id="navbar-logout-form" method="post" action="{% url 'accounts:logout' %}" style="display:none;">
+                            {% csrf_token %}
+                        </form>
+                        <a class="dropdown-item text-danger" href="#" onclick="document.getElementById('navbar-logout-form').submit(); return false;">
+                            <i class="bi bi-box-arrow-right me-2"></i>خروج
+                        </a>
+                    </li>                
                 </ul>
             </div>
         </div>

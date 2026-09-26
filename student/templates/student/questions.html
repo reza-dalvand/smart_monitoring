@@ -5,6 +5,49 @@
     <i class="bi bi-question-circle-fill"></i> سوالات و فعالیت‌های کلاسی
 </div>
 
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- بنر ۱: ثبت چهره انجام نشده                        -->
+<!-- ═══════════════════════════════════════════════════ -->
+{% if not face_enrolled %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-warning);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+            <strong>ثبت چهره شما هنوز تکمیل نشده است.</strong>
+            <br><small class="text-muted">برای شرکت در حضور و غیاب هوشمند، ابتدا چهره خود را ثبت کنید.</small>
+        </div>
+        <a href="{% url 'face:enrollment' %}" class="s-btn s-btn-primary">
+            <i class="bi bi-person-badge-fill"></i> ثبت چهره
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- بنر ۲: درخواست احراز هویت فعال                    -->
+<!-- ═══════════════════════════════════════════════════ -->
+{% if active_face_count > 0 %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-success);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="s-badge success mb-2">
+                <i class="bi bi-camera-fill"></i> احراز هویت فعال
+            </span>
+            <div style="font-size:.9rem;">
+                شما <strong>{{ active_face_count }}</strong> درخواست احراز هویت چهره دارید.
+                <br><small class="text-muted">ابتدا اسکن چهره را انجام دهید، سپس به سوالات پاسخ دهید.</small>
+            </div>
+        </div>
+        <a href="{% url 'student:attendance' %}" class="s-btn s-btn-success">
+            <i class="bi bi-camera-fill"></i> شروع احراز هویت
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- لیست سوالات                                       -->
+<!-- ═══════════════════════════════════════════════════ -->
 {% if question_items %}
 {% for item in question_items %}
 <div class="s-card mb-3">
@@ -17,7 +60,7 @@
             <span class="s-badge success"><i class="bi bi-check-circle-fill"></i> تکمیل شده</span>
         {% elif item.can_answer %}
             <span class="s-badge warning"><i class="bi bi-hourglass-split"></i> در انتظار پاسخ</span>
-        {% else %}
+        {% elif item.requires_face and not item.face_verified %}
             <span class="s-badge info"><i class="bi bi-lock-fill"></i> نیاز به احراز هویت</span>
         {% endif %}
     </div>
@@ -37,7 +80,6 @@
             </div>
         </div>
 
-        <!-- Progress -->
         {% if item.total_questions > 0 %}
         <div class="s-progress mb-3">
             <div class="s-progress-fill info" style="width:{% widthratio item.answered_count item.total_questions 100 %}%"></div>
@@ -45,18 +87,22 @@
         {% endif %}
 
         {% if item.all_answered %}
-        <a href="{% url 'student:assessment_result' item.request.id %}" class="s-btn s-btn-success w-100 justify-content-center">
-            <i class="bi bi-eye-fill"></i> مشاهده نتیجه
-        </a>
+            <a href="{% url 'dashboard:student_question_result' item.request.id %}" class="s-btn s-btn-success w-100 justify-content-center">
+                <i class="bi bi-eye-fill"></i> مشاهده نتیجه
+            </a>
         {% elif item.can_answer %}
-        <a href="{% url 'dashboard:student_answer_questions' item.request.id %}" class="s-btn s-btn-primary w-100 justify-content-center">
-            <i class="bi bi-pencil-square"></i>
-            {% if item.answered_count > 0 %}ادامه پاسخ‌دهی{% else %}شروع پاسخ‌دهی{% endif %}
-        </a>
-        {% else %}
-        <button class="s-btn s-btn-outline w-100 justify-content-center" disabled>
-            <i class="bi bi-lock-fill"></i> ابتدا احراز هویت چهره را انجام دهید
-        </button>
+            <a href="{% url 'dashboard:student_answer_questions' item.request.id %}" class="s-btn s-btn-primary w-100 justify-content-center">
+                <i class="bi bi-pencil-square"></i>
+                {% if item.answered_count > 0 %}ادامه پاسخ‌دهی{% else %}شروع پاسخ‌دهی{% endif %}
+            </a>
+        {% elif item.requires_face and not item.face_verified %}
+            <!-- ── تغییر کلیدی: دکمه فعال به‌جای دکمه غیرفعال ── -->
+            <a href="{% url 'student:attendance' %}" class="s-btn s-btn-warning w-100 justify-content-center" style="padding:12px;">
+                <i class="bi bi-camera-fill"></i> رفتن به احراز هویت چهره
+            </a>
+            <small class="text-muted d-block text-center mt-2">
+                پس از تأیید چهره، می‌توانید به سوالات پاسخ دهید.
+            </small>
         {% endif %}
     </div>
 </div>

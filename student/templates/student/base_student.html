@@ -225,7 +225,10 @@
         </a>
         <div class="s-header-user">
             {{ user.get_full_name|default:user.username }}
-            <a href="{% url 'accounts:logout' %}" style="color:var(--s-secondary);margin-right:10px;font-size:.8rem;">خروج</a>
+            <form id="student-logout-form" method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+                {% csrf_token %}
+            </form>
+            <a href="#" onclick="document.getElementById('student-logout-form').submit(); return false;" style="color:var(--s-secondary);margin-right:10px;font-size:.8rem; text-decoration: none;">خروج</a>
         </div>
     </header>
 

@@ -827,7 +827,7 @@ def assistant_dashboard(request):
     total_students = User.objects.filter(role='student').count()
     total_teachers = User.objects.filter(role='teacher').count()
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     today_attendance = AttendanceRecord.objects.filter(
         status='absent',
         attendance_check__session__session_date__date=today
