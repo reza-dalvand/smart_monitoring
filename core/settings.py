@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'national.apps.NationalConfig',
     'province.apps.ProvinceConfig',
     'district.apps.DistrictConfig',
+    'school.apps.SchoolConfig',
 ]
 
 MIDDLEWARE = [

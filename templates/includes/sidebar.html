@@ -106,20 +106,86 @@
         </a>
     </div>
 
+    <!-- اضافه کردن بخش مدیر مدرسه به منو -->
+    {% elif user.role == 'principal' %}
+    <div class="menu-section">
+        <div class="menu-section-title">پنل مدیریت مدرسه</div>
+        <a href="{% url 'school:principal_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'principal_dashboard' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+            <span class="menu-item-text">داشبورد</span>
+        </a>
+        <a href="{% url 'school:principal_students' %}" class="menu-item {% if 'principal_student' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
+            <span class="menu-item-text">دانش‌آموزان</span>
+        </a>
+        <a href="{% url 'school:principal_teachers' %}" class="menu-item {% if 'principal_teacher' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-person-workspace"></i></div>
+            <span class="menu-item-text">معلمان</span>
+        </a>
+        <a href="{% url 'school:principal_classes' %}" class="menu-item {% if 'principal_class' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <span class="menu-item-text">کلاس‌ها</span>
+        </a>
+        <a href="{% url 'school:principal_attendance' %}" class="menu-item {% if 'principal_attendance' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
+            <span class="menu-item-text">حضور و غیاب</span>
+        </a>
+        <a href="{% url 'school:principal_followups' %}" class="menu-item {% if 'principal_followup' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-folder-fill"></i></div>
+            <span class="menu-item-text">پیگیری‌ها</span>
+        </a>
+        <a href="{% url 'school:principal_assistants' %}" class="menu-item {% if 'principal_assistant' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-person-badge-fill"></i></div>
+            <span class="menu-item-text">معاونان</span>
+        </a>
+        <a href="{% url 'school:principal_alerts' %}" class="menu-item {% if 'principal_alerts' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <span class="menu-item-text">هشدارها</span>
+        </a>
+        <a href="{% url 'school:principal_reports' %}" class="menu-item {% if 'principal_reports' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <span class="menu-item-text">گزارش‌ها</span>
+        </a>
+        <a href="{% url 'school:principal_settings' %}" class="menu-item {% if 'principal_settings' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-gear-fill"></i></div>
+            <span class="menu-item-text">تنظیمات</span>
+        </a>
+        <a href="{% url 'school:principal_audit_log' %}" class="menu-item {% if 'principal_audit_log' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-clock-history"></i></div>
+            <span class="menu-item-text">لاگ فعالیت</span>
+        </a>
+    </div>
+
     {% elif user.role == 'assistant' %}
     <div class="menu-section">
-        <div class="menu-section-title">نظارت و گزارش</div>
-        <a href="{% url 'dashboard:assistant_absences' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_absences' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-person-x-fill"></i>
-            </div>
-            <span class="menu-item-text">غیبت‌های امروز</span>
+        <div class="menu-section-title">پنل معاون</div>
+        <a href="{% url 'school:assistant_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_dashboard' and 'school' in request.resolver_match.namespace %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+            <span class="menu-item-text">داشبورد عملیاتی</span>
         </a>
-        <a href="{% url 'dashboard:assistant_students' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_students' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-people-fill"></i>
-            </div>
+        <a href="{% url 'school:assistant_students' %}" class="menu-item {% if 'assistant_student' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
             <span class="menu-item-text">دانش‌آموزان</span>
+        </a>
+        <a href="{% url 'school:assistant_classes' %}" class="menu-item {% if 'assistant_class' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <span class="menu-item-text">کلاس‌ها</span>
+        </a>
+        <a href="{% url 'school:assistant_attendance' %}" class="menu-item {% if 'assistant_attendance' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
+            <span class="menu-item-text">حضور و غیاب</span>
+        </a>
+        <a href="{% url 'school:assistant_schedule' %}" class="menu-item {% if 'assistant_schedule' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-calendar-week-fill"></i></div>
+            <span class="menu-item-text">برنامه هفتگی</span>
+        </a>
+        <a href="{% url 'school:assistant_followups' %}" class="menu-item {% if 'assistant_followup' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-folder-fill"></i></div>
+            <span class="menu-item-text">پیگیری‌ها</span>
+        </a>
+        <a href="{% url 'school:assistant_reports' %}" class="menu-item {% if 'assistant_reports' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <span class="menu-item-text">گزارش‌ها</span>
         </a>
     </div>
 

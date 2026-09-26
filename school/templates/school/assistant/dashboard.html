@@ -1,0 +1,147 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-lightning-fill me-2" style="color: #ffc107;"></i>
+            داشبورد عملیاتی — {{ school.name }}
+        </h2>
+        <p>امروز چه کارهایی باید انجام بدهم؟</p>
+    </div>
+</div>
+
+<!-- KPI -->
+<div class="sc-kpi-grid">
+    <div class="sc-kpi-card danger">
+        <div class="sc-kpi-icon"><i class="bi bi-person-x-fill"></i></div>
+        <div class="sc-kpi-value">{{ today_absences|length|default:"0" }}</div>
+        <div class="sc-kpi-title">غیبت امروز</div>
+    </div>
+    <div class="sc-kpi-card warning">
+        <div class="sc-kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+        <div class="sc-kpi-value">{{ pending_reviews|length|default:"0" }}</div>
+        <div class="sc-kpi-title">در انتظار بررسی</div>
+    </div>
+    <div class="sc-kpi-card purple">
+        <div class="sc-kpi-icon"><i class="bi bi-folder-fill"></i></div>
+        <div class="sc-kpi-value">{{ open_cases|length|default:"0" }}</div>
+        <div class="sc-kpi-title">پرونده باز</div>
+    </div>
+    <div class="sc-kpi-card info">
+        <div class="sc-kpi-icon"><i class="bi bi-list-check"></i></div>
+        <div class="sc-kpi-value">{{ my_tasks|length|default:"0" }}</div>
+        <div class="sc-kpi-title">وظایف من</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Today's Absences -->
+    <div class="col-lg-7">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-person-x-fill"></i>
+                    غیبت‌های امروز
+                </h3>
+                <a href="{% url 'school:assistant_attendance' %}" class="btn btn-sm btn-outline-danger">
+                    عملیات حضور
+                </a>
+            </div>
+            <div class="sc-section-body">
+                {% if today_absences %}
+                <div class="table-responsive">
+                    <table class="sc-table">
+                        <thead>
+                            <tr>
+                                <th>دانش‌آموز</th>
+                                <th>کلاس</th>
+                                <th>درس</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in today_absences %}
+                            <tr>
+                                <td><strong>{{ record.student.get_full_name|default:record.student.username }}</strong></td>
+                                <td>{{ record.attendance_check.session.classroom.name }}</td>
+                                <td>{{ record.attendance_check.session.classroom.subject }}</td>
+                                <td>
+                                    <a href="{% url 'school:assistant_student_detail' record.student.id %}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="sc-empty">
+                    <div class="sc-empty-icon"><i class="bi bi-check-circle"></i></div>
+                    <p>امروز غیبتی ثبت نشده است.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks + Cases -->
+    <div class="col-lg-5">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-list-check"></i>
+                    اقدامات امروز
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                {% if my_tasks %}
+                    {% for task in my_tasks %}
+                    <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <span class="sc-badge {% if task.status == 'TODO' %}warning{% else %}info{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                        <span style="font-size: .9rem;">{{ task.title }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">وظیفه‌ای وجود ندارد.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-folder-fill"></i>
+                    پرونده‌های باز
+                </h3>
+                <a href="{% url 'school:assistant_followup_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus me-1"></i> جدید
+                </a>
+            </div>
+            <div class="sc-section-body">
+                {% if open_cases %}
+                    {% for case in open_cases %}
+                    <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <span class="sc-badge {% if case.priority == 'URGENT' %}danger{% elif case.priority == 'HIGH' %}warning{% else %}info{% endif %}">
+                            {{ case.get_priority_display }}
+                        </span>
+                        <a href="{% url 'school:assistant_followup_detail' case.case_number %}"
+                           style="text-decoration: none; color: #17224a; font-weight: 600; font-size: .88rem;">
+                            {{ case.title }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">پرونده بازی نیست.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<!-- Hero -->
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-mortarboard-fill me-2" style="color: #ffc107;"></i>
+            مرکز فرماندهی {{ school.name }}
+        </h2>
+        <p>وضعیت لحظه‌ای مدرسه | {{ overview.total_students }} دانش‌آموز | {{ overview.total_teachers }} معلم</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="sc-kpi-grid">
+    <div class="sc-kpi-card">
+        <div class="sc-kpi-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.total_students|default:"-" }}</div>
+        <div class="sc-kpi-title">دانش‌آموزان</div>
+    </div>
+    <div class="sc-kpi-card success">
+        <div class="sc-kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.present_today|default:"0" }}</div>
+        <div class="sc-kpi-title">حاضر امروز</div>
+    </div>
+    <div class="sc-kpi-card danger">
+        <div class="sc-kpi-icon"><i class="bi bi-person-x-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.absent_today|default:"0" }}</div>
+        <div class="sc-kpi-title">غایب امروز</div>
+    </div>
+    <div class="sc-kpi-card warning">
+        <div class="sc-kpi-icon"><i class="bi bi-question-circle-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.suspicious_attendance|default:"0" }}</div>
+        <div class="sc-kpi-title">مشکوک</div>
+    </div>
+    <div class="sc-kpi-card info">
+        <div class="sc-kpi-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.total_classes|default:"-" }}</div>
+        <div class="sc-kpi-title">کلاس‌ها</div>
+    </div>
+    <div class="sc-kpi-card purple">
+        <div class="sc-kpi-icon"><i class="bi bi-folder-fill"></i></div>
+        <div class="sc-kpi-value">{{ overview.open_cases|default:"0" }}</div>
+        <div class="sc-kpi-title">پرونده باز</div>
+    </div>
+</div>
+
+<!-- Alerts + Tasks (Middle) -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <!-- Alerts -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    هشدارها و موارد استثنایی
+                </h3>
+                <a href="{% url 'school:principal_alerts' %}" class="btn btn-sm btn-outline-primary">
+                    مشاهده همه
+                </a>
+            </div>
+            <div class="sc-section-body">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                    <div class="sc-alert-item {{ alert.severity }}">
+                        <div>
+                            <i class="bi {% if alert.severity == 'CRITICAL' %}bi-exclamation-octagon-fill text-danger{% else %}bi-exclamation-triangle-fill text-warning{% endif %}"
+                               style="font-size: 1.3rem;"></i>
+                        </div>
+                        <div>
+                            <strong>{{ alert.title }}</strong>
+                            {% if alert.message %}
+                            <div class="small text-muted mt-1">{{ alert.message }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="sc-empty">
+                        <div class="sc-empty-icon"><i class="bi bi-check-circle"></i></div>
+                        <p>در حال حاضر هشداری وجود ندارد.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Students at Risk -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-person-exclamation"></i>
+                    دانش‌آموزان نیازمند توجه
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                {% if students_at_risk %}
+                    <div class="table-responsive">
+                        <table class="sc-table">
+                            <thead>
+                                <tr>
+                                    <th>دانش‌آموز</th>
+                                    <th>دلایل</th>
+                                    <th>سطح ریسک</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in students_at_risk %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'school:principal_student_detail' item.student.id %}"
+                                           style="text-decoration:none; color: var(--sc-primary); font-weight: 700;">
+                                            {{ item.student.get_full_name|default:item.student.username }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% for reason in item.reasons %}
+                                        <span class="sc-badge warning">{{ reason }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <span class="sc-badge {% if item.risk_level == 'HIGH' %}danger{% else %}warning{% endif %}">
+                                            {{ item.risk_level }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="sc-empty">
+                        <div class="sc-empty-icon"><i class="bi bi-check-circle"></i></div>
+                        <p>دانش‌آموز نیازمند توجهی شناسایی نشد.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <!-- Pending Tasks -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-list-check"></i>
+                    وظایف من
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                {% if pending_tasks %}
+                    {% for task in pending_tasks %}
+                    <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <i class="bi bi-circle text-muted"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold" style="font-size: .9rem;">{{ task.title }}</div>
+                            {% if task.due_date %}
+                            <small class="text-muted">مهلت: {{ task.due_date }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="sc-empty">
+                        <p>وظیفه‌ای وجود ندارد.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Open Cases -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-folder-fill"></i>
+                    پرونده‌های باز
+                </h3>
+                <a href="{% url 'school:principal_followup_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus me-1"></i> جدید
+                </a>
+            </div>
+            <div class="sc-section-body">
+                {% if open_cases %}
+                    {% for case in open_cases %}
+                    <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <span class="sc-badge {% if case.priority == 'URGENT' %}danger{% elif case.priority == 'HIGH' %}warning{% else %}info{% endif %}">
+                            {{ case.get_priority_display }}
+                        </span>
+                        <div class="flex-grow-1">
+                            <a href="{% url 'school:principal_followup_detail' case.case_number %}"
+                               style="text-decoration: none; color: #17224a; font-weight: 600; font-size: .88rem;">
+                                {{ case.title }}
+                            </a>
+                            {% if case.student %}
+                            <div class="small text-muted">{{ case.student.get_full_name }}</div>
+                            {% endif %}
+                        </div>
+                        <span class="sc-badge {{ case.status }}">{{ case.get_status_display }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="sc-empty">
+                        <p>پرونده بازی وجود ندارد.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts (Bottom) -->
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title">
+            <i class="bi bi-graph-up-arrow"></i>
+            روند حضور (۳۰ روز اخیر)
+        </h3>
+    </div>
+    <div class="sc-section-body">
+        {% if attendance_trend %}
+        <div class="sc-chart-wrapper">
+            <canvas id="attendanceTrendChart"></canvas>
+        </div>
+        {% else %}
+        <div class="sc-empty">
+            <p>داده‌ای برای نمودار وجود ندارد.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if attendance_trend %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('attendanceTrendChart');
+    if (!ctx) return;
+    try {
+        const data = {{ attendance_trend|safe }};
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [{
+                    label: 'نرخ حضور (%)',
+                    data: data.map(d => d.rate),
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22,163,74,.1)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: .4,
+                    pointRadius: 2,
+                    pointBackgroundColor: '#16a34a',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { rtl: true, textDirection: 'rtl', backgroundColor: '#1e293b', cornerRadius: 12, padding: 12 }
+                },
+                scales: {
+                    y: { beginAtZero: false, min: 0, max: 100, ticks: { callback: v => v + '٪' }, grid: { color: '#f0f3f8' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    } catch(e) { console.error('Chart error:', e); }
+});
+</script>
+{% endif %}
+
+{% endblock %}
