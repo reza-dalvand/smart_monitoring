@@ -1,0 +1,70 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-tags-fill"></i> عملکرد موضوعی - {{ classroom.name }}</div>
+    <a href="{% url 'teacher:analytics' %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ol"></i> عملکرد بر اساس موضوع</h6>
+    </div>
+    <div class="t-card-body">
+        {% if topic_data %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>موضوع</th>
+                        <th>تعداد سوال</th>
+                        <th>پاسخ صحیح</th>
+                        <th>نرخ موفقیت</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in topic_data %}
+                    <tr>
+                        <td><strong>{{ topic.topic }}</strong></td>
+                        <td>{{ topic.total }}</td>
+                        <td>{{ topic.correct }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="t-progress" style="width:80px;">
+                                    {% if topic.rate %}
+                                        {% if topic.rate >= 75 %}
+                                        <div class="t-progress-fill success" style="width:{{ topic.rate }}%"></div>
+                                        {% elif topic.rate >= 50 %}
+                                        <div class="t-progress-fill warning" style="width:{{ topic.rate }}%"></div>
+                                        {% else %}
+                                        <div class="t-progress-fill danger" style="width:{{ topic.rate }}%"></div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <small class="fw-bold">{{ topic.rate|default:"0" }}٪</small>
+                            </div>
+                        </td>
+                        <td>
+                            {% if topic.needs_review %}
+                                <span class="t-badge danger"><i class="bi bi-exclamation-triangle"></i> نیاز به مرور</span>
+                            {% elif topic.rate and topic.rate >= 75 %}
+                                <span class="t-badge success"><i class="bi bi-check-circle"></i> خوب</span>
+                            {% else %}
+                                <span class="t-badge warning"><i class="bi bi-eye"></i> متوسط</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-tags" title="داده‌ای برای تحلیل موضوعی نیست" message="هنوز پاسخ کافی برای تحلیل موضوعی ثبت نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

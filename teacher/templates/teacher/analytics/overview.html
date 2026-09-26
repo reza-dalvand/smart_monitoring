@@ -1,0 +1,58 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-bar-chart-fill"></i> تحلیل عملکرد</div>
+</div>
+
+<!-- KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-journal-bookmark-fill" value=overview.total_classes label="کلاس‌ها" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-people-fill" value=overview.total_students label="دانش‌آموزان" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-calendar-event-fill" value=overview.total_sessions label="جلسات" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=overview.attendance_rate label="نرخ حضور" color="success" %}
+</div>
+
+<!-- Classes List -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-journal-bookmark"></i> تحلیل کلاس‌ها</h6>
+    </div>
+    <div class="t-card-body">
+        {% if classes %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>کلاس</th>
+                        <th>درس</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for classroom in classes %}
+                    <tr>
+                        <td><strong>{{ classroom.name }}</strong></td>
+                        <td>{{ classroom.subject }}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'teacher:class_analytics' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                    <i class="bi bi-bar-chart"></i> تحلیل کلاس
+                                </a>
+                                <a href="{% url 'teacher:topic_analytics' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                    <i class="bi bi-tags"></i> عملکرد موضوعی
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-journal-x" title="کلاسی وجود ندارد" message="هیچ کلاسی برای تحلیل وجود ندارد." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

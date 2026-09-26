@@ -1,0 +1,107 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-broadcast"></i> پنل جلسه {{ session.id }}</div>
+    <div class="d-flex gap-2">
+        <form method="post" action="{% url 'teacher:session_end' session.id %}">
+            {% csrf_token %}
+            <button type="submit" class="t-btn t-btn-danger t-btn-sm">
+                <i class="bi bi-stop-fill"></i> پایان جلسه
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Session Info -->
+<div class="t-card mb-4" style="border-right: 4px solid var(--t-success);">
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ classroom.name }} - {{ classroom.subject }}</strong>
+            </div>
+            {% if session.topic %}
+            <div class="col-md-3">
+                <small class="text-muted d-block">موضوع</small>
+                <strong>{{ session.topic }}</strong>
+            </div>
+            {% endif %}
+            <div class="col-md-3">
+                <small class="text-muted d-block">تعداد دانش‌آموز</small>
+                <strong>{{ students_count }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">وضعیت</small>
+                {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=present_count label="حاضر" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-x-fill" value=absent_count label="غایب" color="danger" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-exclamation-triangle-fill" value=suspicious_count label="مشکوک" color="warning" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-hourglass-split" value=pending_count label="در انتظار" color="info" %}
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-lightning-fill"></i> اقدامات جلسه</h6>
+            </div>
+            <div class="t-card-body">
+                <a href="{% url 'teacher:attendance_detail' session.id %}" class="t-quick mb-3">
+                    <div class="t-quick-icon" style="background:rgba(26,35,126,.08);color:var(--t-primary);">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                    <div>مشاهده حضور و غیاب</div>
+                </a>
+                <a href="{% url 'teacher:participation_record' session.id %}" class="t-quick mb-3">
+                    <div class="t-quick-icon" style="background:rgba(124,58,237,.1);color:var(--t-purple);">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div>ثبت مشارکت دانش‌آموزان</div>
+                </a>
+                <a href="{% url 'teacher:homework_create' %}" class="t-quick">
+                    <div class="t-quick-icon" style="background:rgba(2,132,199,.1);color:var(--t-info);">
+                        <i class="bi bi-journal-text-fill"></i>
+                    </div>
+                    <div>ایجاد تکلیف برای این جلسه</div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-info-circle"></i> اطلاعات تکمیلی</h6>
+            </div>
+            <div class="t-card-body">
+                {% if extension %}
+                    {% if extension.learning_objectives %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">اهداف یادگیری</small>
+                        <p class="mb-0" style="font-size:.88rem;">{{ extension.learning_objectives }}</p>
+                    </div>
+                    {% endif %}
+                    {% if extension.started_at %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">زمان شروع</small>
+                        <strong>{{ extension.started_at|date:"H:i" }}</strong>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                {% if not extension or not extension.learning_objectives and not extension.started_at %}
+                <p class="text-muted text-center mb-0">اطلاعات تکمیلی ثبت نشده است.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}داشبورد معلم{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="t-page-header">
+    <div class="t-page-title">
+        <i class="bi bi-speedometer2"></i>
+        سلام، {{ user.get_full_name|default:user.username }} 👋
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'teacher:session_create' %}" class="t-btn t-btn-primary t-btn-sm">
+            <i class="bi bi-plus-circle"></i> جلسه جدید
+        </a>
+        <a href="{% url 'teacher:ai' %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-robot"></i> دستیار هوشمند
+        </a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-journal-bookmark-fill" value=overview.total_classes label="کلاس‌ها" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-people-fill" value=overview.total_students label="دانش‌آموزان" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=overview.attendance_rate label="نرخ حضور" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-graph-up" value=overview.participation_rate label="نرخ مشارکت" color="info" %}
+</div>
+
+<!-- Active Session Alert -->
+{% if active_session %}
+<div class="t-card mb-4" style="border-right: 4px solid var(--t-success);">
+    <div class="t-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="t-badge success mb-2"><i class="bi bi-broadcast"></i> جلسه فعال</span>
+            <h6 class="fw-bold mb-1">{{ active_session.session.classroom.name }} - {{ active_session.session.classroom.subject }}</h6>
+            <small class="text-muted">
+                {% if active_session.session.topic %}موضوع: {{ active_session.session.topic }}{% endif %}
+            </small>
+        </div>
+        <a href="{% url 'teacher:session_panel' active_session.session.id %}" class="t-btn t-btn-success">
+            <i class="bi bi-sliders"></i> مدیریت جلسه
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Today's Classes -->
+    <div class="col-lg-5">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-calendar-day"></i> کلاس‌های امروز</h6>
+            </div>
+            <div class="t-card-body">
+                {% if today_classes %}
+                    {% for classroom in today_classes %}
+                    <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div>
+                            <div class="fw-bold" style="font-size:.9rem;">{{ classroom.name }}</div>
+                            <small class="text-muted">{{ classroom.subject }}</small>
+                        </div>
+                        <a href="{% url 'teacher:class_detail' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+                            <i class="bi bi-play-fill"></i> ورود
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {% include "teacher/components/empty_state.html" with icon="bi-calendar-x" title="کلاسی برای امروز نیست" message="برنامه هفتگی شما برای امروز خالی است." %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Items -->
+    <div class="col-lg-7">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-lightning-fill"></i> اقدامات لازم</h6>
+            </div>
+            <div class="t-card-body">
+                <!-- Pending Questions -->
+                {% if pending_questions > 0 %}
+                <a href="{% url 'teacher:questions' %}" class="t-quick mb-3">
+                    <div class="t-quick-icon" style="background:rgba(217,119,6,.1);color:var(--t-warning);">
+                        <i class="bi bi-question-circle-fill"></i>
+                    </div>
+                    <div>
+                        <div>{{ pending_questions }} سوال منتظر بررسی</div>
+                        <small class="text-muted">سوالات هوش مصنوعی نیاز به تایید دارند</small>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- Students at Risk -->
+                {% if students_at_risk %}
+                <a href="{% url 'teacher:analytics' %}" class="t-quick mb-3">
+                    <div class="t-quick-icon" style="background:rgba(220,38,38,.1);color:var(--t-danger);">
+                        <i class="bi bi-person-exclamation"></i>
+                    </div>
+                    <div>
+                        <div>{{ students_at_risk|length }} دانش‌آموز نیازمند توجه</div>
+                        <small class="text-muted">بر اساس تحلیل عملکرد و مشارکت</small>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- Quick Actions -->
+                <div class="row g-2 mt-2">
+                    <div class="col-6">
+                        <a href="{% url 'teacher:assessment_create' %}" class="t-quick">
+                            <div class="t-quick-icon" style="background:rgba(22,163,74,.1);color:var(--t-success);">
+                                <i class="bi bi-clipboard-check-fill"></i>
+                            </div>
+                            <div style="font-size:.85rem;">ایجاد ارزیابی</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'teacher:homework_create' %}" class="t-quick">
+                            <div class="t-quick-icon" style="background:rgba(2,132,199,.1);color:var(--t-info);">
+                                <i class="bi bi-journal-text-fill"></i>
+                            </div>
+                            <div style="font-size:.85rem;">ایجاد تکلیف</div>
+                        </a>
+                    </div>
+                </div>
+
+                {% if pending_questions == 0 and not students_at_risk %}
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-check-circle" style="font-size:2rem;opacity:.4;"></i>
+                    <p class="mt-2 mb-0">همه چیز مرتب است! 🎉</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students at Risk Detail -->
+{% if students_at_risk %}
+<div class="t-card mt-4">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-person-exclamation"></i> دانش‌آموزان نیازمند توجه</h6>
+        <a href="{% url 'teacher:analytics' %}" class="t-btn t-btn-outline t-btn-sm">مشاهده همه</a>
+    </div>
+    <div class="t-card-body">
+        {% for item in students_at_risk %}
+        <div class="t-student-row">
+            <div class="t-student-avatar">{{ item.student.username|first|upper }}</div>
+            <div class="flex-grow-1">
+                <div class="t-student-name">{{ item.student.get_full_name|default:item.student.username }}</div>
+                <div class="t-student-sub">
+                    {% for indicator in item.indicators %}
+                        {{ indicator.message }}{% if not forloop.last %} | {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% if item.risk_level == 'needs_attention' %}
+                <span class="t-badge danger"><i class="bi bi-exclamation-circle-fill"></i> نیازمند توجه</span>
+            {% else %}
+                <span class="t-badge warning"><i class="bi bi-eye-fill"></i> زیر نظر</span>
+            {% endif %}
+            <a href="{% url 'teacher:student_detail' item.student.id %}" class="t-btn t-btn-outline t-btn-sm">
+                <i class="bi bi-eye"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

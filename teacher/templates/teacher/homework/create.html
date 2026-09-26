@@ -1,0 +1,65 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-plus-circle-fill"></i> ایجاد تکلیف جدید</div>
+</div>
+
+<div class="t-card" style="max-width:700px;margin:0 auto;">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-journal-text"></i> اطلاعات تکلیف</h6>
+    </div>
+    <div class="t-card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="t-form-label">عنوان تکلیف <span class="text-danger">*</span></label>
+                <input type="text" name="title" class="t-form-control" required
+                       placeholder="مثال: تمرین‌های فصل دوم ریاضی">
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">شرح تکلیف</label>
+                <textarea name="description" class="t-form-control" rows="3"
+                          placeholder="توضیحات کامل تکلیف..."></textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="t-form-label">کلاس <span class="text-danger">*</span></label>
+                    <select name="classroom" class="t-form-control" required>
+                        <option value="">انتخاب کلاس...</option>
+                        {% for classroom in classrooms %}
+                        <option value="{{ classroom.id }}">{{ classroom.name }} - {{ classroom.subject }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">موضوع</label>
+                    <input type="text" name="topic" class="t-form-control"
+                           placeholder="مثال: معادلات درجه دوم">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">مهلت ارسال <span class="text-danger">*</span></label>
+                <input type="datetime-local" name="deadline" class="t-form-control" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="t-form-label">پیوست (اختیاری)</label>
+                <input type="file" name="attachment" class="t-form-control">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-primary flex-grow-1 justify-content-center">
+                    <i class="bi bi-check-circle"></i> ایجاد تکلیف
+                </button>
+                <a href="{% url 'teacher:homework' %}" class="t-btn t-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

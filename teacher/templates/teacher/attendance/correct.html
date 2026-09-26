@@ -1,0 +1,63 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-pencil-square-fill"></i> اصلاح وضعیت حضور</div>
+</div>
+
+<div class="t-card" style="max-width:600px;margin:0 auto;">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-person-badge"></i> اطلاعات دانش‌آموز</h6>
+    </div>
+    <div class="t-card-body">
+        <!-- Student Info -->
+        <div class="t-student-row mb-3">
+            <div class="t-student-avatar">{{ response.student.username|first|upper }}</div>
+            <div>
+                <div class="t-student-name">{{ response.student.get_full_name|default:response.student.username }}</div>
+                <div class="t-student-sub">کلاس: {{ response.attendance_request.classroom.name }}</div>
+            </div>
+        </div>
+
+        <!-- Current Status -->
+        <div class="alert alert-light border mb-4">
+            <strong>وضعیت فعلی:</strong>
+            {% if response.final_status == 'present' %}
+                {% include "teacher/components/status_badge.html" with status="present" display="حاضر" %}
+            {% elif response.final_status == 'absent' %}
+                {% include "teacher/components/status_badge.html" with status="absent" display="غایب" %}
+            {% else %}
+                {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+            {% endif %}
+        </div>
+
+        <!-- Correction Form -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="t-form-label">وضعیت جدید <span class="text-danger">*</span></label>
+                <select name="new_status" class="t-form-control" required>
+                    <option value="">انتخاب وضعیت...</option>
+                    <option value="present">حاضر</option>
+                    <option value="absent">غایب</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="t-form-label">دلیل تغییر <span class="text-danger">*</span></label>
+                <textarea name="reason" class="t-form-control" rows="3" required
+                          placeholder="مثال: دانش‌آموز با تأخیر وارد کلاس شد."></textarea>
+                <small class="text-muted">این تغییر در لاگ ممیزی ثبت خواهد شد.</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-primary flex-grow-1 justify-content-center">
+                    <i class="bi bi-check-circle"></i> ثبت تغییر
+                </button>
+                <a href="{% url 'teacher:attendance_detail' response.attendance_request.id %}" class="t-btn t-btn-outline">
+                    انصراف
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

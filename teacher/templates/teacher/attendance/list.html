@@ -1,0 +1,55 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-person-check-fill"></i> حضور و غیاب</div>
+</div>
+
+<div class="t-card">
+    <div class="t-card-body">
+        {% if attendance_requests %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>نوع درخواست</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in attendance_requests %}
+                    <tr>
+                        <td><strong>{{ req.id }}</strong></td>
+                        <td>{{ req.classroom.name }}</td>
+                        <td>{{ req.get_request_type_display }}</td>
+                        <td>
+                            {% if req.status == 'active' %}
+                                {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+                            {% elif req.status == 'finished' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="پایان یافته" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="cancelled" display="لغو شده" %}
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ req.created_at|date:"Y/m/d H:i" }}</small></td>
+                        <td>
+                            <a href="{% url 'teacher:attendance_detail' req.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                <i class="bi bi-eye"></i> جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-person-check" title="درخواست حضوری ثبت نشده" message="هنوز درخواست حضور و غیابی ایجاد نکرده‌اید." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-folder me-2" style="color: #ffc107;"></i> پرونده #{{ case.case_number }}</h2>
+    <p>{{ case.title }} | <span class="sc-badge {{ case.status|lower }}">{{ case.get_status_display }}</span></p>
+</div>
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title">توضیحات و یادداشت‌ها</h3></div>
+            <div class="sc-section-body">
+                <p class="text-muted">{{ case.description|default:"توضیحی ثبت نشده است."|linebreaksbr }}</p>
+                <hr>
+                <h5>یادداشت‌ها</h5>
+                {% for note in notes %}
+                <div class="border-bottom pb-2 mb-2">
+                    <strong>{{ note.author.get_full_name }}</strong> <small class="text-muted">({{ note.created_at|date:"Y/m/d H:i" }})</small>
+                    <p class="mb-0">{{ note.content|linebreaksbr }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted">یادداشتی ثبت نشده است.</p>
+                {% endfor %}
+                
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="note" class="form-control" placeholder="افزودن یادداشت جدید..." required>
+                        <button class="btn btn-primary" type="submit">ثبت</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title">عملیات</h3></div>
+            <div class="sc-section-body d-grid gap-2">
+                {% if case.status != 'RESOLVED' %}
+                <form method="post" action="{% url 'school:principal_followup_resolve' case.case_number %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="resolution_note" value="حل شده توسط مدیر">
+                    <button class="btn btn-success w-100"><i class="bi bi-check-circle"></i> حل کردن پرونده</button>
+                </form>
+                <form method="post" action="{% url 'school:principal_followup_assign' case.case_number %}">
+                    {% csrf_token %}
+                    <select name="assistant_user" class="form-select mb-2" required>
+                        <option value="">ارجاع به معاون...</option>
+                        {% for a in assistants %}
+                        <option value="{{ a.user.id }}">{{ a.user.get_full_name }} ({{ a.get_assistant_type_display }})</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-info w-100"><i class="bi bi-send"></i> ارجاع به معاون</button>
+                </form>
+                {% endif %}
+                <a href="{% url 'school:principal_followups' %}" class="btn btn-outline-secondary">بازگشت</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

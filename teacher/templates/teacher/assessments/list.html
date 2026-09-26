@@ -1,0 +1,62 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-clipboard-check-fill"></i> ارزیابی‌ها</div>
+    <a href="{% url 'teacher:assessment_create' %}" class="t-btn t-btn-primary t-btn-sm">
+        <i class="bi bi-plus-circle"></i> ایجاد ارزیابی
+    </a>
+</div>
+
+<div class="t-card">
+    <div class="t-card-body">
+        {% if assessments %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>وضعیت</th>
+                        <th>مدت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assessment in assessments %}
+                    <tr>
+                        <td><strong>{{ assessment.title }}</strong></td>
+                        <td>{{ assessment.classroom.name }}</td>
+                        <td>{{ assessment.topic|default:"-" }}</td>
+                        <td>
+                            {% if assessment.status == 'draft' %}
+                                {% include "teacher/components/status_badge.html" with status="draft" display="پیش‌نویس" %}
+                            {% elif assessment.status == 'published' %}
+                                {% include "teacher/components/status_badge.html" with status="active" display="منتشر شده" %}
+                            {% elif assessment.status == 'in_progress' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در حال برگزاری" %}
+                            {% elif assessment.status == 'completed' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="تکمیل شده" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="cancelled" display="بایگانی شده" %}
+                            {% endif %}
+                        </td>
+                        <td>{{ assessment.duration_minutes }} دقیقه</td>
+                        <td>
+                            <a href="{% url 'teacher:assessment_detail' assessment.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                <i class="bi bi-eye"></i> جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-clipboard-x" title="ارزیابی‌ای ایجاد نشده" message="برای سنجش عملکرد دانش‌آموزان، اولین ارزیابی خود را بسازید." cta_text="ایجاد ارزیابی" cta_url="/teacher/assessments/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

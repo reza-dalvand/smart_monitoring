@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'province.apps.ProvinceConfig',
     'district.apps.DistrictConfig',
     'school.apps.SchoolConfig',
+    'teacher.apps.TeacherConfig',
 ]
 
 MIDDLEWARE = [

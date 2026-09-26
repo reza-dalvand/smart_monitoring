@@ -1,0 +1,40 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-journal-bookmark me-2" style="color: #ffc107;"></i> {{ classroom.name }}</h2>
+    <p>{{ classroom.subject }} | {{ classroom.get_grade_display }} | {{ classroom.teacher_name }}</p>
+</div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title"><i class="bi bi-people"></i> دانش‌آموزان ({{ students.count }})</h3></div>
+            <div class="sc-section-body" style="max-height: 400px; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                    {% for s in students %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <a href="{% url 'school:principal_student_detail' s.id %}">{{ s.get_full_name|default:s.username }}</a>
+                        <span class="text-muted">{{ s.national_id|default:"-" }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title"><i class="bi bi-calendar-event"></i> جلسات اخیر</h3></div>
+            <div class="sc-section-body" style="max-height: 400px; overflow-y: auto;">
+                {% for session in sessions %}
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>جلسه {{ session.id }}: {{ session.topic|default:"بدون موضوع" }}</span>
+                    <small class="text-muted">{{ session.session_date|date:"Y/m/d" }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">جلسه‌ای برگزار نشده است.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

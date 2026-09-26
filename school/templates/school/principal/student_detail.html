@@ -1,0 +1,68 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-person-badge me-2" style="color: #ffc107;"></i> {{ student.get_full_name }}</h2>
+    <p>کد ملی: {{ student.national_id|default:"-" }}</p>
+</div>
+<!-- دکمه‌های عملیاتی -->
+<div class="d-flex gap-2 mb-4">
+    <a href="{% url 'school:principal_student_status' student.id %}"
+       class="btn btn-warning">
+        <i class="bi bi-person-gear me-1"></i> تغییر وضعیت تحصیلی
+    </a>
+    <a href="{% url 'school:principal_followup_create' %}?student={{ student.id }}"
+       class="btn btn-outline-primary">
+        <i class="bi bi-folder-plus me-1"></i> ایجاد پرونده پیگیری
+    </a>
+</div>
+<div class="sc-kpi-grid">
+    <div class="sc-kpi-card success">
+        <div class="sc-kpi-icon"><i class="bi bi-check-circle"></i></div>
+        <div class="sc-kpi-value">{{ attendance_rate|default:"0" }}٪</div>
+        <div class="sc-kpi-title">نرخ حضور</div>
+    </div>
+    <div class="sc-kpi-card info">
+        <div class="sc-kpi-icon"><i class="bi bi-award"></i></div>
+        <div class="sc-kpi-value">{{ performance_rate|default:"0" }}٪</div>
+        <div class="sc-kpi-title">عملکرد تحصیلی</div>
+    </div>
+    <div class="sc-kpi-card">
+        <div class="sc-kpi-icon"><i class="bi bi-question-circle"></i></div>
+        <div class="sc-kpi-value">{{ correct }}/{{ total_answered }}</div>
+        <div class="sc-kpi-title">پاسخ‌های صحیح</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title"><i class="bi bi-journal-bookmark"></i> کلاس‌ها</h3></div>
+            <div class="sc-section-body">
+                <ul class="list-group list-group-flush">
+                    {% for c in classrooms %}
+                    <li class="list-group-item">{{ c.name }} - {{ c.subject }}</li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">ثبت‌نام نشده</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title"><i class="bi bi-folder"></i> پرونده‌های پیگیری</h3></div>
+            <div class="sc-section-body">
+                {% for case in cases %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <a href="{% url 'school:principal_followup_detail' case.case_number %}">{{ case.title }}</a>
+                    <span class="sc-badge {{ case.status|lower }}">{{ case.get_status_display }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted">پرونده‌ای وجود ندارد.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

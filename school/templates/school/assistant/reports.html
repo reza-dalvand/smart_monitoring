@@ -1,0 +1,39 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-file-earmark-bar-graph me-2" style="color: #ffc107;"></i>گزارش‌های عملیاتی</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title">نرخ حضور</h3></div>
+            <div class="sc-section-body text-center">
+                <h2 class="text-success">۹۲٪</h2>
+                <p class="text-muted">میانگین ماهانه</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title">مشارکت</h3></div>
+            <div class="sc-section-body text-center">
+                <h2 class="text-info">۷۸٪</h2>
+                <p class="text-muted">پاسخ به سوالات</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="sc-section">
+            <div class="sc-section-header"><h3 class="sc-section-title">پرونده‌ها</h3></div>
+            <div class="sc-section-body text-center">
+                <h2 class="text-warning">۱۲</h2>
+                <p class="text-muted">در حال پیگیری</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

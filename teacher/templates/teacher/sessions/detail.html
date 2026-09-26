@@ -1,0 +1,102 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-calendar-event-fill"></i> جلسه {{ session.id }}</div>
+    <div class="d-flex gap-2">
+        {% if extension %}
+            {% if extension.status == 'scheduled' %}
+            <form method="post" action="{% url 'teacher:session_start' session.id %}">
+                {% csrf_token %}
+                <button type="submit" class="t-btn t-btn-success">
+                    <i class="bi bi-play-fill"></i> شروع جلسه
+                </button>
+            </form>
+            {% elif extension.status == 'active' %}
+            <a href="{% url 'teacher:session_panel' session.id %}" class="t-btn t-btn-warning">
+                <i class="bi bi-sliders"></i> پنل جلسه
+            </a>
+            <form method="post" action="{% url 'teacher:session_end' session.id %}">
+                {% csrf_token %}
+                <button type="submit" class="t-btn t-btn-danger">
+                    <i class="bi bi-stop-fill"></i> پایان جلسه
+                </button>
+            </form>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="t-card">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-info-circle"></i> اطلاعات جلسه</h6>
+            </div>
+            <div class="t-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">کلاس</small>
+                        <strong>{{ session.classroom.name }} - {{ session.classroom.subject }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">تاریخ</small>
+                        <strong>{{ session.session_date|date:"Y/m/d - H:i" }}</strong>
+                    </div>
+                    {% if session.topic %}
+                    <div class="col-12">
+                        <small class="text-muted d-block">موضوع</small>
+                        <strong>{{ session.topic }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if extension %}
+                        {% if extension.learning_objectives %}
+                        <div class="col-12">
+                            <small class="text-muted d-block">اهداف یادگیری</small>
+                            <p class="mb-0">{{ extension.learning_objectives }}</p>
+                        </div>
+                        {% endif %}
+                        {% if extension.description %}
+                        <div class="col-12">
+                            <small class="text-muted d-block">توضیحات</small>
+                            <p class="mb-0">{{ extension.description }}</p>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-clock-history"></i> وضعیت</h6>
+            </div>
+            <div class="t-card-body">
+                {% if extension %}
+                    {% if extension.status == 'scheduled' %}
+                        {% include "teacher/components/status_badge.html" with status="scheduled" display="زمان‌بندی شده" %}
+                    {% elif extension.status == 'active' %}
+                        {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+                        {% if extension.started_at %}
+                        <p class="mt-2 mb-0 small text-muted">شروع: {{ extension.started_at|date:"H:i" }}</p>
+                        {% endif %}
+                    {% elif extension.status == 'completed' %}
+                        {% include "teacher/components/status_badge.html" with status="completed" display="تکمیل شده" %}
+                        {% if extension.started_at and extension.ended_at %}
+                        <p class="mt-2 mb-0 small text-muted">
+                            {{ extension.started_at|date:"H:i" }} تا {{ extension.ended_at|date:"H:i" }}
+                        </p>
+                        {% endif %}
+                    {% elif extension.status == 'cancelled' %}
+                        {% include "teacher/components/status_badge.html" with status="cancelled" display="لغو شده" %}
+                    {% endif %}
+                {% else %}
+                    <span class="t-badge secondary">وضعیت ثبت نشده</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

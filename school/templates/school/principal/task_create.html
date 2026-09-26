@@ -1,0 +1,77 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-plus-circle me-2" style="color: #ffc107;"></i>
+            ایجاد وظیفه جدید
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="sc-section">
+            <div class="sc-section-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">عنوان وظیفه <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control"
+                               placeholder="مثلاً: بررسی وضعیت غیبت‌های مهرماه" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">توضیحات</label>
+                        <textarea name="description" class="form-control" rows="4"
+                                  placeholder="جزئیات وظیفه را شرح دهید..."></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">مسئول انجام</label>
+                            <select name="assigned_to" class="form-select">
+                                <option value="">خودم (مدیر)</option>
+                                {% for member in staff_members %}
+                                <option value="{{ member.id }}">
+                                    {{ member.get_full_name|default:member.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">اولویت</label>
+                            <select name="priority" class="form-select">
+                                {% for val, label in priorities %}
+                                <option value="{{ val }}" {% if val == 'MEDIUM' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">مهلت انجام</label>
+                            <input type="date" name="due_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> ایجاد وظیفه
+                        </button>
+                        <a href="{% url 'school:principal_tasks' %}" class="btn btn-outline-secondary">
+                            انصراف
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

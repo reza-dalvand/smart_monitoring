@@ -1,0 +1,74 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-question-circle-fill"></i> بانک سوال</div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'teacher:question_create' %}" class="t-btn t-btn-primary t-btn-sm">
+            <i class="bi bi-plus-circle"></i> سوال دستی جدید
+        </a>
+        <a href="{% url 'dashboard:teacher_ai_new' %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-robot"></i> تولید با هوش مصنوعی
+        </a>
+    </div>
+</div>
+
+<div class="t-card">
+    <div class="t-card-body">
+        {% if questions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>سوال</th>
+                        <th>منبع</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for question in questions %}
+                    <tr>
+                        <td><strong>{{ question.id }}</strong></td>
+                        <td>{{ question.classroom.name }}</td>
+                        <td style="max-width:250px;">{{ question.text|truncatechars:70 }}</td>
+                        <td>
+                            {% if question.source == 'ai' %}
+                                <span class="t-badge purple"><i class="bi bi-robot"></i> هوش مصنوعی</span>
+                            {% else %}
+                                <span class="t-badge info"><i class="bi bi-pencil"></i> دستی</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if question.review_status == 'approved' %}
+                                {% include "teacher/components/status_badge.html" with status="approved" display="تایید شده" %}
+                            {% elif question.review_status == 'pending' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="rejected" display="رد شده" %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'teacher:question_edit' question.id %}" class="t-btn t-btn-outline t-btn-sm" title="ویرایش">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'teacher:question_delete' question.id %}" class="t-btn t-btn-danger t-btn-sm" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-question-circle" title="سوالی ثبت نشده" message="بانک سوال شما خالی است. سوال دستی بسازید یا با هوش مصنوعی تولید کنید." cta_text="ساخت سوال" cta_url="/teacher/questions/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

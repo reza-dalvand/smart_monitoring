@@ -1,0 +1,29 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-person-badge me-2" style="color: #ffc107;"></i> {{ teacher.get_full_name }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-header"><h3 class="sc-section-title"><i class="bi bi-journal-bookmark"></i> کلاس‌های تحت تدریس</h3></div>
+    <div class="sc-section-body">
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>نام کلاس</th><th>درس</th><th>پایه</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for c in classrooms %}
+                    <tr>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.subject }}</td>
+                        <td>{{ c.get_grade_display }}</td>
+                        <td><a href="{% url 'school:principal_class_detail' c.id %}" class="btn btn-sm btn-outline-primary">جزئیات</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">کلاسی یافت نشد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

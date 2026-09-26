@@ -1,0 +1,62 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-people-fill"></i> دانش‌آموزان {{ classroom.name }}</div>
+    <a href="{% url 'teacher:class_detail' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت به کلاس
+    </a>
+</div>
+
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ul"></i> لیست دانش‌آموزان</h6>
+        <span class="t-badge info">{{ students|length }} نفر</span>
+    </div>
+    <div class="t-card-body">
+        {% if students %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>نام دانش‌آموز</th>
+                        <th>کد ملی</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="t-student-avatar" style="width:32px;height:32px;font-size:.8rem;">
+                                    {{ student.username|first|upper }}
+                                </div>
+                                <strong>{{ student.get_full_name|default:student.username }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ student.national_id|default:"-" }}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'teacher:student_detail' student.id %}" class="t-btn t-btn-outline t-btn-sm" title="پروفایل">
+                                    <i class="bi bi-person"></i> پروفایل
+                                </a>
+                                <a href="{% url 'teacher:student_notes' student.id %}" class="t-btn t-btn-outline t-btn-sm" title="یادداشت‌ها">
+                                    <i class="bi bi-journal-text"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-people" title="دانش‌آموزی ثبت نشده" message="این کلاس هنوز دانش‌آموز ندارد." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

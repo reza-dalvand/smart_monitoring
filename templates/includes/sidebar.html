@@ -20,53 +20,95 @@
     </div>
 
     {% if user.role == 'teacher' %}
-    <div class="menu-section">
-        <div class="menu-section-title">مدیریت کلاس</div>
-        <a href="{% url 'dashboard:teacher_active_classes' %}" class="menu-item {% if 'teacher_active_classes' in request.resolver_match.url_name or 'teacher_class_detail' in request.resolver_match.url_name or 'teacher_class_students' in request.resolver_match.url_name or 'teacher_request_results' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-play-circle-fill"></i>
-            </div>
-            <span class="menu-item-text">کلاس‌های فعال</span>
-        </a>
-        <a href="{% url 'dashboard:teacher_weekly_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_weekly_schedule' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-calendar-week-fill"></i>
-            </div>
-            <span class="menu-item-text">برنامه هفتگی من</span>
-        </a>
-    </div>
+        <div class="menu-section">
+            <div class="menu-section-title">پنل معلم</div>
+            <a href="{% url 'teacher:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+                <span class="menu-item-text">داشبورد</span>
+            </a>
+            <a href="{% url 'teacher:classes' %}" class="menu-item {% if 'classes' in request.resolver_match.url_name or 'class_detail' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <span class="menu-item-text">کلاس‌های من</span>
+            </a>
+            <a href="{% url 'teacher:sessions' %}" class="menu-item {% if 'session' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-calendar-event-fill"></i></div>
+                <span class="menu-item-text">جلسات آموزشی</span>
+            </a>
+        </div>
+        <div class="menu-section">
+            <div class="menu-section-title">آموزشی</div>
+            <a href="{% url 'teacher:attendance' %}" class="menu-item {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
+                <span class="menu-item-text">حضور و غیاب</span>
+            </a>
+            <a href="{% url 'teacher:participation' %}" class="menu-item {% if 'participation' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-graph-up"></i></div>
+                <span class="menu-item-text">مشارکت</span>
+            </a>
+            <a href="{% url 'teacher:questions' %}" class="menu-item {% if 'question' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-question-circle-fill"></i></div>
+                <span class="menu-item-text">بانک سوال</span>
+            </a>
+            <a href="{% url 'teacher:assessments' %}" class="menu-item {% if 'assessment' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+                <span class="menu-item-text">ارزیابی‌ها</span>
+            </a>
+            <a href="{% url 'teacher:homework' %}" class="menu-item {% if 'homework' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-journal-text-fill"></i></div>
+                <span class="menu-item-text">تکالیف</span>
+            </a>
+        </div>
+        <div class="menu-section">
+            <div class="menu-section-title">مدیریت</div>
+            <a href="{% url 'teacher:students' %}" class="menu-item {% if 'students' in request.resolver_match.url_name or 'student_detail' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
+                <span class="menu-item-text">دانش‌آموزان</span>
+            </a>
+            <a href="{% url 'teacher:analytics' %}" class="menu-item {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-bar-chart-fill"></i></div>
+                <span class="menu-item-text">تحلیل عملکرد</span>
+            </a>
+            <a href="{% url 'teacher:ai' %}" class="menu-item {% if 'ai' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-robot"></i></div>
+                <span class="menu-item-text">دستیار هوشمند</span>
+            </a>
+            <a href="{% url 'teacher:reports' %}" class="menu-item {% if 'reports' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                <span class="menu-item-text">گزارش‌ها</span>
+            </a>
+        </div>
 
-    <div class="menu-section">
-        <div class="menu-section-title">سوالات</div>
-        <a href="{% url 'dashboard:teacher_ai_new' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_ai_new' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-robot"></i>
-            </div>
-            <span class="menu-item-text">تولید سوال با هوش مصنوعی</span>
-        </a>
-        <a href="{% url 'dashboard:teacher_question_bank' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_bank' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-journal-bookmark-fill"></i>
-            </div>
-            <span class="menu-item-text">بانک سوالات</span>
-        </a>
-        <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_manual_create' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-plus-circle-fill"></i>
-            </div>
-            <span class="menu-item-text">ساخت سوال دستی</span>
-        </a>
-    </div>
+        <div class="menu-section">
+            <div class="menu-section-title">سوالات</div>
+            <a href="{% url 'dashboard:teacher_ai_new' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_ai_new' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <span class="menu-item-text">تولید سوال با هوش مصنوعی</span>
+            </a>
+            <a href="{% url 'dashboard:teacher_question_bank' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_bank' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+                <span class="menu-item-text">بانک سوالات</span>
+            </a>
+            <a href="{% url 'dashboard:teacher_question_manual_create' %}" class="menu-item {% if request.resolver_match.url_name == 'teacher_question_manual_create' %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span class="menu-item-text">ساخت سوال دستی</span>
+            </a>
+        </div>
 
-    <div class="menu-section">
-        <div class="menu-section-title">گزارشات</div>
-        <a href="{% url 'dashboard:teacher_participation_stats' %}" class="menu-item {% if 'participation' in request.resolver_match.url_name or 'session_detail_stats' in request.resolver_match.url_name or 'period_stats' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-graph-up"></i>
-            </div>
-            <span class="menu-item-text">آمار مشارکت</span>
-        </a>
-    </div>
+        <div class="menu-section">
+            <div class="menu-section-title">گزارشات</div>
+            <a href="{% url 'dashboard:teacher_participation_stats' %}" class="menu-item {% if 'participation' in request.resolver_match.url_name or 'session_detail_stats' in request.resolver_match.url_name or 'period_stats' in request.resolver_match.url_name %}active{% endif %}">
+                <div class="menu-item-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <span class="menu-item-text">آمار مشارکت</span>
+            </a>
+        </div>
 
     {% elif user.role == 'student' %}
     <div class="menu-section">
@@ -157,12 +199,21 @@
     </div>
 
     {% elif user.role == 'assistant' %}
+    {% with atypes=request.school_scope.assistant_types %}
     <div class="menu-section">
-        <div class="menu-section-title">پنل معاون</div>
-        <a href="{% url 'school:assistant_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_dashboard' and 'school' in request.resolver_match.namespace %}active{% endif %}">
-            <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
+        <div class="menu-section-title">
+        پنل معاون 
+        {% if 'EDUCATIONAL' in atypes %}(آموزشی){% elif 'EXECUTIVE' in atypes %}(اجرایی){% else %}(عمومی){% endif %}
+        </div>
+        <a href="{% url 'school:assistant_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'assistant_dashboard' %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-lightning-fill"></i></div>
             <span class="menu-item-text">داشبورد عملیاتی</span>
         </a>
+    </div>
+
+    {% if 'EDUCATIONAL' in atypes or 'GENERAL' in atypes %}
+    <div class="menu-section">
+        <div class="menu-section-title">مدیریت آموزشی</div>
         <a href="{% url 'school:assistant_students' %}" class="menu-item {% if 'assistant_student' in request.resolver_match.url_name %}active{% endif %}">
             <div class="menu-item-icon"><i class="bi bi-people-fill"></i></div>
             <span class="menu-item-text">دانش‌آموزان</span>
@@ -171,23 +222,38 @@
             <div class="menu-item-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
             <span class="menu-item-text">کلاس‌ها</span>
         </a>
-        <a href="{% url 'school:assistant_attendance' %}" class="menu-item {% if 'assistant_attendance' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
-            <span class="menu-item-text">حضور و غیاب</span>
-        </a>
         <a href="{% url 'school:assistant_schedule' %}" class="menu-item {% if 'assistant_schedule' in request.resolver_match.url_name %}active{% endif %}">
             <div class="menu-item-icon"><i class="bi bi-calendar-week-fill"></i></div>
             <span class="menu-item-text">برنامه هفتگی</span>
         </a>
+    </div>
+    {% endif %}
+
+    {% if 'EXECUTIVE' in atypes or 'GENERAL' in atypes %}
+    <div class="menu-section">
+        <div class="menu-section-title">عملیات اجرایی</div>
+        <a href="{% url 'school:assistant_attendance' %}" class="menu-item {% if 'assistant_attendance' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
+            <span class="menu-item-text">حضور و غیاب</span>
+            {% if request.school_scope.active_school_id %}
+            <span class="menu-badge" id="absence-badge">!</span>
+            {% endif %}
+        </a>
         <a href="{% url 'school:assistant_followups' %}" class="menu-item {% if 'assistant_followup' in request.resolver_match.url_name %}active{% endif %}">
             <div class="menu-item-icon"><i class="bi bi-folder-fill"></i></div>
-            <span class="menu-item-text">پیگیری‌ها</span>
-        </a>
-        <a href="{% url 'school:assistant_reports' %}" class="menu-item {% if 'assistant_reports' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
-            <span class="menu-item-text">گزارش‌ها</span>
+            <span class="menu-item-text">پرونده‌های پیگیری</span>
         </a>
     </div>
+    {% endif %}
+
+    <div class="menu-section">
+        <div class="menu-section-title">گزارشات</div>
+        <a href="{% url 'school:assistant_reports' %}" class="menu-item {% if 'assistant_reports' in request.resolver_match.url_name %}active{% endif %}">
+            <div class="menu-item-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <span class="menu-item-text">گزارش‌های عملیاتی</span>
+        </a>
+    </div>
+    {% endwith %}
 
     <div class="menu-section">
         <div class="menu-section-title">مدیریت کلاس‌ها</div>

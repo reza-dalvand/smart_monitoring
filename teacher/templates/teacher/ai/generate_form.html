@@ -1,0 +1,79 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}تولید سوال با هوش مصنوعی{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-stars"></i> تولید سوال با هوش مصنوعی</div>
+</div>
+
+<div class="t-card" style="max-width:700px;margin:0 auto;">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-robot"></i> اطلاعات درخواست</h6>
+    </div>
+    <div class="t-card-body">
+        <div class="alert alert-info border-0" style="background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.2)!important;">
+            <small>
+                <i class="bi bi-info-circle me-1"></i>
+                هوش مصنوعی سوالات چهارگزینه‌ای تولید می‌کند. پس از تولید، شما باید سوالات را بررسی و تایید کنید.
+            </small>
+        </div>
+
+        <form method="post" action="{% url 'dashboard:teacher_ai_new' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="t-form-label">کلاس <span class="text-danger">*</span></label>
+                <select name="classroom" class="t-form-control" required>
+                    <option value="">انتخاب کلاس...</option>
+                    {% for classroom in classrooms %}
+                    <option value="{{ classroom.id }}">{{ classroom.name }} - {{ classroom.subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">مبحث</label>
+                <input type="text" name="topic" class="t-form-control"
+                       placeholder="مثال: فصل دوم - متغیرها و حلقه‌ها">
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">پرامپت</label>
+                <textarea name="prompt" class="t-form-control" rows="4"
+                          placeholder="مثال: از مبحث مشخص‌شده، سوالات چهارگزینه‌ای مفهومی و در سطح کتاب طراحی کن."></textarea>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="t-form-label">تعداد سوال</label>
+                    <input type="number" name="requested_count" class="t-form-control"
+                           value="5" min="1" max="20">
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">زمان پاسخ (ثانیه)</label>
+                    <input type="number" name="default_timer_seconds" class="t-form-control"
+                           value="300" min="30" max="3600">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-primary flex-grow-1 justify-content-center" id="aiSubmitBtn">
+                    <i class="bi bi-stars"></i> تولید سوال
+                </button>
+                <a href="{% url 'teacher:ai' %}" class="t-btn t-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+    const btn = document.getElementById('aiSubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> در حال تولید... لطفاً صبر کنید';
+});
+</script>
+{% endblock %}

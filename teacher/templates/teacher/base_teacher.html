@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title|default:"پنل معلم" }} - سامانه پایش هوشمند{% endblock %}</title>
+
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Vazirmatn Font -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --t-primary: #1a237e;
+            --t-primary-dark: #0d1642;
+            --t-primary-light: #283593;
+            --t-secondary: #ffc107;
+            --t-success: #16a34a;
+            --t-danger: #dc2626;
+            --t-warning: #d97706;
+            --t-info: #0284c7;
+            --t-purple: #7c3aed;
+            --t-text: #2c3e50;
+            --t-muted: #7b8494;
+            --t-bg: #f0f2f5;
+            --t-card: #ffffff;
+            --t-border: #edf1f8;
+            --t-shadow: 0 4px 12px rgba(15,23,42,.05);
+            --t-shadow-hover: 0 12px 28px rgba(15,23,42,.10);
+            --t-radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: var(--t-bg);
+            color: var(--t-text);
+            overflow-x: hidden;
+            font-size: 0.92rem;
+        }
+
+        /* ── Header ── */
+        .t-header {
+            background: linear-gradient(135deg, var(--t-primary) 0%, var(--t-primary-light) 100%);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            position: fixed;
+            top: 0; right: 0; left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(26,35,126,.25);
+        }
+        .t-header-brand {
+            display: flex; align-items: center; gap: 12px;
+            color: #fff; text-decoration: none;
+        }
+        .t-header-icon {
+            width: 40px; height: 40px;
+            background: var(--t-secondary);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: var(--t-primary);
+        }
+        .t-header-title { font-weight: 800; font-size: 1.05rem; color: #fff; }
+        .t-header-sub { font-size: .72rem; color: rgba(255,255,255,.7); }
+        .t-header-actions { margin-right: auto; display: flex; align-items: center; gap: 10px; }
+        .t-header-user {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,.12);
+            padding: 6px 14px 6px 8px;
+            border-radius: 25px;
+            color: #fff; text-decoration: none;
+            font-size: .85rem; font-weight: 600;
+            transition: background .2s;
+        }
+        .t-header-user:hover { background: rgba(255,255,255,.22); color: #fff; }
+        .t-header-avatar {
+            width: 34px; height: 34px;
+            background: var(--t-secondary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--t-primary); font-weight: 900; font-size: .95rem;
+        }
+        .t-header-btn {
+            background: rgba(255,255,255,.12);
+            border: none; color: #fff;
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer;
+            transition: background .2s;
+            text-decoration: none;
+        }
+        .t-header-btn:hover { background: rgba(255,255,255,.25); color: #fff; }
+
+        /* ── Sidebar ── */
+        .t-sidebar {
+            position: fixed;
+            top: 64px; right: 0;
+            width: 260px;
+            height: calc(100vh - 64px);
+            background: var(--t-card);
+            border-left: 1px solid var(--t-border);
+            overflow-y: auto;
+            z-index: 999;
+            transition: transform .3s ease;
+            padding: 16px 12px;
+        }
+        .t-sidebar::-webkit-scrollbar { width: 4px; }
+        .t-sidebar::-webkit-scrollbar-thumb { background: #dfe6f2; border-radius: 4px; }
+
+        .t-sidebar-section { margin-bottom: 20px; }
+        .t-sidebar-label {
+            font-size: .72rem; font-weight: 800;
+            color: var(--t-muted);
+            padding: 6px 12px;
+            letter-spacing: .5px;
+        }
+        .t-sidebar-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: var(--t-text);
+            text-decoration: none;
+            font-size: .88rem; font-weight: 600;
+            transition: all .2s;
+            margin-bottom: 2px;
+        }
+        .t-sidebar-item i { font-size: 1.1rem; width: 22px; text-align: center; color: var(--t-muted); }
+        .t-sidebar-item:hover { background: rgba(26,35,126,.05); color: var(--t-primary); }
+        .t-sidebar-item:hover i { color: var(--t-primary); }
+        .t-sidebar-item.active {
+            background: var(--t-primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(26,35,126,.3);
+        }
+        .t-sidebar-item.active i { color: var(--t-secondary); }
+        .t-sidebar-badge {
+            margin-right: auto;
+            background: var(--t-secondary);
+            color: var(--t-primary);
+            font-size: .7rem; font-weight: 800;
+            padding: 2px 8px; border-radius: 10px;
+        }
+
+        /* ── Main ── */
+        .t-main {
+            margin-top: 64px;
+            margin-right: 260px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ── Page Header ── */
+        .t-page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px;
+            margin-bottom: 24px;
+        }
+        .t-page-title {
+            font-size: 1.35rem; font-weight: 900;
+            color: var(--t-primary);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .t-page-title i { color: var(--t-secondary); font-size: 1.4rem; }
+
+        /* ── Cards ── */
+        .t-card {
+            background: var(--t-card);
+            border-radius: var(--t-radius);
+            border: 1px solid var(--t-border);
+            box-shadow: var(--t-shadow);
+            overflow: hidden;
+            transition: box-shadow .25s;
+        }
+        .t-card:hover { box-shadow: var(--t-shadow-hover); }
+        .t-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--t-border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(180deg, #fff, #fbfcfe);
+        }
+        .t-card-title {
+            font-size: .95rem; font-weight: 800;
+            color: var(--t-text);
+            display: flex; align-items: center; gap: 8px;
+            margin: 0;
+        }
+        .t-card-title i { color: var(--t-secondary); }
+        .t-card-body { padding: 20px; }
+
+        /* ── KPI Grid ── */
+        .t-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .t-kpi {
+            background: var(--t-card);
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid var(--t-border);
+            box-shadow: var(--t-shadow);
+            position: relative; overflow: hidden;
+            transition: transform .2s;
+        }
+        .t-kpi:hover { transform: translateY(-3px); }
+        .t-kpi::before {
+            content: '';
+            position: absolute; top: 0; bottom: 0; right: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--t-primary), var(--t-secondary));
+        }
+        .t-kpi.success::before { background: var(--t-success); }
+        .t-kpi.danger::before { background: var(--t-danger); }
+        .t-kpi.warning::before { background: var(--t-warning); }
+        .t-kpi.info::before { background: var(--t-info); }
+        .t-kpi.purple::before { background: var(--t-purple); }
+        .t-kpi-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .t-kpi .t-kpi-icon { background: rgba(26,35,126,.08); color: var(--t-primary); }
+        .t-kpi.success .t-kpi-icon { background: rgba(22,163,74,.1); color: var(--t-success); }
+        .t-kpi.danger .t-kpi-icon { background: rgba(220,38,38,.1); color: var(--t-danger); }
+        .t-kpi.warning .t-kpi-icon { background: rgba(217,119,6,.1); color: var(--t-warning); }
+        .t-kpi.info .t-kpi-icon { background: rgba(2,132,199,.1); color: var(--t-info); }
+        .t-kpi.purple .t-kpi-icon { background: rgba(124,58,237,.1); color: var(--t-purple); }
+        .t-kpi-value { font-size: 1.7rem; font-weight: 950; color: var(--t-text); }
+        .t-kpi-label { font-size: .78rem; color: var(--t-muted); font-weight: 700; margin-top: 2px; }
+
+        /* ── Table ── */
+        .t-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .t-table thead th {
+            background: #f8fafd;
+            color: var(--t-muted);
+            font-size: .75rem; font-weight: 800;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--t-border);
+            text-align: right; white-space: nowrap;
+        }
+        .t-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f3f6fa;
+            color: var(--t-text);
+            font-size: .87rem;
+            vertical-align: middle;
+        }
+        .t-table tbody tr:hover { background: #fbfcff; }
+        .t-table tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Badges ── */
+        .t-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: .72rem; font-weight: 800;
+        }
+        .t-badge.success { background: rgba(22,163,74,.1); color: #15803d; }
+        .t-badge.danger { background: rgba(220,38,38,.1); color: #b91c1c; }
+        .t-badge.warning { background: rgba(217,119,6,.1); color: #b45309; }
+        .t-badge.info { background: rgba(2,132,199,.1); color: #0369a1; }
+        .t-badge.purple { background: rgba(124,58,237,.1); color: #6d28d9; }
+        .t-badge.primary { background: rgba(26,35,126,.08); color: var(--t-primary); }
+        .t-badge.secondary { background: rgba(148,163,184,.15); color: #64748b; }
+
+        /* ── Buttons ── */
+        .t-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 18px; border-radius: 11px;
+            font-weight: 700; font-size: .85rem;
+            border: none; cursor: pointer;
+            transition: all .2s; text-decoration: none;
+        }
+        .t-btn-primary { background: var(--t-primary); color: #fff; }
+        .t-btn-primary:hover { background: var(--t-primary-light); color: #fff; transform: translateY(-1px); }
+        .t-btn-success { background: var(--t-success); color: #fff; }
+        .t-btn-success:hover { background: #15803d; color: #fff; }
+        .t-btn-danger { background: var(--t-danger); color: #fff; }
+        .t-btn-danger:hover { background: #b91c1c; color: #fff; }
+        .t-btn-warning { background: var(--t-warning); color: #fff; }
+        .t-btn-warning:hover { background: #b45309; color: #fff; }
+        .t-btn-outline {
+            background: transparent; color: var(--t-primary);
+            border: 1.5px solid #dfe6f2;
+        }
+        .t-btn-outline:hover { background: var(--t-primary); color: #fff; border-color: var(--t-primary); }
+        .t-btn-sm { padding: 6px 12px; font-size: .8rem; border-radius: 9px; }
+
+        /* ── Empty State ── */
+        .t-empty {
+            text-align: center; padding: 48px 20px;
+            color: var(--t-muted);
+        }
+        .t-empty-icon {
+            width: 72px; height: 72px;
+            background: #f2f5fa; color: #94a3b8;
+            border-radius: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin-bottom: 14px;
+        }
+        .t-empty h5 { font-weight: 800; color: var(--t-text); margin-bottom: 6px; }
+        .t-empty p { font-size: .87rem; margin-bottom: 16px; }
+
+        /* ── Alert Item ── */
+        .t-alert-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 13px; border-radius: 12px; margin-bottom: 10px;
+            border: 1px solid var(--t-border);
+        }
+        .t-alert-item.warning { background: rgba(217,119,6,.04); border-color: rgba(217,119,6,.2); }
+        .t-alert-item.danger { background: rgba(220,38,38,.04); border-color: rgba(220,38,38,.2); }
+        .t-alert-item.info { background: rgba(2,132,199,.04); border-color: rgba(2,132,199,.2); }
+
+        /* ── Student Row ── */
+        .t-student-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0;
+        }
+        .t-student-row + .t-student-row { border-top: 1px solid #f3f6fa; }
+        .t-student-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--t-secondary);
+            color: var(--t-primary);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: .95rem;
+            flex-shrink: 0;
+        }
+        .t-student-name { font-weight: 700; font-size: .88rem; }
+        .t-student-sub { font-size: .78rem; color: var(--t-muted); }
+
+        /* ── Form ── */
+        .t-form-label { font-weight: 700; font-size: .85rem; color: var(--t-text); margin-bottom: 6px; }
+        .t-form-control {
+            width: 100%; padding: 10px 14px;
+            border: 2px solid #e8edf6; border-radius: 10px;
+            font-family: inherit; font-size: .88rem;
+            transition: all .2s; background: #fbfcfe;
+        }
+        .t-form-control:focus {
+            outline: none; border-color: var(--t-primary);
+            background: #fff; box-shadow: 0 0 0 3px rgba(26,35,126,.08);
+        }
+        select.t-form-control { cursor: pointer; }
+
+        /* ── Chart Wrapper ── */
+        .t-chart-wrap { position: relative; width: 100%; height: 300px; }
+
+        /* ── Quick Action ── */
+        .t-quick {
+            display: flex; align-items: center; gap: 12px;
+            padding: 16px; border-radius: 14px;
+            background: linear-gradient(135deg, #f8fafc, #fff);
+            border: 1px solid var(--t-border);
+            text-decoration: none; color: var(--t-text);
+            font-weight: 700; font-size: .9rem;
+            transition: all .2s;
+        }
+        .t-quick:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26,35,126,.1);
+            border-color: #c7d2fe;
+            color: var(--t-primary);
+        }
+        .t-quick-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+
+        /* ── Progress ── */
+        .t-progress { height: 8px; background: #f2f5fa; border-radius: 999px; overflow: hidden; }
+        .t-progress-fill { height: 100%; border-radius: 999px; transition: width .5s; }
+        .t-progress-fill.success { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .t-progress-fill.warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .t-progress-fill.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .t-progress-fill.info { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+        .t-progress-fill.primary { background: linear-gradient(90deg, var(--t-primary), var(--t-primary-light)); }
+
+        /* ── Messages ── */
+        .t-messages { margin-bottom: 20px; }
+        .t-msg {
+            padding: 12px 16px; border-radius: 12px;
+            font-size: .87rem; font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 8px;
+        }
+        .t-msg.success { background: rgba(22,163,74,.08); color: #15803d; border: 1px solid rgba(22,163,74,.2); }
+        .t-msg.error { background: rgba(220,38,38,.08); color: #b91c1c; border: 1px solid rgba(220,38,38,.2); }
+        .t-msg.warning { background: rgba(217,119,6,.08); color: #b45309; border: 1px solid rgba(217,119,6,.2); }
+        .t-msg.info { background: rgba(2,132,199,.08); color: #0369a1; border: 1px solid rgba(2,132,199,.2); }
+
+        /* ── Mobile ── */
+        .t-menu-toggle {
+            display: none;
+            background: none; border: none; color: #fff;
+            font-size: 1.4rem; cursor: pointer;
+            padding: 6px;
+        }
+        @media (max-width: 991px) {
+            .t-sidebar { transform: translateX(100%); }
+            .t-sidebar.open { transform: translateX(0); box-shadow: -8px 0 24px rgba(0,0,0,.15); }
+            .t-main { margin-right: 0; }
+            .t-menu-toggle { display: block; }
+            .t-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 576px) {
+            .t-main { padding: 16px; }
+            .t-kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="t-header">
+        <button class="t-menu-toggle" onclick="document.getElementById('tSidebar').classList.toggle('open')">
+            <i class="bi bi-list"></i>
+        </button>
+        <a href="{% url 'teacher:dashboard' %}" class="t-header-brand">
+            <div class="t-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div>
+                <div class="t-header-title">پنل معلم</div>
+                <div class="t-header-sub">سامانه پایش هوشمند</div>
+            </div>
+        </a>
+        <div class="t-header-actions">
+            <a href="{% url 'dashboard:home' %}" class="t-header-btn" title="داشبورد اصلی">
+                <i class="bi bi-house-fill"></i>
+            </a>
+            <a href="#" class="t-header-user">
+                <div class="t-header-avatar">{{ user.username|first|upper }}</div>
+                {{ user.get_full_name|default:user.username }}
+            </a>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="t-sidebar" id="tSidebar">
+        <div class="t-sidebar-section">
+            <div class="t-sidebar-label">اصلی</div>
+            <a href="{% url 'teacher:dashboard' %}" class="t-sidebar-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> داشبورد
+            </a>
+            <a href="{% url 'teacher:classes' %}" class="t-sidebar-item {% if 'class' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-journal-bookmark-fill"></i> کلاس‌های من
+            </a>
+            <a href="{% url 'teacher:sessions' %}" class="t-sidebar-item {% if 'session' in request.resolver_match.url_name and 'panel' not in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-calendar-event-fill"></i> جلسات آموزشی
+            </a>
+        </div>
+        <div class="t-sidebar-section">
+            <div class="t-sidebar-label">آموزشی</div>
+            <a href="{% url 'teacher:attendance' %}" class="t-sidebar-item {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-person-check-fill"></i> حضور و غیاب
+            </a>
+            <a href="{% url 'teacher:participation' %}" class="t-sidebar-item {% if 'participation' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-graph-up"></i> مشارکت
+            </a>
+            <a href="{% url 'teacher:questions' %}" class="t-sidebar-item {% if 'question' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-question-circle-fill"></i> بانک سوال
+            </a>
+            <a href="{% url 'teacher:assessments' %}" class="t-sidebar-item {% if 'assessment' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clipboard-check-fill"></i> ارزیابی‌ها
+            </a>
+            <a href="{% url 'teacher:homework' %}" class="t-sidebar-item {% if 'homework' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-journal-text-fill"></i> تکالیف
+            </a>
+        </div>
+        <div class="t-sidebar-section">
+            <div class="t-sidebar-label">مدیریت</div>
+            <a href="{% url 'teacher:students' %}" class="t-sidebar-item {% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-people-fill"></i> دانش‌آموزان
+            </a>
+            <a href="{% url 'teacher:analytics' %}" class="t-sidebar-item {% if 'analytics' in request.resolver_match.url_name or 'topic' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bar-chart-fill"></i> تحلیل عملکرد
+            </a>
+            <a href="{% url 'teacher:ai' %}" class="t-sidebar-item {% if 'ai' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-robot"></i> دستیار هوشمند
+            </a>
+            <a href="{% url 'teacher:reports' %}" class="t-sidebar-item {% if 'reports' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-file-earmark-bar-graph"></i> گزارش‌ها
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="t-main">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="t-messages">
+            {% for message in messages %}
+            <div class="t-msg {{ message.tags }}">
+                <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-circle-fill{% elif message.tags == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

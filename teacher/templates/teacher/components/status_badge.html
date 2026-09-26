@@ -1,0 +1,14 @@
+{# استفاده: {% include "teacher/components/status_badge.html" with status="active" %} #}
+{% if status == 'active' or status == 'present' or status == 'completed' or status == 'approved' or status == 'high' %}
+<span class="t-badge success"><i class="bi bi-check-circle-fill"></i>{{ display|default:status }}</span>
+{% elif status == 'scheduled' or status == 'pending' or status == 'medium' %}
+<span class="t-badge warning"><i class="bi bi-clock-fill"></i>{{ display|default:status }}</span>
+{% elif status == 'absent' or status == 'failed' or status == 'rejected' or status == 'low' %}
+<span class="t-badge danger"><i class="bi bi-x-circle-fill"></i>{{ display|default:status }}</span>
+{% elif status == 'suspicious' %}
+<span class="t-badge warning"><i class="bi bi-exclamation-triangle-fill"></i>{{ display|default:status }}</span>
+{% elif status == 'cancelled' or status == 'draft' %}
+<span class="t-badge secondary"><i class="bi bi-dash-circle"></i>{{ display|default:status }}</span>
+{% else %}
+<span class="t-badge info"><i class="bi bi-info-circle-fill"></i>{{ display|default:status }}</span>
+{% endif %}

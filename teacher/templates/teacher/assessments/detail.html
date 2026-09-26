@@ -1,0 +1,99 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-clipboard-check-fill"></i> {{ assessment.title }}</div>
+    <div class="d-flex gap-2">
+        {% if assessment.status == 'draft' %}
+        <form method="post" action="{% url 'teacher:assessment_publish' assessment.id %}">
+            {% csrf_token %}
+            <button type="submit" class="t-btn t-btn-success"
+                    onclick="return confirm('آیا از انتشار این ارزیابی مطمئن هستید؟ دانش‌آموزان قادر به مشاهده آن خواهند بود.');">
+                <i class="bi bi-send-fill"></i> انتشار ارزیابی
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Assessment Info -->
+<div class="t-card mb-4">
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ assessment.classroom.name }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">موضوع</small>
+                <strong>{{ assessment.topic|default:"-" }}</strong>
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block">مدت</small>
+                <strong>{{ assessment.duration_minutes }} دقیقه</strong>
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block">وضعیت</small>
+                {% if assessment.status == 'draft' %}
+                    {% include "teacher/components/status_badge.html" with status="draft" display="پیش‌نویس" %}
+                {% elif assessment.status == 'published' %}
+                    {% include "teacher/components/status_badge.html" with status="active" display="منتشر شده" %}
+                {% elif assessment.status == 'in_progress' %}
+                    {% include "teacher/components/status_badge.html" with status="pending" display="در حال برگزاری" %}
+                {% elif assessment.status == 'completed' %}
+                    {% include "teacher/components/status_badge.html" with status="completed" display="تکمیل شده" %}
+                {% endif %}
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block">نمره کل</small>
+                <strong>{{ assessment.total_score }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Questions -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ol"></i> سوالات ارزیابی</h6>
+        <span class="t-badge info">{{ questions|length }} سوال</span>
+    </div>
+    <div class="t-card-body">
+        {% if questions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>ترتیب</th>
+                        <th>متن سوال</th>
+                        <th>نمره</th>
+                        <th>سطح دشواری</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aq in questions %}
+                    <tr>
+                        <td><strong>{{ aq.order }}</strong></td>
+                        <td>{{ aq.question.text|truncatechars:80 }}</td>
+                        <td>{{ aq.score }}</td>
+                        <td>
+                            {% if aq.difficulty == 'easy' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="آسان" %}
+                            {% elif aq.difficulty == 'medium' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="متوسط" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="absent" display="سخت" %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-question-circle" title="سوالی اضافه نشده" message="از بانک سوال، سوالات مورد نظر را به این ارزیابی اضافه کنید." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

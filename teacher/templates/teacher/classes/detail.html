@@ -1,0 +1,108 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-journal-bookmark-fill"></i> {{ classroom.name }}</div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'teacher:class_students' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-people"></i> دانش‌آموزان
+        </a>
+        <a href="{% url 'teacher:class_analytics' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-bar-chart"></i> تحلیل
+        </a>
+        <a href="{% url 'teacher:topic_analytics' classroom.id %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-tags"></i> عملکرد موضوعی
+        </a>
+    </div>
+</div>
+
+<!-- Class Info -->
+<div class="t-card mb-4">
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">درس</small>
+                <strong>{{ classroom.subject }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">پایه / رشته</small>
+                <strong>{{ classroom.get_grade_display }} - {{ classroom.get_field_display }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">تعداد دانش‌آموز</small>
+                <strong>{{ students_count }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">تعداد جلسات</small>
+                <strong>{{ analytics.total_sessions|default:"0" }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=analytics.attendance_rate label="نرخ حضور" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-graph-up" value=analytics.participation_rate label="نرخ مشارکت" color="info" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-award-fill" value=analytics.assessment_average label="میانگین عملکرد" color="purple" %}
+</div>
+
+<!-- Sessions -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-calendar-event"></i> جلسات اخیر</h6>
+        <a href="{% url 'teacher:session_create' %}" class="t-btn t-btn-primary t-btn-sm">
+            <i class="bi bi-plus"></i> جلسه جدید
+        </a>
+    </div>
+    <div class="t-card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>موضوع</th>
+                        <th>تاریخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><strong>{{ session.id }}</strong></td>
+                        <td>{{ session.topic|default:"بدون موضوع" }}</td>
+                        <td><small class="text-muted">{{ session.session_date|date:"Y/m/d H:i" }}</small></td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'teacher:session_detail' session.id %}" class="t-btn t-btn-outline t-btn-sm" title="جزئیات">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if session.extension %}
+                                    {% if session.extension.status == 'scheduled' %}
+                                    <form method="post" action="{% url 'teacher:session_start' session.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="t-btn t-btn-success t-btn-sm" title="شروع">
+                                            <i class="bi bi-play-fill"></i>
+                                        </button>
+                                    </form>
+                                    {% elif session.extension.status == 'active' %}
+                                    <a href="{% url 'teacher:session_panel' session.id %}" class="t-btn t-btn-warning t-btn-sm" title="پنل">
+                                        <i class="bi bi-sliders"></i>
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-calendar-x" title="جلسه‌ای ثبت نشده" message="برای شروع، یک جلسه جدید ایجاد کنید." cta_text="ایجاد جلسه" cta_url="/teacher/sessions/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

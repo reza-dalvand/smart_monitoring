@@ -1,0 +1,40 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero d-flex justify-content-between align-items-center">
+    <h2><i class="bi bi-person-badge-fill me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+    <a href="{% url 'school:principal_assistant_assign' %}" class="btn btn-light"><i class="bi bi-plus"></i> انتصاب معاون</a>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>نام معاون</th><th>نوع مسئولیت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for a in assignments %}
+                    <tr>
+                        <td>{{ a.user.get_full_name }}</td>
+                        <td>{{ a.get_assistant_type_display|default:"-" }}</td>
+                        <td>
+                            <span class="sc-badge {% if a.is_active %}success{% else %}danger{% endif %}">
+                                {% if a.is_active %}فعال{% else %}غیرفعال{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'school:principal_assistant_toggle' a.id %}" style="display:inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-warning">
+                                    {% if a.is_active %}غیرفعال کردن{% else %}فعال کردن{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">معاونی منصوب نشده است.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

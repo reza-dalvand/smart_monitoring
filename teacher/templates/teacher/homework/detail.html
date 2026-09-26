@@ -1,0 +1,114 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-journal-text-fill"></i> {{ homework.title }}</div>
+    <a href="{% url 'teacher:homework' %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<!-- Homework Info -->
+<div class="t-card mb-4">
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ homework.classroom.name }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">موضوع</small>
+                <strong>{{ homework.topic|default:"-" }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">مهلت ارسال</small>
+                <strong>{{ homework.deadline|date:"Y/m/d - H:i" }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">حداکثر نمره</small>
+                <strong>{{ homework.max_score }}</strong>
+            </div>
+        </div>
+        {% if homework.description %}
+        <hr>
+        <p class="mb-0">{{ homework.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Submissions -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ul"></i> ارسال‌های دانش‌آموزان</h6>
+        <span class="t-badge info">{{ submissions|length }} ارسال</span>
+    </div>
+    <div class="t-card-body">
+        {% if submissions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>دانش‌آموز</th>
+                        <th>وضعیت ارسال</th>
+                        <th>زمان ارسال</th>
+                        <th>نمره</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="t-student-avatar" style="width:32px;height:32px;font-size:.8rem;">
+                                    {{ submission.student.username|first|upper }}
+                                </div>
+                                <strong>{{ submission.student.get_full_name|default:submission.student.username }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            {% if submission.status == 'not_submitted' %}
+                                {% include "teacher/components/status_badge.html" with status="absent" display="ارسال نشده" %}
+                            {% elif submission.status == 'submitted' %}
+                                {% include "teacher/components/status_badge.html" with status="active" display="ارسال شده" %}
+                            {% elif submission.status == 'late' %}
+                                {% include "teacher/components/status_badge.html" with status="suspicious" display="با تأخیر" %}
+                            {% elif submission.status == 'reviewed' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="بررسی شده" %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submission.submitted_at %}
+                                <small class="text-muted">{{ submission.submitted_at|date:"Y/m/d H:i" }}</small>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submission.score is not None %}
+                                <strong>{{ submission.score }}</strong> از {{ homework.max_score }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submission.status != 'not_submitted' %}
+                            <a href="{% url 'teacher:homework_grade' homework.id %}?submission={{ submission.id }}" class="t-btn t-btn-outline t-btn-sm">
+                                <i class="bi bi-pencil-square"></i> تصحیح
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-inbox" title="ارسالی ثبت نشده" message="هنوز هیچ دانش‌آموزی تکلیف خود را ارسال نکرده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

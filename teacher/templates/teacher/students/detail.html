@@ -1,0 +1,75 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-person-fill"></i> پروفایل {{ student.get_full_name|default:student.username }}</div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'teacher:student_notes' student.id %}" class="t-btn t-btn-outline t-btn-sm">
+            <i class="bi bi-journal-text"></i> یادداشت‌ها
+        </a>
+        <a href="{% url 'teacher:followup_suggest' %}?student={{ student.id }}" class="t-btn t-btn-warning t-btn-sm">
+            <i class="bi bi-flag"></i> پیشنهاد پیگیری
+        </a>
+    </div>
+</div>
+
+<!-- Student KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=attendance_rate label="نرخ حضور" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-award-fill" value=performance_rate label="نرخ عملکرد" color="purple" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-question-circle-fill" value=total_answers label="تعداد پاسخ‌ها" color="info" %}
+</div>
+
+<!-- Attendance Progress -->
+<div class="t-card mb-4">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-person-check"></i> وضعیت حضور</h6>
+    </div>
+    <div class="t-card-body">
+        <div class="d-flex justify-content-between mb-2">
+            <small class="fw-bold">نرخ حضور</small>
+            <small class="fw-bold">{{ attendance_rate|default:"0" }}٪</small>
+        </div>
+        <div class="t-progress">
+            {% if attendance_rate %}
+                {% if attendance_rate >= 75 %}
+                <div class="t-progress-fill success" style="width:{{ attendance_rate }}%"></div>
+                {% elif attendance_rate >= 50 %}
+                <div class="t-progress-fill warning" style="width:{{ attendance_rate }}%"></div>
+                {% else %}
+                <div class="t-progress-fill danger" style="width:{{ attendance_rate }}%"></div>
+                {% endif %}
+            {% else %}
+                <div class="t-progress-fill" style="width:0%"></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Performance Progress -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-award"></i> عملکرد تحصیلی</h6>
+    </div>
+    <div class="t-card-body">
+        <div class="d-flex justify-content-between mb-2">
+            <small class="fw-bold">نرخ پاسخ صحیح</small>
+            <small class="fw-bold">{{ performance_rate|default:"0" }}٪</small>
+        </div>
+        <div class="t-progress">
+            {% if performance_rate %}
+                {% if performance_rate >= 75 %}
+                <div class="t-progress-fill success" style="width:{{ performance_rate }}%"></div>
+                {% elif performance_rate >= 50 %}
+                <div class="t-progress-fill warning" style="width:{{ performance_rate }}%"></div>
+                {% else %}
+                <div class="t-progress-fill danger" style="width:{{ performance_rate }}%"></div>
+                {% endif %}
+            {% else %}
+                <div class="t-progress-fill" style="width:0%"></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

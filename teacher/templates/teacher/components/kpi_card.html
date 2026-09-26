@@ -1,0 +1,6 @@
+{# استفاده: {% include "teacher/components/kpi_card.html" with icon="bi-people-fill" value="120" label="دانش‌آموز" color="info" %} #}
+<div class="t-kpi {{ color|default:'' }}">
+    <div class="t-kpi-icon"><i class="bi {{ icon|default:'bi-graph-up' }}"></i></div>
+    <div class="t-kpi-value">{{ value|default:"-" }}</div>
+    <div class="t-kpi-label">{{ label|default:"-" }}</div>
+</div>

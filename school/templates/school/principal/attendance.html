@@ -1,0 +1,46 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-person-check-fill me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-kpi-grid">
+    <div class="sc-kpi-card success">
+        <div class="sc-kpi-value">{{ attendance_stats.present_rate|default:"0" }}٪</div>
+        <div class="sc-kpi-title">نرخ حضور</div>
+    </div>
+    <div class="sc-kpi-card danger">
+        <div class="sc-kpi-value">{{ attendance_stats.absent_rate|default:"0" }}٪</div>
+        <div class="sc-kpi-title">نرخ غیبت</div>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title"><i class="bi bi-exclamation-triangle"></i> موارد مشکوک و در انتظار بررسی</h3>
+    </div>
+    <div class="sc-section-body">
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>دانش‌آموز</th><th>کلاس</th><th>وضعیت خودکار</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for r in suspicious %}
+                    <tr>
+                        <td>{{ r.student.get_full_name }}</td>
+                        <td>{{ r.attendance_request.classroom.name }}</td>
+                        <td><span class="sc-badge warning">{{ r.get_auto_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'school:principal_attendance_override' r.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-pencil-square"></i> تعیین تکلیف
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">مورد مشکوکی وجود ندارد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

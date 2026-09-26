@@ -1,0 +1,13 @@
+{# استفاده: {% include "teacher/components/empty_state.html" with icon="bi-inbox" title="عنوان" message="توضیح" cta_text="دکمه" cta_url="/url/" %} #}
+<div class="t-empty">
+    <div class="t-empty-icon">
+        <i class="bi {{ icon|default:'bi-inbox' }}"></i>
+    </div>
+    <h5>{{ title|default:"داده‌ای وجود ندارد" }}</h5>
+    <p>{{ message|default:"هنوز اطلاعاتی ثبت نشده است." }}</p>
+    {% if cta_text and cta_url %}
+    <a href="{{ cta_url }}" class="t-btn t-btn-primary">
+        <i class="bi bi-plus-circle"></i> {{ cta_text }}
+    </a>
+    {% endif %}
+</div>

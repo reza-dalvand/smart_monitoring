@@ -1,0 +1,33 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-person-plus me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">انتخاب کاربر معاون</label>
+                <select name="user" class="form-select" required>
+                    <option value="">-- انتخاب کنید --</option>
+                    {% for u in assistant_users %}
+                    <option value="{{ u.id }}">{{ u.get_full_name }} ({{ u.username }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">نوع معاونت</label>
+                <select name="assistant_type" class="form-select" required>
+                    {% for val, label in assistant_types %}
+                    <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">ثبت انتصاب</button>
+            <a href="{% url 'school:principal_assistants' %}" class="btn btn-outline-secondary">انصراف</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-people-fill me-2" style="color: #ffc107;"></i>مدیریت دانش‌آموزان</h2>
+        <p>لیست دانش‌آموزان مدرسه {{ school.name }}</p>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-header">
+        <form method="get" class="d-flex gap-2 w-100">
+            <input type="text" name="q" class="form-control" placeholder="جستجو..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+    <div class="sc-section-body">
+        {% if students %}
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead>
+                    <tr>
+                        <th>نام دانش‌آموز</th>
+                        <th>کد ملی</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td><strong>{{ student.get_full_name|default:student.username }}</strong></td>
+                        <td>{{ student.national_id|default:"-" }}</td>
+                        <td><span class="sc-badge success">فعال</span></td>
+                        <td>
+                            <a href="{% url 'school:assistant_student_detail' student.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> پروفایل
+                            </a>
+                            {% if 'EDUCATIONAL' in request.school_scope.assistant_types or 'GENERAL' in request.school_scope.assistant_types %}
+                            <a href="{% url 'school:assistant_student_status' student.id %}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil-square"></i> تغییر وضعیت
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sc-empty">
+            <div class="sc-empty-icon"><i class="bi bi-people"></i></div>
+            <p>دانش‌آموزی یافت نشد.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

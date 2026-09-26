@@ -1,0 +1,32 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-pencil-square me-2" style="color: #ffc107;"></i>تغییر وضعیت تحصیلی</h2>
+        <p>{{ student.get_full_name|default:student.username }}</p>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">وضعیت فعلی: <strong>{{ student_status.get_status_display }}</strong></label>
+                <select name="new_status" class="form-select">
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if value == student_status.status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">دلیل تغییر (الزامی)</label>
+                <textarea name="reason" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">ثبت تغییرات</button>
+            <a href="{% url 'school:assistant_student_detail' student.id %}" class="btn btn-secondary">انصراف</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

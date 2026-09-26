@@ -1,0 +1,36 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-folder-fill me-2" style="color: #ffc107;"></i>پرونده #{{ case.case_number }}</h2>
+        <p>{{ case.title }}</p>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title"><i class="bi bi-info-circle"></i>اطلاعات</h3>
+    </div>
+    <div class="sc-section-body">
+        <p><strong>وضعیت:</strong> {{ case.get_status_display }}</p>
+        <p><strong>اولویت:</strong> {{ case.get_priority_display }}</p>
+        <p><strong>توضیحات:</strong> {{ case.description|linebreaksbr }}</p>
+        
+        {% if 'EDUCATIONAL' in request.school_scope.assistant_types and case.status != 'RESOLVED' %}
+        <form method="post" action="{% url 'school:assistant_followup_resolve' case.case_number %}" class="mt-3">
+            {% csrf_token %}
+            <textarea name="resolution_note" class="form-control mb-2" placeholder="یادداشت حل..."></textarea>
+            <button type="submit" class="btn btn-success">حل و بستن پرونده</button>
+        </form>
+        {% endif %}
+        
+        {% if case.status != 'RESOLVED' %}
+        <form method="post" action="{% url 'school:assistant_followup_escalate' case.case_number %}" class="mt-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning">ارجاع به مدیر</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

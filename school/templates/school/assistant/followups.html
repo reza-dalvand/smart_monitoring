@@ -1,0 +1,44 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-folder-fill me-2" style="color: #ffc107;"></i>پرونده‌های پیگیری</h2>
+    </div>
+</div>
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title"><i class="bi bi-list-ul"></i>لیست پرونده‌ها</h3>
+        <a href="{% url 'school:assistant_followup_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus"></i> پرونده جدید
+        </a>
+    </div>
+    <div class="sc-section-body">
+        {% if cases %}
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>شماره</th><th>عنوان</th><th>وضعیت</th><th>اولویت</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for c in cases %}
+                    <tr>
+                        <td>#{{ c.case_number }}</td>
+                        <td>{{ c.title }}</td>
+                        <td><span class="sc-badge info">{{ c.get_status_display }}</span></td>
+                        <td><span class="sc-badge warning">{{ c.get_priority_display }}</span></td>
+                        <td>
+                            <a href="{% url 'school:assistant_followup_detail' c.case_number %}" class="btn btn-sm btn-outline-primary">جزئیات</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sc-empty">
+            <div class="sc-empty-icon"><i class="bi bi-folder"></i></div>
+            <p>پرونده‌ای ثبت نشده است.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

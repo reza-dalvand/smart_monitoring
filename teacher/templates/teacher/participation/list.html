@@ -1,0 +1,48 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-graph-up"></i> مشارکت دانش‌آموزان</div>
+</div>
+
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ul"></i> جلسات برای ثبت مشارکت</h6>
+    </div>
+    <div class="t-card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>تاریخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><strong>{{ session.id }}</strong></td>
+                        <td>{{ session.classroom.name }}</td>
+                        <td>{{ session.topic|default:"بدون موضوع" }}</td>
+                        <td><small class="text-muted">{{ session.session_date|date:"Y/m/d" }}</small></td>
+                        <td>
+                            <a href="{% url 'teacher:participation_record' session.id %}" class="t-btn t-btn-primary t-btn-sm">
+                                <i class="bi bi-pencil-square"></i> ثبت مشارکت
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-calendar-x" title="جلسه‌ای برای ثبت مشارکت نیست" message="ابتدا یک جلسه ایجاد کنید، سپس مشارکت دانش‌آموزان را ثبت کنید." cta_text="ایجاد جلسه" cta_url="/teacher/sessions/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

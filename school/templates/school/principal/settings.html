@@ -1,0 +1,44 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-gear-fill me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">سال تحصیلی</label>
+                    <input type="text" name="academic_year" class="form-control" value="{{ settings.academic_year }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">آستانه تأخیر (دقیقه)</label>
+                    <input type="number" name="late_threshold_minutes" class="form-control" value="{{ settings.late_threshold_minutes }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">آستانه هشدار غیبت (٪)</label>
+                    <input type="number" step="0.1" name="absence_warning_threshold" class="form-control" value="{{ settings.absence_warning_threshold }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">آستانه هشدار مشارکت (٪)</label>
+                    <input type="number" step="0.1" name="participation_warning_threshold" class="form-control" value="{{ settings.participation_warning_threshold }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">آستانه هشدار عملکرد (٪)</label>
+                    <input type="number" step="0.1" name="performance_warning_threshold" class="form-control" value="{{ settings.performance_warning_threshold }}">
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="face_verification_required" id="faceReq" {% if settings.face_verification_required %}checked{% endif %}>
+                        <label class="form-check-label" for="faceReq">الزام احراز هویت چهره برای حضور و غیاب</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-primary">ذخیره تنظیمات</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

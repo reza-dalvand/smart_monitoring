@@ -1,0 +1,79 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}بررسی سوالات هوش مصنوعی{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-robot"></i> بررسی سوالات هوش مصنوعی</div>
+    <a href="{% url 'teacher:questions' %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت به بانک سوال
+    </a>
+</div>
+
+{% if questions %}
+<div class="row g-4">
+    {% for question in questions %}
+    <div class="col-lg-6">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title">
+                    <span class="t-badge purple me-2">{{ forloop.counter }}</span>
+                    سوال
+                </h6>
+                {% if question.review_status == 'approved' %}
+                    {% include "teacher/components/status_badge.html" with status="approved" display="تایید شده" %}
+                {% elif question.review_status == 'pending' %}
+                    {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+                {% else %}
+                    {% include "teacher/components/status_badge.html" with status="rejected" display="رد شده" %}
+                {% endif %}
+            </div>
+            <div class="t-card-body">
+                <p class="fw-bold mb-3">{{ question.text }}</p>
+                <div class="mb-3">
+                    {% for choice in "abcd" %}
+                    <div class="d-flex align-items-center gap-2 py-1">
+                        <span class="fw-bold" style="width:20px;">{{ forloop.counter }}.</span>
+                        <span>
+                            {% if forloop.counter == 1 %}{{ question.choice_a }}
+                            {% elif forloop.counter == 2 %}{{ question.choice_b }}
+                            {% elif forloop.counter == 3 %}{{ question.choice_c }}
+                            {% else %}{{ question.choice_d }}{% endif %}
+                        </span>
+                        {% if question.correct_answer == 'a' and forloop.counter == 1 or question.correct_answer == 'b' and forloop.counter == 2 or question.correct_answer == 'c' and forloop.counter == 3 or question.correct_answer == 'd' and forloop.counter == 4 %}
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if question.review_status == 'pending' %}
+                <div class="d-flex gap-2">
+                    <form method="post" action="{% url 'dashboard:teacher_ai_question_approve' question.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="t-btn t-btn-success t-btn-sm">
+                            <i class="bi bi-check-circle"></i> تایید
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'dashboard:teacher_ai_question_reject' question.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="t-btn t-btn-danger t-btn-sm">
+                            <i class="bi bi-x-circle"></i> رد
+                        </button>
+                    </form>
+                    <a href="{% url 'teacher:question_edit' question.id %}" class="t-btn t-btn-outline t-btn-sm">
+                        <i class="bi bi-pencil"></i> ویرایش
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="t-card">
+    <div class="t-card-body">
+        {% include "teacher/components/empty_state.html" with icon="bi-robot" title="سوال هوش مصنوعی وجود ندارد" message="برای تولید سوال با هوش مصنوعی، از بخش دستیار هوشمند استفاده کنید." cta_text="تولید سوال" cta_url="/teacher/ai/" %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-person-check-fill"></i> جزئیات حضور - درخواست {{ attendance_request.id }}</div>
+    <a href="{% url 'teacher:attendance' %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<!-- Request Info -->
+<div class="t-card mb-4">
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ attendance_request.classroom.name }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">نوع درخواست</small>
+                <strong>{{ attendance_request.get_request_type_display }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">وضعیت</small>
+                {% if attendance_request.status == 'active' %}
+                    {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+                {% elif attendance_request.status == 'finished' %}
+                    {% include "teacher/components/status_badge.html" with status="completed" display="پایان یافته" %}
+                {% else %}
+                    {% include "teacher/components/status_badge.html" with status="cancelled" display="لغو شده" %}
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">تاریخ ایجاد</small>
+                <strong>{{ attendance_request.created_at|date:"Y/m/d H:i" }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Responses -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-list-ul"></i> وضعیت دانش‌آموزان</h6>
+        <span class="t-badge info">{{ responses|length }} نفر</span>
+    </div>
+    <div class="t-card-body">
+        {% if responses %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>دانش‌آموز</th>
+                        <th>وضعیت خودکار</th>
+                        <th>وضعیت نهایی</th>
+                        <th>درصد تطابق</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resp in responses %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="t-student-avatar" style="width:32px;height:32px;font-size:.8rem;">
+                                    {{ resp.student.username|first|upper }}
+                                </div>
+                                <strong>{{ resp.student.get_full_name|default:resp.student.username }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            {% if resp.auto_status == 'present' %}
+                                {% include "teacher/components/status_badge.html" with status="present" display="حاضر" %}
+                            {% elif resp.auto_status == 'suspicious' %}
+                                {% include "teacher/components/status_badge.html" with status="suspicious" display="مشکوک" %}
+                            {% elif resp.auto_status == 'absent_mismatch' or resp.auto_status == 'no_response' %}
+                                {% include "teacher/components/status_badge.html" with status="absent" display="غایب" %}
+                            {% elif resp.auto_status == 'pending' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+                            {% else %}
+                                <span class="t-badge secondary">{{ resp.get_auto_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if resp.final_status == 'present' %}
+                                {% include "teacher/components/status_badge.html" with status="present" display="حاضر" %}
+                            {% elif resp.final_status == 'absent' %}
+                                {% include "teacher/components/status_badge.html" with status="absent" display="غایب" %}
+                            {% elif resp.final_status == 'pending' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+                            {% else %}
+                                <span class="t-badge secondary">{{ resp.get_final_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if resp.similarity_score %}
+                                {{ resp.similarity_score|floatformat:2 }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if resp.final_status == 'pending' or resp.auto_status == 'suspicious' %}
+                            <a href="{% url 'teacher:attendance_correct' resp.id %}" class="t-btn t-btn-warning t-btn-sm">
+                                <i class="bi bi-pencil-square"></i> اصلاح
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-inbox" title="پاسخی ثبت نشده" message="هنوز هیچ دانش‌آموزی به این درخواست پاسخ نداده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

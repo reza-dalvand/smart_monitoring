@@ -1,0 +1,42 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-bar-chart-fill"></i> تحلیل کلاس {{ classroom.name }}</div>
+    <a href="{% url 'teacher:analytics' %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<!-- KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=analytics.attendance_rate label="نرخ حضور" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-graph-up" value=analytics.participation_rate label="نرخ مشارکت" color="info" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-award-fill" value=analytics.assessment_average label="میانگین عملکرد" color="purple" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-calendar-event-fill" value=analytics.total_sessions label="تعداد جلسات" color="" %}
+</div>
+
+<!-- Class Info -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-info-circle"></i> اطلاعات کلاس</h6>
+    </div>
+    <div class="t-card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <small class="text-muted d-block">درس</small>
+                <strong>{{ classroom.subject }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">پایه / رشته</small>
+                <strong>{{ classroom.get_grade_display }} - {{ classroom.get_field_display }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">تعداد دانش‌آموز</small>
+                <strong>{{ analytics.total_students|default:"0" }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

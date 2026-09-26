@@ -1,0 +1,167 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<!-- Hero -->
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-person-gear me-2" style="color: #ffc107;"></i>
+            تغییر وضعیت تحصیلی
+        </h2>
+        <p>{{ student.get_full_name|default:student.username }} | کد ملی: {{ student.national_id|default:"-" }}</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- فرم تغییر وضعیت -->
+    <div class="col-lg-7">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-pencil-square"></i>
+                    ثبت وضعیت جدید
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                <!-- وضعیت فعلی -->
+                <div class="alert {% if student_status.status == 'ACTIVE' %}alert-success{% elif student_status.status == 'INACTIVE' %}alert-secondary{% elif student_status.status == 'TRANSFERRED' %}alert-warning{% else %}alert-info{% endif %} d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>
+                        <strong>وضعیت فعلی:</strong>
+                        {{ student_status.get_status_display }}
+                        {% if student_status.reason %}
+                        <br><small>آخرین دلیل: {{ student_status.reason }}</small>
+                        {% endif %}
+                        {% if student_status.changed_by %}
+                        <br><small>توسط: {{ student_status.changed_by.get_full_name|default:student_status.changed_by.username }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">وضعیت جدید <span class="text-danger">*</span></label>
+                        <div class="row g-2">
+                            {% for value, label in status_choices %}
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio"
+                                           name="new_status" id="status_{{ value }}"
+                                           value="{{ value }}"
+                                           {% if student_status.status == value %}checked{% endif %}
+                                           required>
+                                    <label class="form-check-label" for="status_{{ value }}">
+                                        {% if value == 'ACTIVE' %}
+                                            <i class="bi bi-check-circle text-success"></i>
+                                        {% elif value == 'INACTIVE' %}
+                                            <i class="bi bi-x-circle text-secondary"></i>
+                                        {% elif value == 'TRANSFERRED' %}
+                                            <i class="bi bi-arrow-left-right text-warning"></i>
+                                        {% elif value == 'GRADUATED' %}
+                                            <i class="bi bi-mortarboard text-info"></i>
+                                        {% endif %}
+                                        {{ label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">دلیل تغییر <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="3"
+                                  placeholder="دلیل تغییر وضعیت را به‌طور کامل شرح دهید..."
+                                  required></textarea>
+                        <div class="form-text">این دلیل در سوابق ممیزی (Audit Log) ثبت خواهد شد.</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> ثبت تغییر وضعیت
+                        </button>
+                        <a href="{% url 'school:principal_student_detail' student.id %}"
+                           class="btn btn-outline-secondary">
+                            انصراف
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- تاریخچه تغییرات -->
+    <div class="col-lg-5">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-clock-history"></i>
+                    تاریخچه تغییرات
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                {% if history %}
+                    {% for h in history %}
+                    <div class="d-flex align-items-start gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="sc-badge {% if h.status == 'ACTIVE' %}success{% elif h.status == 'INACTIVE' %}danger{% elif h.status == 'TRANSFERRED' %}warning{% else %}info{% endif %}">
+                            {{ h.get_status_display }}
+                        </div>
+                        <div>
+                            {% if h.reason %}
+                            <div class="small">{{ h.reason }}</div>
+                            {% endif %}
+                            <div class="small text-muted mt-1">
+                                <i class="bi bi-person"></i>
+                                {{ h.changed_by.get_full_name|default:h.changed_by.username|default:"سیستم" }}
+                                |
+                                <i class="bi bi-calendar"></i>
+                                {{ h.updated_at|date:"Y/m/d H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="sc-empty">
+                        <div class="sc-empty-icon"><i class="bi bi-clock-history"></i></div>
+                        <p>هنوز تغییری ثبت نشده است.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- راهنما -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title">
+                    <i class="bi bi-question-circle"></i>
+                    راهنمای وضعیت‌ها
+                </h3>
+            </div>
+            <div class="sc-section-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <strong>فعال:</strong> دانش‌آموز در حال تحصیل در مدرسه
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-x-circle text-secondary"></i>
+                        <strong>غیرفعال:</strong> توقف موقت تحصیل
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-arrow-left-right text-warning"></i>
+                        <strong>منتقل شده:</strong> انتقال به مدرسه دیگر
+                    </li>
+                    <li>
+                        <i class="bi bi-mortarboard text-info"></i>
+                        <strong>فارغ‌التحصیل:</strong> اتمام دوره تحصیلی
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

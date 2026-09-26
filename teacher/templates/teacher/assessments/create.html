@@ -1,0 +1,61 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-plus-circle-fill"></i> ایجاد ارزیابی جدید</div>
+</div>
+
+<div class="t-card" style="max-width:700px;margin:0 auto;">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-clipboard-check"></i> اطلاعات ارزیابی</h6>
+    </div>
+    <div class="t-card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="t-form-label">عنوان ارزیابی <span class="text-danger">*</span></label>
+                <input type="text" name="title" class="t-form-control" required
+                       placeholder="مثال: آزمون میان‌ترم ریاضی - فصل دوم">
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">کلاس <span class="text-danger">*</span></label>
+                <select name="classroom" class="t-form-control" required>
+                    <option value="">انتخاب کلاس...</option>
+                    {% for classroom in classrooms %}
+                    <option value="{{ classroom.id }}">{{ classroom.name }} - {{ classroom.subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">موضوع</label>
+                <input type="text" name="topic" class="t-form-control"
+                       placeholder="مثال: معادلات درجه دوم">
+            </div>
+
+            <div class="mb-4">
+                <label class="t-form-label">مدت آزمون (دقیقه)</label>
+                <input type="number" name="duration" class="t-form-control"
+                       value="30" min="5" max="180">
+            </div>
+
+            <div class="alert alert-light border">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    پس از ایجاد ارزیابی، می‌توانید سوالات را از بانک سوال اضافه و سپس ارزیابی را منتشر کنید.
+                </small>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-primary flex-grow-1 justify-content-center">
+                    <i class="bi bi-check-circle"></i> ایجاد ارزیابی
+                </button>
+                <a href="{% url 'teacher:assessments' %}" class="t-btn t-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

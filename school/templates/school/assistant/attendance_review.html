@@ -1,0 +1,27 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-clipboard-check me-2" style="color: #ffc107;"></i>بررسی غیبت</h2>
+    </div>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <p><strong>دانش‌آموز:</strong> {{ review.student.get_full_name }}</p>
+        <p><strong>تاریخ غیبت:</strong> {{ review.review_date }}</p>
+        <p><strong>وضعیت فعلی:</strong> {{ review.get_review_status_display }}</p>
+        
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="d-flex gap-2 flex-wrap">
+                <button name="action" value="confirm" class="btn btn-success">تأیید غیبت</button>
+                <button name="action" value="contact" class="btn btn-info">تماس با والدین</button>
+                <button name="action" value="escalate" class="btn btn-warning">ارجاع به مدیر</button>
+                <button name="action" value="resolve" class="btn btn-primary">حل شده</button>
+            </div>
+            <textarea name="note" class="form-control mt-3" placeholder="یادداشت..."></textarea>
+        </form>
+    </div>
+</div>
+{% endblock %}

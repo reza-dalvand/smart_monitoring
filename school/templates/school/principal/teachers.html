@@ -1,0 +1,27 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-person-workspace me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>نام معلم</th><th>تعداد کلاس‌ها</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for t in teachers %}
+                    <tr>
+                        <td><strong>{{ t.get_full_name|default:t.username }}</strong></td>
+                        <td>{{ t.classes_count }}</td>
+                        <td><a href="{% url 'school:principal_teacher_detail' t.id %}" class="btn btn-sm btn-outline-primary">مشاهده</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-muted">معلمی یافت نشد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

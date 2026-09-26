@@ -1,0 +1,106 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-robot"></i> دستیار هوشمند</div>
+    <a href="{% url 'dashboard:teacher_ai_new' %}" class="t-btn t-btn-primary t-btn-sm">
+        <i class="bi bi-stars"></i> تولید سوال جدید
+    </a>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <a href="{% url 'dashboard:teacher_ai_new' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(124,58,237,.1);color:var(--t-purple);">
+                <i class="bi bi-stars"></i>
+            </div>
+            <div style="font-size:.85rem;">تولید سوال با AI</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'dashboard:teacher_ai_review' 0 %}" class="t-quick" style="pointer-events:none;opacity:.5;">
+            <div class="t-quick-icon" style="background:rgba(217,119,6,.1);color:var(--t-warning);">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <div style="font-size:.85rem;">بررسی سوالات</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'teacher:questions' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(2,132,199,.1);color:var(--t-info);">
+                <i class="bi bi-question-circle-fill"></i>
+            </div>
+            <div style="font-size:.85rem;">بانک سوال</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'teacher:question_create' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(22,163,74,.1);color:var(--t-success);">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div style="font-size:.85rem;">سوال دستی</div>
+        </a>
+    </div>
+</div>
+
+<!-- Recent AI Jobs -->
+<div class="t-card">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-clock-history"></i> درخواست‌های اخیر هوش مصنوعی</h6>
+    </div>
+    <div class="t-card-body">
+        {% if jobs %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>تعداد سوال</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td><strong>{{ job.id }}</strong></td>
+                        <td>{{ job.classroom.name }}</td>
+                        <td>{{ job.topic|default:"-" }}</td>
+                        <td>{{ job.requested_count }}</td>
+                        <td>
+                            {% if job.status == 'pending' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در انتظار" %}
+                            {% elif job.status == 'processing' %}
+                                {% include "teacher/components/status_badge.html" with status="pending" display="در حال پردازش" %}
+                            {% elif job.status == 'completed' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="تکمیل شده" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="absent" display="ناموفق" %}
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ job.created_at|date:"Y/m/d H:i" }}</small></td>
+                        <td>
+                            {% if job.status == 'completed' %}
+                            <a href="{% url 'dashboard:teacher_ai_review' job.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                <i class="bi bi-eye"></i> بررسی
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-robot" title="درخواستی ثبت نشده" message="هنوز درخواست تولید سوال با هوش مصنوعی ثبت نکرده‌اید." cta_text="تولید سوال" cta_url="/dashboard/teacher/ai/new/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-person-check-fill me-2" style="color: #ffc107;"></i>عملیات حضور و غیاب</h2>
+        <p>بررسی و پیگیری غیبت‌های دانش‌آموزان</p>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title"><i class="bi bi-person-x-fill"></i>غیبت‌های {{ tab }}</h3>
+    </div>
+    <div class="sc-section-body">
+        {% if absences %}
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead>
+                    <tr><th>دانش‌آموز</th><th>کلاس</th><th>تاریخ</th><th>عملیات</th></tr>
+                </thead>
+                <tbody>
+                    {% for a in absences %}
+                    <tr>
+                        <td>{{ a.student.get_full_name }}</td>
+                        <td>{{ a.attendance_check.session.classroom.name }}</td>
+                        <td>{{ a.attendance_check.session.session_date|date:"Y/m/d" }}</td>
+                        <td>
+                            <a href="{% url 'school:assistant_student_detail' a.student.id %}" class="btn btn-sm btn-outline-info">پروفایل</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sc-empty">
+            <div class="sc-empty-icon"><i class="bi bi-check-circle"></i></div>
+            <p>غیبتی ثبت نشده است.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

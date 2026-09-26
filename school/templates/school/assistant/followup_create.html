@@ -1,0 +1,35 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-plus-circle-fill me-2" style="color: #ffc107;"></i>ایجاد پرونده پیگیری</h2>
+    </div>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">عنوان</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">توضیحات</label>
+                <textarea name="description" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">دانش‌آموز (اختیاری)</label>
+                <select name="student" class="form-select">
+                    <option value="">انتخاب کنید...</option>
+                    {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">ایجاد پرونده</button>
+            <a href="{% url 'school:assistant_followups' %}" class="btn btn-secondary">انصراف</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

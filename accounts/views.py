@@ -16,6 +16,7 @@ class CustomLoginView(LoginView):
             'district_admin': 'district:dashboard',
             'principal': 'school:principal_dashboard',
             'assistant': 'school:assistant_dashboard',
+            'teacher': 'teacher:dashboard',
         }
         redirect_name = role_redirects.get(user.role, 'dashboard:home')
         try:

@@ -1,0 +1,126 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-clipboard-check me-2" style="color: #ffc107;"></i>
+            {{ task.title }}
+        </h2>
+        <p>
+            ایجاد شده توسط {{ task.created_by.get_full_name|default:task.created_by.username }}
+            | {{ task.created_at|date:"Y/m/d H:i" }}
+        </p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- اطلاعات وظیفه -->
+    <div class="col-lg-8">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title"><i class="bi bi-info-circle"></i> جزئیات</h3>
+            </div>
+            <div class="sc-section-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold" style="width: 150px;">وضعیت:</td>
+                        <td>
+                            <span class="sc-badge {% if task.status == 'DONE' %}success{% elif task.status == 'IN_PROGRESS' %}info{% elif task.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">اولویت:</td>
+                        <td>
+                            <span class="sc-badge {% if task.priority == 'URGENT' %}danger{% elif task.priority == 'HIGH' %}warning{% else %}info{% endif %}">
+                                {{ task.get_priority_display|default:task.priority }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">مسئول:</td>
+                        <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"تعیین نشده" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">مهلت:</td>
+                        <td>{{ task.due_date|date:"Y/m/d"|default:"—" }}</td>
+                    </tr>
+                </table>
+
+                <hr>
+
+                <h6 class="fw-bold mb-2">توضیحات و یادداشت‌ها:</h6>
+                <div class="bg-light p-3 rounded" style="white-space: pre-wrap;">{{ task.description|default:"توضیحی ثبت نشده." }}</div>
+            </div>
+        </div>
+
+        <!-- افزودن یادداشت -->
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title"><i class="bi bi-chat-left-text"></i> افزودن یادداشت</h3>
+            </div>
+            <div class="sc-section-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_note">
+                    <div class="input-group">
+                        <input type="text" name="note" class="form-control"
+                               placeholder="یادداشت جدید..." required>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-send"></i> ثبت
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- عملیات -->
+    <div class="col-lg-4">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title"><i class="bi bi-gear"></i> عملیات</h3>
+            </div>
+            <div class="sc-section-body">
+                <!-- تغییر وضعیت -->
+                <form method="post" class="mb-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_status">
+                    <label class="form-label fw-bold">تغییر وضعیت:</label>
+                    <div class="input-group">
+                        <select name="new_status" class="form-select">
+                            {% for val, label in task_statuses %}
+                            <option value="{{ val }}" {% if task.status == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <hr>
+
+                <!-- حذف -->
+                <form method="post" action="{% url 'school:principal_task_delete' task.id %}"
+                      onsubmit="return confirm('آیا از حذف این وظیفه مطمئن هستید؟');">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger w-100" type="submit">
+                        <i class="bi bi-trash me-1"></i> حذف وظیفه
+                    </button>
+                </form>
+
+                <hr>
+
+                <a href="{% url 'school:principal_tasks' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-right me-1"></i> بازگشت به لیست
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

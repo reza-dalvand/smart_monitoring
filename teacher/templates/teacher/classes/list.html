@@ -1,0 +1,53 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}کلاس‌های من{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-journal-bookmark-fill"></i> کلاس‌های من</div>
+</div>
+
+{% if classrooms %}
+<div class="row g-4">
+    {% for classroom in classrooms %}
+    <div class="col-lg-4 col-md-6">
+        <div class="t-card h-100">
+            <div class="t-card-body">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ classroom.name }}</h6>
+                        <small class="text-muted">{{ classroom.subject }}</small>
+                    </div>
+                    <span class="t-badge primary">{{ classroom.get_grade_display }} {{ classroom.get_field_display }}</span>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-4 text-center">
+                        <div class="fw-bold" style="font-size:1.2rem;color:var(--t-primary);">{{ classroom.students_count }}</div>
+                        <small class="text-muted">دانش‌آموز</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="fw-bold" style="font-size:1.2rem;color:var(--t-info);">{{ classroom.sessions_count }}</div>
+                        <small class="text-muted">جلسه</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="fw-bold" style="font-size:1.2rem;color:var(--t-success);">
+                            {% if classroom.questions_count %}{{ classroom.questions_count }}{% else %}۰{% endif %}
+                        </div>
+                        <small class="text-muted">سوال</small>
+                    </div>
+                </div>
+                <a href="{% url 'teacher:class_detail' classroom.id %}" class="t-btn t-btn-primary w-100 justify-content-center">
+                    <i class="bi bi-arrow-left"></i> مدیریت کلاس
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="t-card">
+    <div class="t-card-body">
+        {% include "teacher/components/empty_state.html" with icon="bi-journal-x" title="هنوز کلاسی ندارید" message="هیچ کلاسی به شما اختصاص داده نشده است. با معاون مدرسه هماهنگ کنید." %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

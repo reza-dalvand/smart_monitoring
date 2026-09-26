@@ -1,0 +1,53 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-file-earmark-bar-graph-fill"></i> گزارش‌ها</div>
+</div>
+
+<!-- KPIs -->
+<div class="t-kpi-grid">
+    {% include "teacher/components/kpi_card.html" with icon="bi-journal-bookmark-fill" value=overview.total_classes label="کلاس‌ها" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-people-fill" value=overview.total_students label="دانش‌آموزان" color="" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-person-check-fill" value=overview.attendance_rate label="نرخ حضور" color="success" %}
+    {% include "teacher/components/kpi_card.html" with icon="bi-graph-up" value=overview.participation_rate label="نرخ مشارکت" color="info" %}
+</div>
+
+<!-- Report Links -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <a href="{% url 'teacher:analytics' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(26,35,126,.08);color:var(--t-primary);">
+                <i class="bi bi-bar-chart-fill"></i>
+            </div>
+            <div>
+                <div>تحلیل عملکرد</div>
+                <small class="text-muted">آمار کلی کلاس‌ها و دانش‌آموزان</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'teacher:attendance' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(22,163,74,.1);color:var(--t-success);">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <div>
+                <div>گزارش حضور و غیاب</div>
+                <small class="text-muted">وضعیت حضور دانش‌آموزان</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'teacher:participation' %}" class="t-quick">
+            <div class="t-quick-icon" style="background:rgba(124,58,237,.1);color:var(--t-purple);">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div>
+                <div>گزارش مشارکت</div>
+                <small class="text-muted">مشارکت دانش‌آموزان در کلاس</small>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

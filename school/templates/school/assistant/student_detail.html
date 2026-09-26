@@ -1,0 +1,42 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-person-fill me-2" style="color: #ffc107;"></i>{{ student.get_full_name|default:student.username }}</h2>
+        <p>پروفایل مدیریتی دانش‌آموز</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title"><i class="bi bi-info-circle-fill"></i>اطلاعات پایه</h3>
+            </div>
+            <div class="sc-section-body">
+                <p><strong>نام کاربری:</strong> {{ student.username }}</p>
+                <p><strong>کد ملی:</strong> {{ student.national_id|default:"ثبت نشده" }}</p>
+                <p><strong>ایمیل:</strong> {{ student.email|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="sc-section">
+            <div class="sc-section-header">
+                <h3 class="sc-section-title"><i class="bi bi-gear-fill"></i>عملیات</h3>
+            </div>
+            <div class="sc-section-body">
+                {% if 'EDUCATIONAL' in request.school_scope.assistant_types or 'GENERAL' in request.school_scope.assistant_types %}
+                <a href="{% url 'school:assistant_student_status' student.id %}" class="btn btn-warning w-100 mb-2">
+                    <i class="bi bi-pencil-square"></i> تغییر وضعیت تحصیلی
+                </a>
+                {% endif %}
+                <a href="{% url 'school:assistant_followup_create' %}?student={{ student.id }}" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle"></i> ایجاد پرونده پیگیری
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-plus-circle me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">عنوان پرونده *</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">دانش‌آموز (اختیاری)</label>
+                    <select name="student" class="form-select">
+                        <option value="">-- انتخاب دانش‌آموز --</option>
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.get_full_name }} ({{ s.national_id|default:"-" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">دسته‌بندی</label>
+                    <select name="category" class="form-select">
+                        {% for val, label in categories %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">اولویت</label>
+                    <select name="priority" class="form-select">
+                        {% for val, label in priorities %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">توضیحات</label>
+                    <textarea name="description" class="form-control" rows="4"></textarea>
+                </div>
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-primary">ایجاد پرونده</button>
+            <a href="{% url 'school:principal_followups' %}" class="btn btn-outline-secondary">انصراف</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+
+<!-- Hero -->
+<div class="sc-hero d-flex justify-content-between align-items-center">
+    <div class="sc-hero-content">
+        <h2>
+            <i class="bi bi-list-check me-2" style="color: #ffc107;"></i>
+            مدیریت وظایف
+        </h2>
+        <p>پیگیری و مدیریت وظایف مدرسه</p>
+    </div>
+    <a href="{% url 'school:principal_task_create' %}" class="btn btn-light fw-bold">
+        <i class="bi bi-plus-circle me-1"></i> وظیفه جدید
+    </a>
+</div>
+
+<!-- آمار سریع -->
+<div class="sc-kpi-grid">
+    <div class="sc-kpi-card">
+        <div class="sc-kpi-icon"><i class="bi bi-clipboard-data"></i></div>
+        <div class="sc-kpi-value">{{ stats.total }}</div>
+        <div class="sc-kpi-title">کل وظایف</div>
+    </div>
+    <div class="sc-kpi-card warning">
+        <div class="sc-kpi-icon"><i class="bi bi-circle"></i></div>
+        <div class="sc-kpi-value">{{ stats.todo }}</div>
+        <div class="sc-kpi-title">در انتظار</div>
+    </div>
+    <div class="sc-kpi-card info">
+        <div class="sc-kpi-icon"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="sc-kpi-value">{{ stats.in_progress }}</div>
+        <div class="sc-kpi-title">در حال انجام</div>
+    </div>
+    <div class="sc-kpi-card success">
+        <div class="sc-kpi-icon"><i class="bi bi-check-circle"></i></div>
+        <div class="sc-kpi-value">{{ stats.done }}</div>
+        <div class="sc-kpi-title">انجام شده</div>
+    </div>
+</div>
+
+<!-- فیلترها -->
+<div class="sc-section">
+    <div class="sc-section-header">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <select name="status" class="form-select form-select-sm" style="width: auto;">
+                <option value="">همه وضعیت‌ها</option>
+                {% for val, label in task_statuses %}
+                <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="assignee" class="form-select form-select-sm" style="width: auto;">
+                <option value="">همه اعضا</option>
+                {% for member in staff_members %}
+                <option value="{{ member.id }}" {% if assignee_filter == member.id|stringformat:"d" %}selected{% endif %}>
+                    {{ member.get_full_name|default:member.username }}
+                </option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-sm btn-primary">فیلتر</button>
+            <a href="{% url 'school:principal_tasks' %}" class="btn btn-sm btn-outline-secondary">پاکسازی</a>
+        </form>
+    </div>
+    <div class="sc-section-body">
+        {% if tasks %}
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>مسئول</th>
+                        <th>اولویت</th>
+                        <th>وضعیت</th>
+                        <th>مهلت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'school:principal_task_detail' task.id %}"
+                               style="text-decoration: none; font-weight: 600; color: var(--sc-primary);">
+                                {{ task.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <small>{{ task.assigned_to.get_full_name|default:task.assigned_to.username|default:"-" }}</small>
+                        </td>
+                        <td>
+                            <span class="sc-badge {% if task.priority == 'URGENT' %}danger{% elif task.priority == 'HIGH' %}warning{% elif task.priority == 'LOW' %}info{% else %}success{% endif %}">
+                                {{ task.get_priority_display|default:task.priority }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="sc-badge {% if task.status == 'DONE' %}success{% elif task.status == 'IN_PROGRESS' %}info{% elif task.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>
+                                {% if task.due_date %}
+                                    {{ task.due_date|date:"Y/m/d" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <a href="{% url 'school:principal_task_detail' task.id %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sc-empty">
+            <div class="sc-empty-icon"><i class="bi bi-clipboard-check"></i></div>
+            <p>وظیفه‌ای یافت نشد.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

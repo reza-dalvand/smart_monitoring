@@ -1,0 +1,60 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-journal-text-fill"></i> تکالیف</div>
+    <a href="{% url 'teacher:homework_create' %}" class="t-btn t-btn-primary t-btn-sm">
+        <i class="bi bi-plus-circle"></i> ایجاد تکلیف
+    </a>
+</div>
+
+<div class="t-card">
+    <div class="t-card-body">
+        {% if homeworks %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>مهلت ارسال</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for homework in homeworks %}
+                    <tr>
+                        <td><strong>{{ homework.title }}</strong></td>
+                        <td>{{ homework.classroom.name }}</td>
+                        <td>{{ homework.topic|default:"-" }}</td>
+                        <td><small class="text-muted">{{ homework.deadline|date:"Y/m/d - H:i" }}</small></td>
+                        <td>
+                            {% if homework.status == 'draft' %}
+                                {% include "teacher/components/status_badge.html" with status="draft" display="پیش‌نویس" %}
+                            {% elif homework.status == 'active' %}
+                                {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+                            {% elif homework.status == 'closed' %}
+                                {% include "teacher/components/status_badge.html" with status="completed" display="بسته شده" %}
+                            {% else %}
+                                {% include "teacher/components/status_badge.html" with status="cancelled" display="بایگانی شده" %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'teacher:homework_detail' homework.id %}" class="t-btn t-btn-outline t-btn-sm">
+                                <i class="bi bi-eye"></i> جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-journal-x" title="تکلیفی ایجاد نشده" message="برای تمرین و ارزیابی بیشتر، تکلیف ایجاد کنید." cta_text="ایجاد تکلیف" cta_url="/teacher/homework/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-journal-text"></i> یادداشت‌های {{ student.get_full_name|default:student.username }}</div>
+    <a href="{% url 'teacher:student_detail' student.id %}" class="t-btn t-btn-outline t-btn-sm">
+        <i class="bi bi-arrow-right"></i> پروفایل
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Add Note -->
+    <div class="col-md-4">
+        <div class="t-card">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-plus-circle"></i> یادداشت جدید</h6>
+            </div>
+            <div class="t-card-body">
+                <form method="post" action="{% url 'teacher:note_add' student.id %}">
+                    {% csrf_token %}
+                    <textarea name="content" class="t-form-control mb-3" rows="4"
+                              placeholder="مثال: در مبحث معادلات درجه دوم نیاز به تمرین بیشتری دارد."
+                              required></textarea>
+                    <button type="submit" class="t-btn t-btn-primary w-100 justify-content-center">
+                        <i class="bi bi-check-circle"></i> ثبت یادداشت
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes List -->
+    <div class="col-md-8">
+        <div class="t-card h-100">
+            <div class="t-card-header">
+                <h6 class="t-card-title"><i class="bi bi-list-ul"></i> یادداشت‌های قبلی</h6>
+                <span class="t-badge info">{{ notes|length }} یادداشت</span>
+            </div>
+            <div class="t-card-body">
+                {% if notes %}
+                    {% for note in notes %}
+                    <div class="p-3 mb-3 rounded-3" style="background:#f8fafc;border:1px solid var(--t-border);">
+                        <p class="mb-2" style="font-size:.9rem;">{{ note.content }}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ note.created_at|date:"Y/m/d - H:i" }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {% include "teacher/components/empty_state.html" with icon="bi-journal-x" title="یادداشتی ثبت نشده" message="برای این دانش‌آموز یادداشتی ثبت نکرده‌اید." %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -107,7 +107,7 @@ class AIGenerationForm(forms.ModelForm):
             'default_timer_seconds': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 30,
-                'max': 3600
+                'max': 4000
             }),
         }
 

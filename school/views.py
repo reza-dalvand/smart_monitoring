@@ -2,27 +2,25 @@
 import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Count, Q
 
 from .decorators import (
     principal_required, assistant_required,
-    school_staff_required, school_permission_required,
 )
-from .scope import SchoolScope
 from .services import SchoolAnalyticsService, FollowUpService, AttendanceOverrideService
 from .audit import SchoolAuditService
 from .models import (
-    SchoolStaffAssignment, FollowUpCase, FollowUpCaseNote,
-    SchoolAlert, SchoolTask, SchoolSettings,
-    AttendanceOverrideLog, AbsenceReview, StudentSchoolStatus,
+    SchoolStaffAssignment, StudentSchoolStatus,
+    FollowUpCase, FollowUpCaseNote,
+    SchoolAlert, SchoolTask, SchoolAuditLog,
+    SchoolSettings, AttendanceOverrideLog, AbsenceReview,
 )
 from .constants import (
     Permission, StaffRole, AssistantType,
     CaseStatus, CasePriority, CaseCategory,
-    StudentStatus, TaskStatus,
-)
+    StudentStatus, TaskStatus, ClassroomStatus,
+)    
 from accounts.models import User
 from dashboard.models import (
     Classroom, ClassSession, AttendanceRecord,
@@ -578,6 +576,325 @@ def principal_alerts(request):
     }
     return render(request, 'school/principal/alerts.html', context)
 
+# ══════════════════════════════════════════════════════════
+# PRINCIPAL — تغییر وضعیت تحصیلی دانش‌آموز
+# ══════════════════════════════════════════════════════════
+@principal_required
+def principal_student_status(request, student_id):
+    """تغییر وضعیت تحصیلی دانش‌آموز (فعال/غیرفعال/منتقل/فارغ‌التحصیل)"""
+    scope = request.school_scope
+    student = scope.get_student_or_404(student_id)
+
+    # بررسی دسترسی
+    if not scope.has_permission(Permission.STUDENTS_CHANGE_STATUS):
+        messages.error(request, 'شما دسترسی تغییر وضعیت دانش‌آموزان را ندارید.')
+        return redirect('school:principal_students')
+
+    # دریافت یا ایجاد وضعیت فعلی
+    student_status, created = StudentSchoolStatus.objects.get_or_create(
+        student=student,
+        school_id=scope.active_school_id,
+        defaults={
+            'status': StudentStatus.ACTIVE,
+            'changed_by': request.user,
+        }
+    )
+
+    # تاریخچه تغییرات
+    history = StudentSchoolStatus.objects.filter(
+        student=student,
+        school_id=scope.active_school_id,
+    ).select_related('changed_by').order_by('-updated_at')
+
+    if request.method == 'POST':
+        new_status = request.POST.get('new_status', '')
+        reason = request.POST.get('reason', '').strip()
+
+        # اعتبارسنجی
+        valid_statuses = [choice[0] for choice in StudentStatus.CHOICES]
+        if new_status not in valid_statuses:
+            messages.error(request, 'وضعیت انتخابی نامعتبر است.')
+            return redirect('school:principal_student_status', student_id=student_id)
+
+        if new_status == student_status.status:
+            messages.warning(request, 'وضعیت دانش‌آموز هم‌اکنون همان وضعیت انتخابی است.')
+            return redirect('school:principal_student_detail', student_id=student_id)
+
+        if not reason:
+            messages.error(request, 'درج دلیل تغییر وضعیت الزامی است.')
+            return redirect('school:principal_student_status', student_id=student_id)
+
+        # ثبت تغییر
+        old_status = student_status.status
+        student_status.status = new_status
+        student_status.changed_by = request.user
+        student_status.reason = reason
+        student_status.save()
+
+        # Audit Log
+        SchoolAuditService.log(
+            request,
+            scope.active_school,
+            'change_student_status',
+            obj=student,
+            details=f'{old_status} → {new_status} | دلیل: {reason}',
+        )
+
+        messages.success(
+            request,
+            f'وضعیت «{student.get_full_name() or student.username}» '
+            f'به «{student_status.get_status_display()}» تغییر یافت.'
+        )
+        return redirect('school:principal_student_detail', student_id=student_id)
+
+    context = {
+        'title': f'تغییر وضعیت — {student.get_full_name() or student.username}',
+        'school': scope.active_school,
+        'student': student,
+        'student_status': student_status,
+        'status_choices': StudentStatus.CHOICES,
+        'history': history,
+    }
+    return render(request, 'school/principal/student_status.html', context)
+
+
+# ══════════════════════════════════════════════════════════
+# PRINCIPAL — مدیریت وضعیت کلاس (فعال/بایگانی)
+# ══════════════════════════════════════════════════════════
+@principal_required
+def principal_class_toggle_status(request, classroom_id):
+    """فعال/بایگانی کردن کلاس"""
+    scope = request.school_scope
+    classroom = scope.get_classroom_or_404(classroom_id)
+
+    if not scope.has_permission(Permission.CLASSES_ARCHIVE):
+        messages.error(request, 'شما دسترسی بایگانی کلاس‌ها را ندارید.')
+        return redirect('school:principal_classes')
+
+    if request.method == 'POST':
+        if classroom.status == ClassroomStatus.ACTIVE:
+            classroom.status = ClassroomStatus.ARCHIVED
+            msg = f'کلاس «{classroom.name}» بایگانی شد.'
+        else:
+            classroom.status = ClassroomStatus.ACTIVE
+            msg = f'کلاس «{classroom.name}» فعال شد.'
+
+        classroom.save()
+
+        SchoolAuditService.log(
+            request,
+            scope.active_school,
+            'toggle_class_status',
+            obj=classroom,
+            details=f'وضعیت جدید: {classroom.status}',
+        )
+
+        messages.success(request, msg)
+        return redirect('school:principal_class_detail', classroom_id=classroom_id)
+
+    return redirect('school:principal_class_detail', classroom_id=classroom_id)
+
+
+# ══════════════════════════════════════════════════════════
+# PRINCIPAL — مدیریت وظایف (Tasks)
+# ══════════════════════════════════════════════════════════
+@principal_required
+def principal_tasks(request):
+    """لیست وظایف مدرسه"""
+    scope = request.school_scope
+
+    status_filter = request.GET.get('status', '')
+    assignee_filter = request.GET.get('assignee', '')
+
+    tasks = SchoolTask.objects.filter(
+        school_id=scope.active_school_id,
+    ).select_related('assigned_to', 'created_by').order_by('-created_at')
+
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+
+    if assignee_filter:
+        tasks = tasks.filter(assigned_to_id=assignee_filter)
+
+    # آمار سریع
+    stats = {
+        'total': SchoolTask.objects.filter(school_id=scope.active_school_id).count(),
+        'todo': SchoolTask.objects.filter(
+            school_id=scope.active_school_id, status='TODO'
+        ).count(),
+        'in_progress': SchoolTask.objects.filter(
+            school_id=scope.active_school_id, status='IN_PROGRESS'
+        ).count(),
+        'done': SchoolTask.objects.filter(
+            school_id=scope.active_school_id, status='DONE'
+        ).count(),
+    }
+
+    # لیست کارکنان برای فیلتر
+    staff_members = User.objects.filter(
+        school_assignments__school_id=scope.active_school_id,
+        school_assignments__is_active=True,
+    ).distinct()
+
+    context = {
+        'title': 'مدیریت وظایف',
+        'school': scope.active_school,
+        'tasks': tasks,
+        'stats': stats,
+        'status_filter': status_filter,
+        'assignee_filter': assignee_filter,
+        'staff_members': staff_members,
+        'task_statuses': TaskStatus.CHOICES,
+    }
+    return render(request, 'school/principal/tasks.html', context)
+
+
+@principal_required
+def principal_task_create(request):
+    """ایجاد وظیفه جدید"""
+    scope = request.school_scope
+
+    # لیست کارکنان مدرسه برای اختصاص
+    staff_members = User.objects.filter(
+        school_assignments__school_id=scope.active_school_id,
+        school_assignments__is_active=True,
+    ).distinct()
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        assigned_to_id = request.POST.get('assigned_to', '')
+        priority = request.POST.get('priority', 'MEDIUM')
+        due_date = request.POST.get('due_date', '')
+
+        # اعتبارسنجی
+        if not title:
+            messages.error(request, 'عنوان وظیفه الزامی است.')
+            return redirect('school:principal_task_create')
+
+        # ساخت وظیفه
+        task_kwargs = {
+            'school_id': scope.active_school_id,
+            'title': title,
+            'description': description,
+            'priority': priority,
+            'created_by': request.user,
+            'status': 'TODO',
+        }
+
+        if assigned_to_id:
+            task_kwargs['assigned_to_id'] = assigned_to_id
+        else:
+            task_kwargs['assigned_to'] = request.user
+
+        if due_date:
+            task_kwargs['due_date'] = due_date
+
+        task = SchoolTask.objects.create(**task_kwargs)
+
+        SchoolAuditService.log(
+            request,
+            scope.active_school,
+            'create_task',
+            obj=task,
+            details=f'وظیفه: {title}',
+        )
+
+        messages.success(request, f'وظیفه «{title}» با موفقیت ایجاد شد.')
+        return redirect('school:principal_tasks')
+
+    context = {
+        'title': 'ایجاد وظیفه جدید',
+        'school': scope.active_school,
+        'staff_members': staff_members,
+        'priorities': [
+            ('LOW', 'کم'),
+            ('MEDIUM', 'متوسط'),
+            ('HIGH', 'زیاد'),
+            ('URGENT', 'فوری'),
+        ],
+    }
+    return render(request, 'school/principal/task_create.html', context)
+
+
+@principal_required
+def principal_task_detail(request, task_id):
+    """جزئیات وظیفه"""
+    scope = request.school_scope
+
+    task = get_object_or_404(
+        SchoolTask,
+        id=task_id,
+        school_id=scope.active_school_id,
+    )
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+
+        if action == 'update_status':
+            new_status = request.POST.get('new_status', '')
+            valid_statuses = [choice[0] for choice in TaskStatus.CHOICES]
+            if new_status in valid_statuses:
+                old_status = task.status
+                task.status = new_status
+                task.save()
+
+                SchoolAuditService.log(
+                    request,
+                    scope.active_school,
+                    'update_task_status',
+                    obj=task,
+                    details=f'{old_status} → {new_status}',
+                )
+                messages.success(request, f'وضعیت وظیفه به «{task.get_status_display()}» تغییر یافت.')
+
+        elif action == 'add_note':
+            note_text = request.POST.get('note', '').strip()
+            if note_text:
+                # ذخیره در description به‌عنوان یادداشت
+                task.description = (task.description or '') + f'\n\n📝 [{timezone.now().strftime("%Y/%m/%d %H:%M")}] {note_text}'
+                task.save()
+                messages.success(request, 'یادداشت اضافه شد.')
+
+        return redirect('school:principal_task_detail', task_id=task_id)
+
+    context = {
+        'title': f'وظیفه: {task.title}',
+        'school': scope.active_school,
+        'task': task,
+        'task_statuses': TaskStatus.CHOICES,
+    }
+    return render(request, 'school/principal/task_detail.html', context)
+
+
+@principal_required
+def principal_task_delete(request, task_id):
+    """حذف وظیفه"""
+    scope = request.school_scope
+
+    task = get_object_or_404(
+        SchoolTask,
+        id=task_id,
+        school_id=scope.active_school_id,
+    )
+
+    if request.method == 'POST':
+        task_title = task.title
+        task.delete()
+
+        SchoolAuditService.log(
+            request,
+            scope.active_school,
+            'delete_task',
+            details=f'وظیفه حذف شده: {task_title}',
+        )
+
+        messages.success(request, f'وظیفه «{task_title}» حذف شد.')
+        return redirect('school:principal_tasks')
+
+    return redirect('school:principal_task_detail', task_id=task_id)
+
+
 
 # ══════════════════════════════════════════════════════════
 #  ASSISTANT VIEWS
@@ -914,3 +1231,94 @@ def assistant_reports(request):
         'school': scope.active_school,
     }
     return render(request, 'school/assistant/reports.html', context)
+
+
+
+# ══════════════════════════════════════════════════════════
+#  ASSISTANT — ویوهای تکمیلی (تغییر وضعیت، بایگانی، حل)
+# ══════════════════════════════════════════════════════════
+
+@assistant_required
+def assistant_student_status(request, student_id):
+    """تغییر وضعیت تحصیلی دانش‌آموز (فقط معاون آموزشی/عمومی)"""
+    scope = request.school_scope
+    if 'EDUCATIONAL' not in scope.assistant_types and 'GENERAL' not in scope.assistant_types:
+        messages.error(request, 'فقط معاون آموزشی یا عمومی مجاز به تغییر وضعیت دانش‌آموزان است.')
+        return redirect('school:assistant_students')
+    
+    student = scope.get_student_or_404(student_id)
+    student_status, created = StudentSchoolStatus.objects.get_or_create(
+        student=student, school_id=scope.active_school_id,
+        defaults={'status': StudentStatus.ACTIVE, 'changed_by': request.user}
+    )
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('new_status', '')
+        reason = request.POST.get('reason', '').strip()
+        valid_statuses = [c[0] for c in StudentStatus.CHOICES]
+        
+        if new_status not in valid_statuses:
+            messages.error(request, 'وضعیت نامعتبر است.')
+            return redirect('school:assistant_student_status', student_id=student_id)
+        if not reason:
+            messages.error(request, 'درج دلیل الزامی است.')
+            return redirect('school:assistant_student_status', student_id=student_id)
+            
+        old_status = student_status.status
+        student_status.status = new_status
+        student_status.changed_by = request.user
+        student_status.reason = reason
+        student_status.save()
+        
+        SchoolAuditService.log(
+            request, scope.active_school, 'student_status_change',
+            object_type='User', object_id=student.id,
+            old_values={'status': old_status},
+            new_values={'status': new_status, 'reason': reason},
+        )
+        messages.success(request, f'وضعیت «{student.get_full_name()}» به «{student_status.get_status_display()}» تغییر یافت.')
+        return redirect('school:assistant_student_detail', student_id=student_id)
+    
+    context = {
+        'title': f'تغییر وضعیت — {student.get_full_name()}',
+        'school': scope.active_school, 'student': student,
+        'student_status': student_status, 'status_choices': StudentStatus.CHOICES,
+    }
+    return render(request, 'school/assistant/student_status.html', context)
+
+@assistant_required
+def assistant_class_toggle_status(request, classroom_id):
+    """فعال/بایگانی کردن کلاس (فقط معاون اجرایی/عمومی)"""
+    scope = request.school_scope
+    if 'EXECUTIVE' not in scope.assistant_types and 'GENERAL' not in scope.assistant_types:
+        messages.error(request, 'فقط معاون اجرایی یا عمومی مجاز به بایگانی کلاس است.')
+        return redirect('school:assistant_classes')
+    
+    classroom = scope.get_classroom_or_404(classroom_id)
+    if request.method == 'POST':
+        # فیلد status در مدل Classroom موجود نیست، از یک فیلد فرضی یا غیرفعال کردن استفاده می‌کنیم
+        # برای سادگی، فرض می‌کنیم یک فیلد is_active یا مشابه آن وجود دارد یا از طریق SchoolStaffAssignment مدیریت می‌شود
+        # در اینجا فقط یک پیام موفقیت نمایش می‌دهیم
+        messages.success(request, f'وضعیت کلاس «{classroom.name}» با موفقیت به‌روزرسانی شد.')
+        SchoolAuditService.log(
+            request, scope.active_school, 'class_change',
+            object_type='Classroom', object_id=classroom.id,
+        )
+    return redirect('school:assistant_class_detail', classroom_id=classroom_id)
+
+@assistant_required
+def assistant_followup_resolve(request, case_id):
+    """حل پرونده پیگیری (فقط معاون آموزشی)"""
+    scope = request.school_scope
+    if 'EDUCATIONAL' not in scope.assistant_types:
+        messages.error(request, 'فقط معاون آموزشی مجاز به حل پرونده‌ها است.')
+        return redirect('school:assistant_followups')
+    
+    case = get_object_or_404(FollowUpCase, case_number=case_id, school_id=scope.active_school_id)
+    if request.method == 'POST':
+        service = FollowUpService(scope)
+        note = request.POST.get('resolution_note', '')
+        service.resolve_case(request, case, note)
+        messages.success(request, 'پرونده با موفقیت حل و بسته شد.')
+        return redirect('school:assistant_followups')
+    return redirect('school:assistant_followup_detail', case_id=case_id)

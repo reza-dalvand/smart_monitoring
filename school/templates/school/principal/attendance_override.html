@@ -1,0 +1,31 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-pencil-square me-2" style="color: #ffc107;"></i> تغییر وضعیت حضور</h2>
+    <p>دانش‌آموز: {{ response.student.get_full_name }} | کلاس: {{ response.attendance_request.classroom.name }}</p>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">وضعیت فعلی: <strong>{{ response.get_final_status_display }}</strong></label>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">وضعیت جدید</label>
+                <select name="new_status" class="form-select" required>
+                    <option value="present">حاضر</option>
+                    <option value="absent">غایب</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">دلیل تغییر (الزامی)</label>
+                <textarea name="reason" class="form-control" rows="3" required placeholder="دلیل تغییر وضعیت را وارد کنید..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">ثبت تغییرات</button>
+            <a href="{% url 'school:principal_attendance' %}" class="btn btn-outline-secondary">انصراف</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

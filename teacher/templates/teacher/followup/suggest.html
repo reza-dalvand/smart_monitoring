@@ -1,0 +1,65 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-flag-fill"></i> پیشنهاد پیگیری به معاون</div>
+</div>
+
+<div class="t-card" style="max-width:700px;margin:0 auto;">
+    <div class="t-card-header">
+        <h6 class="t-card-title"><i class="bi bi-info-circle"></i> اطلاعات پیشنهاد</h6>
+    </div>
+    <div class="t-card-body">
+        <div class="alert alert-warning border-0" style="background:rgba(217,119,6,.05);border:1px solid rgba(217,119,6,.2)!important;">
+            <small>
+                <i class="bi bi-info-circle me-1"></i>
+                شما فقط پیشنهاد پیگیری ثبت می‌کنید. تصمیم‌گیری و ارجاع با معاون یا مدیر مدرسه است.
+            </small>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="t-form-label">دانش‌آموز <span class="text-danger">*</span></label>
+                <select name="student" class="t-form-control" required>
+                    <option value="">انتخاب دانش‌آموز...</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.get_full_name|default:student.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">کلاس <span class="text-danger">*</span></label>
+                <select name="classroom" class="t-form-control" required>
+                    <option value="">انتخاب کلاس...</option>
+                    {% for classroom in classrooms %}
+                    <option value="{{ classroom.id }}">{{ classroom.name }} - {{ classroom.subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">دلیل پیشنهاد <span class="text-danger">*</span></label>
+                <input type="text" name="reason" class="t-form-control" required
+                       placeholder="مثال: افت شدید مشارکت در جلسات اخیر">
+            </div>
+
+            <div class="mb-4">
+                <label class="t-form-label">توضیحات</label>
+                <textarea name="details" class="t-form-control" rows="3"
+                          placeholder="توضیحات تکمیلی (اختیاری)"></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-warning flex-grow-1 justify-content-center">
+                    <i class="bi bi-flag-fill"></i> ثبت پیشنهاد پیگیری
+                </button>
+                <a href="{% url 'teacher:students' %}" class="t-btn t-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

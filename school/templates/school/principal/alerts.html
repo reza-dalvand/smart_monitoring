@@ -1,0 +1,36 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <h2><i class="bi bi-exclamation-triangle-fill me-2" style="color: #ffc107;"></i> {{ title }}</h2>
+</div>
+<div class="sc-section">
+    <div class="sc-section-body">
+        {% if alerts %}
+            {% for alert in alerts %}
+            <div class="sc-alert-item {{ alert.severity }}">
+                <div>
+                    <i class="bi {% if alert.severity == 'CRITICAL' %}bi-exclamation-octagon-fill text-danger{% else %}bi-exclamation-triangle-fill text-warning{% endif %}" style="font-size: 1.5rem;"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <strong>{{ alert.title }}</strong>
+                    {% if alert.message %}
+                    <p class="mb-0 small text-muted">{{ alert.message }}</p>
+                    {% endif %}
+                    {% if alert.student %}
+                    <a href="{% url 'school:principal_student_detail' alert.student.id %}" class="small">مشاهده پروفایل دانش‌آموز</a>
+                    {% elif alert.classroom %}
+                    <a href="{% url 'school:principal_class_detail' alert.classroom.id %}" class="small">مشاهده کلاس</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="sc-empty">
+                <div class="sc-empty-icon"><i class="bi bi-check-circle"></i></div>
+                <p>در حال حاضر هیچ هشدار یا مورد استثنایی وجود ندارد.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

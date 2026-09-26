@@ -1,0 +1,80 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-calendar-event-fill"></i> جلسات آموزشی</div>
+    <a href="{% url 'teacher:session_create' %}" class="t-btn t-btn-primary t-btn-sm">
+        <i class="bi bi-plus-circle"></i> ایجاد جلسه جدید
+    </a>
+</div>
+
+<div class="t-card">
+    <div class="t-card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="t-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>تاریخ</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><strong>{{ session.id }}</strong></td>
+                        <td>{{ session.classroom.name }}</td>
+                        <td>{{ session.topic|default:"بدون موضوع" }}</td>
+                        <td><small class="text-muted">{{ session.session_date|date:"Y/m/d H:i" }}</small></td>
+                        <td>
+                            {% if session.extension %}
+                                {% if session.extension.status == 'scheduled' %}
+                                    {% include "teacher/components/status_badge.html" with status="scheduled" display="زمان‌بندی شده" %}
+                                {% elif session.extension.status == 'active' %}
+                                    {% include "teacher/components/status_badge.html" with status="active" display="فعال" %}
+                                {% elif session.extension.status == 'completed' %}
+                                    {% include "teacher/components/status_badge.html" with status="completed" display="تکمیل شده" %}
+                                {% elif session.extension.status == 'cancelled' %}
+                                    {% include "teacher/components/status_badge.html" with status="cancelled" display="لغو شده" %}
+                                {% endif %}
+                            {% else %}
+                                <span class="t-badge secondary">بدون وضعیت</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'teacher:session_detail' session.id %}" class="t-btn t-btn-outline t-btn-sm" title="جزئیات">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if session.extension %}
+                                    {% if session.extension.status == 'scheduled' %}
+                                    <form method="post" action="{% url 'teacher:session_start' session.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="t-btn t-btn-success t-btn-sm" title="شروع جلسه">
+                                            <i class="bi bi-play-fill"></i> شروع
+                                        </button>
+                                    </form>
+                                    {% elif session.extension.status == 'active' %}
+                                    <a href="{% url 'teacher:session_panel' session.id %}" class="t-btn t-btn-warning t-btn-sm" title="پنل جلسه">
+                                        <i class="bi bi-sliders"></i> پنل
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "teacher/components/empty_state.html" with icon="bi-calendar-x" title="هنوز جلسه‌ای ایجاد نکرده‌اید" message="برای شروع تدریس، اولین جلسه خود را ایجاد کنید." cta_text="ایجاد جلسه" cta_url="/teacher/sessions/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -187,20 +187,21 @@ class SchoolScope:
         )
 
     def get_student_or_404(self, student_id):
-        return get_object_or_404(
-            User,
+        """هرگز از User.objects.get(id=...) به‌تنهایی استفاده نکنید."""
+        qs = User.objects.filter(
             id=student_id,
             role='student',
             enrolled_classes__school_id__in=self.school_ids,
-        )
+        ).distinct()  # ← جلوگیری از رکوردهای تکراری ناشی از JOIN
+        return get_object_or_404(qs)
 
     def get_teacher_or_404(self, teacher_id):
-        return get_object_or_404(
-            User,
+        qs = User.objects.filter(
             id=teacher_id,
             role='teacher',
             taught_classes__school_id__in=self.school_ids,
-        )
+        ).distinct()  # ← جلوگیری از رکوردهای تکراری ناشی از JOIN
+        return get_object_or_404(qs)
 
     def validate_school_id(self, school_id):
         """اعتبارسنجی پارامتر اختیاری فیلتر"""

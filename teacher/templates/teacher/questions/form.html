@@ -1,0 +1,82 @@
+{% extends 'teacher/base_teacher.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="t-page-header">
+    <div class="t-page-title"><i class="bi bi-pencil-square-fill"></i> {{ title }}</div>
+</div>
+
+<div class="t-card" style="max-width:750px;margin:0 auto;">
+    <div class="t-card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="t-form-label">کلاس <span class="text-danger">*</span></label>
+                <select name="classroom" class="t-form-control" required>
+                    <option value="">انتخاب کلاس...</option>
+                    {% for classroom in classrooms %}
+                    <option value="{{ classroom.id }}" {% if form.classroom.value == classroom.id|stringformat:"s" %}selected{% endif %}>
+                        {{ classroom.name }} - {{ classroom.subject }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">موضوع</label>
+                <input type="text" name="topic" class="t-form-control" value="{{ form.topic.value|default:'' }}"
+                       placeholder="مثال: فصل اول - متغیرها">
+            </div>
+
+            <div class="mb-3">
+                <label class="t-form-label">متن سوال <span class="text-danger">*</span></label>
+                <textarea name="text" class="t-form-control" rows="3" required
+                          placeholder="متن سوال را وارد کنید...">{{ form.text.value|default:'' }}</textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="t-form-label">گزینه الف <span class="text-danger">*</span></label>
+                    <input type="text" name="choice_a" class="t-form-control" required value="{{ form.choice_a.value|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">گزینه ب <span class="text-danger">*</span></label>
+                    <input type="text" name="choice_b" class="t-form-control" required value="{{ form.choice_b.value|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">گزینه ج <span class="text-danger">*</span></label>
+                    <input type="text" name="choice_c" class="t-form-control" required value="{{ form.choice_c.value|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">گزینه د <span class="text-danger">*</span></label>
+                    <input type="text" name="choice_d" class="t-form-control" required value="{{ form.choice_d.value|default:'' }}">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="t-form-label">پاسخ صحیح <span class="text-danger">*</span></label>
+                    <select name="correct_answer" class="t-form-control" required>
+                        <option value="a">گزینه الف</option>
+                        <option value="b">گزینه ب</option>
+                        <option value="c">گزینه ج</option>
+                        <option value="d">گزینه د</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="t-form-label">زمان پاسخ (ثانیه)</label>
+                    <input type="number" name="timer_seconds" class="t-form-control" value="300" min="10" max="7200">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="t-btn t-btn-primary flex-grow-1 justify-content-center">
+                    <i class="bi bi-check-circle"></i> ذخیره سوال
+                </button>
+                <a href="{% url 'teacher:questions' %}" class="t-btn t-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

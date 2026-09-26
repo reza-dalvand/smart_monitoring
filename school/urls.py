@@ -26,6 +26,21 @@ urlpatterns = [
     path('principal/settings/', views.principal_settings, name='principal_settings'),
     path('principal/audit/', views.principal_audit_log, name='principal_audit_log'),
     path('principal/alerts/', views.principal_alerts, name='principal_alerts'),
+        # ── تغییر وضعیت دانش‌آموز ──
+    path('principal/students/<int:student_id>/status/',
+         views.principal_student_status,
+         name='principal_student_status'),
+
+    # ── تغییر وضعیت کلاس ──
+    path('principal/classes/<int:classroom_id>/toggle-status/',
+         views.principal_class_toggle_status,
+         name='principal_class_toggle_status'),
+
+        # ── مدیریت وظایف ──
+    path('principal/tasks/', views.principal_tasks, name='principal_tasks'),
+    path('principal/tasks/create/', views.principal_task_create, name='principal_task_create'),
+    path('principal/tasks/<int:task_id>/', views.principal_task_detail, name='principal_task_detail'),
+    path('principal/tasks/<int:task_id>/delete/', views.principal_task_delete, name='principal_task_delete'),
 
     # ── Assistant ──
     path('assistant/', views.assistant_operational_dashboard, name='assistant_dashboard'),
@@ -43,4 +58,7 @@ urlpatterns = [
     path('assistant/followups/<int:case_id>/', views.assistant_followup_detail, name='assistant_followup_detail'),
     path('assistant/followups/<int:case_id>/escalate/', views.assistant_followup_escalate, name='assistant_followup_escalate'),
     path('assistant/reports/', views.assistant_reports, name='assistant_reports'),
+    path('assistant/students/<int:student_id>/status/', views.assistant_student_status, name='assistant_student_status'),
+    path('assistant/classes/<int:classroom_id>/toggle/', views.assistant_class_toggle_status, name='assistant_class_toggle_status'),
+    path('assistant/followups/<int:case_id>/resolve/', views.assistant_followup_resolve, name='assistant_followup_resolve'),
 ]

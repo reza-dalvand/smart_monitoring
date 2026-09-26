@@ -1,0 +1,31 @@
+{% extends 'school/base_school.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block school_content %}
+<div class="sc-hero">
+    <div class="sc-hero-content">
+        <h2><i class="bi bi-journal-bookmark-fill me-2" style="color: #ffc107;"></i>{{ classroom.name }}</h2>
+        <p>{{ classroom.subject }} — {{ classroom.get_grade_display }} {{ classroom.get_field_display }}</p>
+    </div>
+</div>
+
+<div class="sc-section">
+    <div class="sc-section-header">
+        <h3 class="sc-section-title"><i class="bi bi-people-fill"></i>دانش‌آموزان ({{ students.count }})</h3>
+    </div>
+    <div class="sc-section-body">
+        <div class="table-responsive">
+            <table class="sc-table">
+                <thead><tr><th>نام</th><th>کد ملی</th></tr></thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td>{{ s.get_full_name|default:s.username }}</td>
+                        <td>{{ s.national_id|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
