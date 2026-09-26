@@ -142,24 +142,29 @@ def get_teacher_classrooms(user):
     return Classroom.objects.filter(teacher=user).order_by('name')
 
 
-# در تابع dashboard_home:
+
 @login_required
 def dashboard_home(request):
+    """روتر بر اساس نقش کاربر"""
     user = request.user
-    if user.role == 'student':
-        return redirect('student:dashboard')
-    elif user.role == 'teacher':
-        return teacher_dashboard(request)
-    elif user.role == 'assistant':
-        return assistant_dashboard(request)
-    elif user.role == 'country_admin':
-        return redirect('national:dashboard')
-    elif user.role == 'province_admin':
-        return redirect('province:dashboard')
-    elif user.role == 'district_admin':         
-        return redirect('district:dashboard')
-    else:
-        return admin_dashboard(request)
+
+    role_redirects = {
+        'student': 'student:dashboard',
+        'teacher': 'teacher:dashboard',
+        'assistant': 'school:assistant_dashboard',
+        'principal': 'school:principal_dashboard',
+        'district_admin': 'district:dashboard',
+        'province_admin': 'province:dashboard',
+        'country_admin': 'national:dashboard',
+    }
+
+    redirect_name = role_redirects.get(user.role)
+    if redirect_name:
+        return redirect(redirect_name)
+
+    # نقش‌های ناشناخته
+    messages.error(request, 'نقش کاربری معتبر نیست.')
+    return redirect('accounts:login')
 
 
 # ========== داشبورد دانش‌آموز ==========

@@ -5,22 +5,24 @@ logger = logging.getLogger(__name__)
 
 
 class SchoolAuditService:
-    """ثبت لاگ عملیات حساس در سطح مدرسه"""
-
     @staticmethod
     def log(request, school, action, object_type='', object_id='',
-            old_values=None, new_values=None, reason=''):
+            old_values=None, new_values=None, reason='',
+            classroom=None, obj=None, details=None):
+        """
+        ✅ اصلاح شد: پارامترهای obj و details اضافه شدند
+        """
         try:
             from .models import SchoolAuditLog
             SchoolAuditLog.objects.create(
                 actor=request.user,
                 school=school,
                 action=action,
-                object_type=object_type,
-                object_id=str(object_id),
+                object_type=object_type or (type(obj).__name__ if obj else ''),
+                object_id=str(object_id or (obj.pk if obj else '')),
                 old_values=old_values or {},
                 new_values=new_values or {},
-                reason=reason,
+                reason=reason or (details if details else ''),
                 ip_address=SchoolAuditService._get_ip(request),
             )
         except Exception as e:

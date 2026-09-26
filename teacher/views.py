@@ -1037,3 +1037,417 @@ def teacher_homework_grade(request, homework_id):
         'max_score': homework.max_score,
     }
     return render(request, 'teacher/homework/grade.html', context)
+
+
+# ══════════════════════════════════════════════════════════
+#  ویوهای منتقل‌شده از dashboard
+# ══════════════════════════════════════════════════════════
+from django.db.models import Count, Q, Prefetch
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+from dashboard.forms import (
+    AIGenerationForm,
+    AttendanceRequestForm,
+    SelectQuestionsForm,
+    StartSessionForm,
+)
+from dashboard.services import (
+    generate_questions_for_job,
+    regenerate_rejected_question,
+)
+from accounts.models import StudentProfile
+
+
+@teacher_scope_required
+def teacher_weekly_schedule(request):
+    """برنامه هفتگی معلم"""
+    scope = request.teacher_scope
+    from dashboard.models import WeeklySchedule
+    schedules = WeeklySchedule.objects.filter(
+        classroom__teacher=request.user
+    ).select_related('classroom').order_by('day_of_week', 'start_time')
+
+    days_info = [
+        ('saturday', 'شنبه'), ('sunday', 'یکشنبه'),
+        ('monday', 'دوشنبه'), ('tuesday', 'سه‌شنبه'),
+        ('wednesday', 'چهارشنبه'),
+    ]
+    schedule_days = []
+    for day_key, day_name in days_info:
+        day_classes = [s for s in schedules if s.day_of_week == day_key]
+        schedule_days.append({
+            'key': day_key, 'name': day_name,
+            'classes': day_classes, 'count': len(day_classes),
+        })
+
+    context = {
+        'title': 'برنامه هفتگی من',
+        'schedule_days': schedule_days,
+        'total_sessions': schedules.count(),
+        'total_classrooms': schedules.values('classroom').distinct().count(),
+    }
+    return render(request, 'teacher/schedule/weekly.html', context)
+
+
+@teacher_scope_required
+def teacher_create_attendance_request(request, classroom_id, session_id):
+    """ایجاد درخواست حضور و غیاب / سوال"""
+    scope = request.teacher_scope
+    classroom = scope.get_class_or_404(classroom_id)
+    session = scope.get_session_or_404(session_id)
+
+    if classroom.students.count() == 0:
+        messages.error(request, 'این کلاس هیچ دانش‌آموزی ندارد.')
+        return redirect('teacher:class_detail', classroom_id=classroom.id)
+
+    if request.method == 'POST':
+        form = AttendanceRequestForm(request.POST)
+        questions_form = SelectQuestionsForm(request.POST, classroom=classroom)
+        request_type = request.POST.get('request_type', 'face_only')
+
+        if form.is_valid():
+            if request_type in ('question_only', 'face_and_question'):
+                if not questions_form.is_valid():
+                    messages.error(request, 'لطفاً حداقل یک سوال انتخاب کنید.')
+                    return redirect(request.path)
+                selected_questions = questions_form.cleaned_data['questions']
+            else:
+                selected_questions = []
+
+            attendance_request = form.save(commit=False)
+            attendance_request.teacher = request.user
+            attendance_request.classroom = classroom
+            attendance_request.session = session
+            attendance_request.save()
+
+            if selected_questions:
+                from dashboard.models import AttendanceRequestQuestion
+                for index, question in enumerate(selected_questions, 1):
+                    AttendanceRequestQuestion.objects.create(
+                        attendance_request=attendance_request,
+                        question=question,
+                        order=index,
+                        timer_seconds=question.timer_seconds
+                    )
+
+            messages.success(request, f'درخواست با موفقیت ایجاد شد.')
+            return redirect('teacher:teacher_request_results', request_id=attendance_request.id)
+    else:
+        form = AttendanceRequestForm()
+        questions_form = SelectQuestionsForm(classroom=classroom)
+
+    context = {
+        'title': 'ایجاد درخواست حضور / سوال',
+        'form': form,
+        'questions_form': questions_form,
+        'classroom': classroom,
+        'session': session,
+    }
+    return render(request, 'teacher/sessions/request_form.html', context)
+
+
+@teacher_scope_required
+def teacher_request_results(request, request_id):
+    """نتایج یک درخواست"""
+    scope = request.teacher_scope
+    attendance_request = scope.get_attendance_request_or_404(request_id)
+
+    from dashboard.models import StudentAnswer
+    responses = attendance_request.responses.select_related(
+        'student', 'student__profile'
+    ).order_by('student__last_name')
+
+    total_students = responses.count()
+    present_count = responses.filter(final_status='present').count()
+    absent_count = responses.filter(final_status='absent').count()
+    pending_count = responses.filter(final_status='pending').count()
+
+    request_questions = attendance_request.request_questions.select_related(
+        'question'
+    ).order_by('order')
+
+    questions_stats = []
+    for rq in request_questions:
+        question = rq.question
+        answers = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            question=question
+        )
+        total_answers = answers.count()
+        correct_count = answers.filter(is_correct=True).count()
+        wrong_count = total_answers - correct_count
+        no_answer_count = total_students - total_answers
+        questions_stats.append({
+            'request_question': rq,
+            'question': question,
+            'total_answers': total_answers,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'no_answer_count': no_answer_count,
+        })
+
+    students_detail = []
+    for response in responses:
+        student = response.student
+        student_answers = StudentAnswer.objects.filter(
+            attendance_request=attendance_request,
+            student=student
+        ).select_related('question')
+        students_detail.append({
+            'response': response,
+            'student': student,
+            'correct': student_answers.filter(is_correct=True).count(),
+            'wrong': student_answers.filter(is_correct=False).count(),
+            'total': student_answers.count(),
+            'answers': student_answers,
+        })
+
+    context = {
+        'title': f'نتایج درخواست {request_id}',
+        'attendance_request': attendance_request,
+        'classroom': attendance_request.classroom,
+        'session': attendance_request.session,
+        'total_students': total_students,
+        'present_count': present_count,
+        'absent_count': absent_count,
+        'pending_count': pending_count,
+        'request_questions': request_questions,
+        'questions_stats': questions_stats,
+        'students_detail': students_detail,
+    }
+    return render(request, 'teacher/sessions/request_results.html', context)
+
+
+@teacher_scope_required
+def teacher_finish_request(request, request_id):
+    """پایان دادن به درخواست"""
+    scope = request.teacher_scope
+    attendance_request = scope.get_attendance_request_or_404(request_id)
+
+    if request.method == 'POST' and attendance_request.status == 'active':
+        for response in attendance_request.responses.filter(auto_status='pending'):
+            response.mark_no_response()
+        attendance_request.status = 'finished'
+        attendance_request.save()
+        messages.success(request, 'درخواست با موفقیت پایان یافت.')
+
+    return redirect('teacher:teacher_request_results', request_id=request_id)
+
+
+@teacher_scope_required
+def teacher_ai_new(request):
+    """صفحه تولید سوال با هوش مصنوعی"""
+    scope = request.teacher_scope
+    classrooms = scope.filter_classes()
+
+    if request.method == 'POST':
+        form = AIGenerationForm(request.POST, teacher=request.user)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.teacher = request.user
+            job.status = 'pending'
+            job.save()
+
+            generated_count = generate_questions_for_job(job)
+            job.refresh_from_db()
+
+            if job.status == 'completed':
+                if generated_count > 0:
+                    messages.success(request, f'{generated_count} سوال تولید شد.')
+                else:
+                    messages.warning(request, f'هشدار: {job.error_message}')
+            else:
+                messages.error(request, f'خطا: {job.error_message}')
+
+            return redirect('teacher:teacher_ai_review', job_id=job.id)
+    else:
+        form = AIGenerationForm(teacher=request.user)
+
+    context = {
+        'title': 'تولید سوال با هوش مصنوعی',
+        'form': form,
+        'classrooms': classrooms,
+    }
+    return render(request, 'teacher/ai/generate_form.html', context)
+
+
+@teacher_scope_required
+def teacher_ai_review(request, job_id):
+    """بررسی سوالات تولیدشده"""
+    scope = request.teacher_scope
+    from dashboard.models import AIGenerationJob
+    job = get_object_or_404(AIGenerationJob, id=job_id, teacher=request.user)
+    questions = job.generated_questions.all().order_by('id')
+
+    context = {
+        'title': 'بررسی سوالات تولیدشده',
+        'job': job,
+        'questions': questions,
+        'pending_count': questions.filter(review_status='pending').count(),
+        'approved_count': questions.filter(review_status='approved').count(),
+        'rejected_count': questions.filter(review_status='rejected').count(),
+    }
+    return render(request, 'teacher/ai/review.html', context)
+
+
+@teacher_scope_required
+def teacher_ai_regenerate_rejected(request, job_id):
+    """تولید مجدد سوالات ردشده"""
+    scope = request.teacher_scope
+    from dashboard.models import AIGenerationJob
+    job = get_object_or_404(AIGenerationJob, id=job_id, teacher=request.user)
+
+    if request.method == 'POST':
+        rejected_questions = job.generated_questions.filter(review_status='rejected')
+        regenerated_count = 0
+        for question in rejected_questions:
+            if regenerate_rejected_question(job, question):
+                regenerated_count += 1
+        if regenerated_count > 0:
+            messages.success(request, f'{regenerated_count} سوال تولید شد.')
+        else:
+            messages.info(request, 'سوال ردشده‌ای وجود ندارد.')
+
+    return redirect('teacher:teacher_ai_review', job_id=job.id)
+
+
+@teacher_scope_required
+def teacher_ai_question_approve(request, pk):
+    """تایید سوال"""
+    scope = request.teacher_scope
+    question = scope.get_question_or_404(pk)
+    if request.method == 'POST':
+        question.review_status = 'approved'
+        question.is_approved = True
+        question.save()
+        messages.success(request, 'سوال تایید شد.')
+    return redirect('teacher:teacher_ai_review', job_id=question.ai_job.id)
+
+
+@teacher_scope_required
+def teacher_ai_question_reject(request, pk):
+    """رد سوال"""
+    scope = request.teacher_scope
+    question = scope.get_question_or_404(pk)
+    if request.method == 'POST':
+        question.review_status = 'rejected'
+        question.is_approved = False
+        question.save()
+        messages.warning(request, 'سوال رد شد.')
+    return redirect('teacher:teacher_ai_review', job_id=question.ai_job.id)
+
+
+@teacher_scope_required
+def teacher_ai_question_reject_and_regenerate(request, pk):
+    """رد و تولید مجدد"""
+    scope = request.teacher_scope
+    question = scope.get_question_or_404(pk)
+    if request.method == 'POST':
+        job = question.ai_job
+        success = regenerate_rejected_question(job, question)
+        if success:
+            messages.success(request, 'سوال رد شد و جایگزین تولید شد.')
+        else:
+            messages.error(request, 'تولید جایگزین ناموفق بود.')
+        return redirect('teacher:teacher_ai_review', job_id=job.id)
+    return redirect('teacher:teacher_ai_review', job_id=question.ai_job.id)
+
+
+@teacher_scope_required
+def teacher_participation_stats(request):
+    """آمار مشارکت"""
+    scope = request.teacher_scope
+    classrooms = scope.filter_classes()
+    context = {
+        'title': 'آمار مشارکت',
+        'classrooms': classrooms,
+    }
+    return render(request, 'teacher/analytics/participation.html', context)
+
+
+@teacher_scope_required
+def teacher_session_detail_stats(request, session_id):
+    """آمار یک جلسه"""
+    scope = request.teacher_scope
+    session = scope.get_session_or_404(session_id)
+    classroom = session.classroom
+    students = classroom.students.all().order_by('last_name')
+
+    context = {
+        'title': f'آمار جلسه {session.id}',
+        'session': session,
+        'classroom': classroom,
+        'students': students,
+    }
+    return render(request, 'teacher/analytics/session_detail.html', context)
+
+
+@teacher_scope_required
+def teacher_period_stats(request, classroom_id):
+    """آمار هفتگی/ماهانه"""
+    scope = request.teacher_scope
+    classroom = scope.get_class_or_404(classroom_id)
+    period = request.GET.get('period', 'weekly')
+
+    context = {
+        'title': f'آمار {period}',
+        'classroom': classroom,
+        'period': period,
+    }
+    return render(request, 'teacher/analytics/period_stats.html', context)
+
+
+@teacher_scope_required
+def teacher_attendance(request):
+    """لیست درخواست‌های حضور"""
+    scope = request.teacher_scope
+    requests_qs = scope.filter_attendance_requests().select_related(
+        'classroom', 'session'
+    ).order_by('-created_at')[:30]
+
+    context = {
+        'title': 'حضور و غیاب',
+        'attendance_requests': requests_qs,
+    }
+    return render(request, 'teacher/attendance/list.html', context)
+
+
+@teacher_scope_required
+def teacher_attendance_detail(request, request_id):
+    """جزئیات درخواست حضور"""
+    scope = request.teacher_scope
+    att_request = scope.get_attendance_request_or_404(request_id)
+    responses = att_request.responses.select_related('student').order_by('student__last_name')
+
+    context = {
+        'title': f'جزئیات حضور {request_id}',
+        'attendance_request': att_request,
+        'responses': responses,
+    }
+    return render(request, 'teacher/attendance/detail.html', context)
+
+
+@teacher_scope_required
+def teacher_attendance_correct(request, response_id):
+    """اصلاح وضعیت حضور"""
+    scope = request.teacher_scope
+    response = scope.get_attendance_response_or_404(response_id)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('new_status')
+        reason = request.POST.get('reason', '')
+        if new_status in ('present', 'absent') and reason.strip():
+            response.final_status = new_status
+            response.reviewed_by = request.user
+            response.reviewed_at = timezone.now()
+            response.save()
+            messages.success(request, 'وضعیت حضور اصلاح شد.')
+            return redirect('teacher:attendance_detail', request_id=response.attendance_request_id)
+        else:
+            messages.error(request, 'وضعیت و دلیل الزامی است.')
+
+    context = {
+        'title': 'اصلاح وضعیت حضور',
+        'response': response,
+    }
+    return render(request, 'teacher/attendance/correct.html', context)

@@ -11,7 +11,7 @@ import json
 from datetime import timedelta
 from django.db import connection, transaction
 from django.urls import reverse
-from core import settings
+from django.conf import settings  # ✅ اصلاح شد: از django.conf به جای core
 from face.models import FaceEmbedding, FaceVerificationSession
 from face.constants import VerificationSessionStatus
 from dashboard.models import AttendanceRequest, AttendanceResponse

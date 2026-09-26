@@ -6,11 +6,7 @@ app_name = 'student'
 urlpatterns = [
     # Dashboard
     path('', views.student_dashboard, name='dashboard'),
-
-    # Profile
     path('profile/', views.student_profile, name='profile'),
-
-    # Schedule
     path('schedule/', views.student_schedule, name='schedule'),
 
     # Classes
@@ -24,8 +20,11 @@ urlpatterns = [
     # Attendance
     path('attendance/', views.student_attendance, name='attendance'),
 
-    # Questions
-    path('questions/', views.student_questions, name='questions'),
+    # Questions (از dashboard منتقل شد)
+    path('questions/', views.student_questions_page, name='questions'),
+    path('questions/<int:request_id>/answer/', views.student_answer_questions, name='student_answer_questions'),
+    path('questions/<int:request_id>/question/<int:question_id>/submit/', views.student_submit_answer, name='student_submit_answer'),
+    path('questions/<int:request_id>/result/', views.student_question_result, name='student_question_result'),
 
     # Assessments
     path('assessments/', views.student_assessments, name='assessments'),

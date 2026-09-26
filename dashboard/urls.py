@@ -4,63 +4,6 @@ from . import views
 app_name = 'dashboard'
 
 urlpatterns = [
-    # داشبورد اصلی
+    # داشبورد اصلی (روتر بر اساس نقش)
     path('', views.dashboard_home, name='home'),
-
-    # برنامه هفتگی دانش‌آموز
-    path('weekly-schedule/', views.weekly_schedule_view, name='weekly_schedule'),
-    
-    # ========== سیستم پاسخ‌دهی دانش‌آموز ==========
-    path('student/questions/', views.student_active_questions, name='student_active_questions'),
-    path('student/questions/<int:request_id>/answer/', views.student_answer_questions, name='student_answer_questions'),
-    path('student/questions/<int:request_id>/question/<int:question_id>/submit/', views.student_submit_answer, name='student_submit_answer'),
-    path('student/questions/<int:request_id>/result/', views.student_question_result, name='student_question_result'),
-
-    # ========== پنل معلم - کلاس‌های فعال ==========
-    path('teacher/schedule/', views.teacher_weekly_schedule, name='teacher_weekly_schedule'),
-    path('teacher/classes/', views.teacher_active_classes, name='teacher_active_classes'),
-    path('teacher/classes/<int:classroom_id>/', views.teacher_class_detail, name='teacher_class_detail'),
-    path('teacher/classes/<int:classroom_id>/start-session/', views.teacher_start_session, name='teacher_start_session'),
-    path('teacher/classes/<int:classroom_id>/session/<int:session_id>/new-request/', views.teacher_create_attendance_request, name='teacher_create_attendance_request'),
-    path('teacher/classes/<int:classroom_id>/students/', views.teacher_class_students, name='teacher_class_students'),
-    path('teacher/requests/<int:request_id>/results/', views.teacher_request_results, name='teacher_request_results'),
-    path('teacher/requests/<int:request_id>/finish/', views.teacher_finish_request, name='teacher_finish_request'),
-    path(
-        'teacher/ai/question/<int:pk>/reject-regenerate/',
-        views.teacher_ai_question_reject_and_regenerate,
-        name='teacher_ai_question_reject_regenerate'
-    ),
-
-    # ========== پنل معلم - آمار مشارکت ==========
-    path('teacher/participation/', views.teacher_participation_stats, name='teacher_participation_stats'),
-    path('teacher/session/<int:session_id>/stats/', views.teacher_session_detail_stats, name='teacher_session_detail_stats'),
-    path('teacher/classroom/<int:classroom_id>/period-stats/', views.teacher_period_stats, name='teacher_period_stats'),
-
-    # ========== پنل معلم - فاز ۲ ==========
-    path('teacher/ai/new/', views.teacher_ai_new, name='teacher_ai_new'),
-    path('teacher/ai/<int:job_id>/review/', views.teacher_ai_review, name='teacher_ai_review'),
-    path('teacher/ai/<int:job_id>/regenerate/', views.teacher_ai_regenerate_rejected, name='teacher_ai_regenerate_rejected'),
-    path('teacher/ai/question/<int:pk>/approve/', views.teacher_ai_question_approve, name='teacher_ai_question_approve'),
-    path('teacher/ai/question/<int:pk>/reject/', views.teacher_ai_question_reject, name='teacher_ai_question_reject'),
-    path('teacher/questions/', views.teacher_question_bank, name='teacher_question_bank'),
-    path('teacher/questions/manual/create/', views.teacher_question_manual_create, name='teacher_question_manual_create'),
-    path('teacher/questions/<int:pk>/edit/', views.teacher_question_edit, name='teacher_question_edit'),
-    path('teacher/questions/<int:pk>/delete/', views.teacher_question_delete, name='teacher_question_delete'),
-
-    # پنل معاون
-    path('assistant/', views.assistant_dashboard, name='assistant_dashboard'),
-    path('assistant/absences/', views.absences_today_view, name='assistant_absences'),
-    path('assistant/students/', views.student_list_view, name='assistant_students'),
-
-    # مدیریت کلاس‌ها
-    path('assistant/classes/', views.class_list_view, name='assistant_class_list'),
-    path('assistant/classes/create/', views.class_create_view, name='assistant_class_create'),
-    path('assistant/classes/<int:pk>/edit/', views.class_edit_view, name='assistant_class_edit'),
-    path('assistant/classes/<int:pk>/delete/', views.class_delete_view, name='assistant_class_delete'),
-
-    # مدیریت برنامه هفتگی
-    path('assistant/schedule/', views.schedule_builder_view, name='assistant_schedule'),
-    path('assistant/schedule/copy/', views.schedule_copy_view, name='assistant_schedule_copy'),
-    path('assistant/schedule/<int:pk>/delete/', views.schedule_delete_view, name='assistant_schedule_delete'),
-    path('assistant/schedule/print/<int:classroom_id>/', views.schedule_print_view, name='assistant_schedule_print'),
 ]

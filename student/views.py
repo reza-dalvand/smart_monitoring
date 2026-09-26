@@ -7,9 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Q, Prefetch
-from .services.face_service import StudentFaceService
-
-from core import settings
+from django.conf import settings  # ✅ اصلاح شد: از django.conf به جای core
 from dashboard.models import (
     Classroom, ClassSession, Question, StudentAnswer,
     AttendanceRequest, AttendanceResponse, WeeklySchedule,
@@ -22,6 +20,7 @@ from .services import (
     StudentRequestService,
     StudentStatusService,
 )
+from .services.face_service import StudentFaceService
 from .models import (
     StudentRequest, StudentFaceChangeRequest,
     SessionMaterial, VirtualSessionInfo,
@@ -798,3 +797,206 @@ def student_virtual_classes(request):
         'sessions': sessions,
     }
     return render(request, 'student/virtual_classes.html', context)
+
+
+# ══════════════════════════════════════════════════════════
+#  ویوهای پاسخ به سوالات (از dashboard منتقل شد)
+# ══════════════════════════════════════════════════════════
+from django.http import JsonResponse
+
+
+@student_required
+def student_questions_page(request):
+    """سوالات فعال"""
+    scope = request.student_scope
+    student = scope.student
+
+    from dashboard.models import AttendanceRequest, AttendanceResponse, StudentAnswer
+
+    active_requests = scope.filter_attendance_requests().filter(
+        status='active',
+        request_type__in=['question_only', 'face_and_question'],
+    ).select_related('classroom', 'session', 'teacher').prefetch_related(
+        'request_questions__question'
+    ).order_by('-created_at')
+
+    question_items = []
+    for att_request in active_requests:
+        total_questions = att_request.request_questions.count()
+        answered_count = StudentAnswer.objects.filter(
+            attendance_request=att_request,
+            student=student,
+        ).count()
+        response = AttendanceResponse.objects.filter(
+            attendance_request=att_request,
+            student=student,
+        ).first()
+        requires_face = att_request.requires_face
+        face_verified = bool(response and response.face_verified and response.final_status == 'present')
+        can_answer = not requires_face or face_verified
+
+        question_items.append({
+            'request': att_request,
+            'response': response,
+            'total_questions': total_questions,
+            'answered_count': answered_count,
+            'can_answer': can_answer,
+            'all_answered': answered_count >= total_questions,
+        })
+
+    context = {
+        'title': 'سوالات فعال',
+        'question_items': question_items,
+    }
+    return render(request, 'student/questions.html', context)
+
+
+@student_required
+def student_answer_questions(request, request_id):
+    """صفحه پاسخ به سوالات"""
+    scope = request.student_scope
+    student = scope.student
+    att_request = scope.get_attendance_request_or_404(request_id)
+
+    if att_request.status != 'active':
+        messages.error(request, 'این درخواست فعال نیست.')
+        return redirect('student:questions')
+
+    if att_request.requires_face:
+        from dashboard.models import AttendanceResponse
+        response = AttendanceResponse.objects.filter(
+            attendance_request=att_request,
+            student=student,
+        ).first()
+        if not response or not response.face_verified or response.final_status != 'present':
+            messages.warning(request, 'لطفاً ابتدا احراز هویت چهره را تکمیل کنید.')
+            return redirect('student:attendance')
+
+    from dashboard.models import StudentAnswer
+    request_questions = att_request.request_questions.select_related(
+        'question'
+    ).order_by('order')
+
+    existing_answers = {
+        answer.question_id: answer
+        for answer in StudentAnswer.objects.filter(
+            attendance_request=att_request,
+            student=student
+        )
+    }
+
+    questions_with_answers = []
+    for rq in request_questions:
+        questions_with_answers.append({
+            'request_question': rq,
+            'question': rq.question,
+            'answer': existing_answers.get(rq.question.id),
+        })
+
+    context = {
+        'title': f'پاسخ به سوالات',
+        'attendance_request': att_request,
+        'questions': questions_with_answers,
+        'total_questions': len(questions_with_answers),
+        'answered_count': len(existing_answers),
+    }
+    return render(request, 'student/answer_questions.html', context)
+
+
+@student_required
+def student_submit_answer(request, request_id, question_id):
+    """ثبت پاسخ سوال"""
+    scope = request.student_scope
+    student = scope.student
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'درخواست نامعتبر'}, status=400)
+
+    from dashboard.models import AttendanceRequest, Question, StudentAnswer, AttendanceResponse
+
+    try:
+        att_request = AttendanceRequest.objects.get(
+            id=request_id,
+            classroom__students=student,
+            status='active'
+        )
+    except AttendanceRequest.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'درخواست یافت نشد'}, status=404)
+
+    if att_request.requires_face:
+        response = AttendanceResponse.objects.filter(
+            attendance_request=att_request,
+            student=student,
+        ).first()
+        if not response or not response.face_verified:
+            return JsonResponse({'success': False, 'message': 'احراز هویت لازم است'}, status=403)
+
+    try:
+        question = Question.objects.get(
+            id=question_id,
+            attendance_requests=att_request
+        )
+    except Question.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'سوال یافت نشد'}, status=404)
+
+    selected_choice = request.POST.get('choice')
+    if selected_choice not in ['a', 'b', 'c', 'd']:
+        return JsonResponse({'success': False, 'message': 'پاسخ نامعتبر'}, status=400)
+
+    is_correct = selected_choice == question.correct_answer
+
+    StudentAnswer.objects.update_or_create(
+        question=question,
+        student=student,
+        attendance_request=att_request,
+        defaults={
+            'selected_choice': selected_choice,
+            'is_correct': is_correct,
+        }
+    )
+
+    total_questions = att_request.request_questions.count()
+    answered_count = StudentAnswer.objects.filter(
+        attendance_request=att_request,
+        student=student,
+    ).count()
+
+    return JsonResponse({
+        'success': True,
+        'is_correct': is_correct,
+        'answered_count': answered_count,
+        'total_questions': total_questions,
+        'all_completed': answered_count >= total_questions,
+    })
+
+
+@student_required
+def student_question_result(request, request_id):
+    """نتیجه سوالات"""
+    scope = request.student_scope
+    student = scope.student
+    att_request = scope.get_attendance_request_or_404(request_id)
+
+    from dashboard.models import StudentAnswer
+    answers = StudentAnswer.objects.filter(
+        attendance_request=att_request,
+        student=student
+    ).select_related('question')
+
+    total_questions = att_request.request_questions.count()
+    answered_count = answers.count()
+    correct_count = answers.filter(is_correct=True).count()
+    wrong_count = answers.filter(is_correct=False).count()
+    percentage = round((correct_count / answered_count) * 100) if answered_count > 0 else 0
+
+    context = {
+        'title': 'نتیجه سوالات',
+        'attendance_request': att_request,
+        'answers': answers,
+        'total_questions': total_questions,
+        'answered_count': answered_count,
+        'correct_count': correct_count,
+        'wrong_count': wrong_count,
+        'percentage': percentage,
+    }
+    return render(request, 'student/question_result.html', context)
