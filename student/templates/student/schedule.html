@@ -1,0 +1,67 @@
+{% extends 'student/base_student.html' %}
+{% block title %}برنامه هفتگی{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-calendar-week-fill"></i> برنامه هفتگی
+</div>
+
+{% if schedule_days %}
+    {% for day in schedule_days %}
+    <div class="s-card">
+        <div class="s-card-header">
+            <h6 class="s-card-title">
+                <i class="bi bi-calendar-day-fill"></i> {{ day.name }}
+            </h6>
+            <span class="s-badge info">{{ day.count }} جلسه</span>
+        </div>
+        <div class="s-card-body">
+            {% if day.classes %}
+            <div class="table-responsive">
+                <table class="s-table">
+                    <thead>
+                        <tr>
+                            <th>ساعت</th>
+                            <th>درس</th>
+                            <th>کلاس</th>
+                            <th>معلم</th>
+                            <th>نوع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in day.classes %}
+                        <tr>
+                            <td>
+                                <i class="bi bi-clock" style="color:var(--s-secondary);"></i>
+                                {{ schedule.start_time|time:"H:i" }} تا {{ schedule.end_time|time:"H:i" }}
+                            </td>
+                            <td><strong>{{ schedule.classroom.subject }}</strong></td>
+                            <td>{{ schedule.classroom.name }}</td>
+                            <td>
+                                {% if schedule.classroom.teacher %}
+                                    {{ schedule.classroom.teacher.get_full_name|default:schedule.classroom.teacher.username }}
+                                {% else %}
+                                    {{ schedule.classroom.teacher_name }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="s-badge success">حضوری</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                {% include "student/components/empty_state.html" with icon="bi-moon-stars" title="جلسه‌ای ندارید" message="در این روز کلاسی برنامه‌ریزی نشده است." %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="s-card">
+    <div class="s-card-body">
+        {% include "student/components/empty_state.html" with icon="bi-calendar-x" title="برنامه‌ای ندارید" message="هنوز برنامه هفتگی‌ای برای شما ثبت نشده است." %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

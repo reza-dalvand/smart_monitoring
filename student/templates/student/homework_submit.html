@@ -1,0 +1,57 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="s-page-title mb-0">
+        <i class="bi bi-cloud-upload-fill"></i> ارسال تکلیف: {{ homework.title }}
+    </div>
+    <a href="{% url 'student:homework_detail' homework.id %}" class="s-btn s-btn-outline">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<div class="s-card" style="max-width:700px;">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-pencil-square"></i> پاسخ تکلیف</h6>
+    </div>
+    <div class="s-card-body">
+        <div class="alert alert-light border mb-4">
+            <small>
+                <i class="bi bi-info-circle me-1"></i>
+                <strong>مهلت ارسال:</strong> {{ homework.deadline|date:"Y/m/d — H:i" }}
+                {% if homework.description %}
+                <br><strong>شرح تکلیف:</strong> {{ homework.description|truncatechars:150 }}
+                {% endif %}
+            </small>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" style="font-size:.88rem;">{{ form.content.label }}</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                <div class="text-danger small mt-1">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold" style="font-size:.88rem;">{{ form.attachment.label }}</label>
+                {{ form.attachment }}
+                <small class="text-muted d-block mt-1">فرمت‌های مجاز: تصویر، فایل متنی، فشرده</small>
+                {% if form.attachment.errors %}
+                <div class="text-danger small mt-1">{{ form.attachment.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="s-btn s-btn-primary flex-grow-1 justify-content-center" style="padding:12px;">
+                    <i class="bi bi-check-circle-fill"></i> ثبت ارسال
+                </button>
+                <a href="{% url 'student:homework_detail' homework.id %}" class="s-btn s-btn-outline">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

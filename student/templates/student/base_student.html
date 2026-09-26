@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title|default:"پنل دانش‌آموز" }} - سامانه پایش هوشمند{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <style>
+        :root {
+            --s-primary: #1a237e;
+            --s-primary-light: #283593;
+            --s-secondary: #ffc107;
+            --s-success: #16a34a;
+            --s-danger: #dc2626;
+            --s-warning: #d97706;
+            --s-info: #0284c7;
+            --s-purple: #7c3aed;
+            --s-text: #2c3e50;
+            --s-muted: #7b8494;
+            --s-bg: #f0f2f5;
+            --s-card: #ffffff;
+            --s-border: #edf1f8;
+            --s-shadow: 0 4px 12px rgba(15,23,42,.05);
+            --s-radius: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: var(--s-bg);
+            color: var(--s-text);
+            font-size: 0.92rem;
+        }
+        .s-header {
+            background: linear-gradient(135deg, var(--s-primary), var(--s-primary-light));
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0; right: 0; left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(26,35,126,.25);
+        }
+        .s-header-brand {
+            display: flex; align-items: center; gap: 10px;
+            color: #fff; text-decoration: none;
+        }
+        .s-header-icon {
+            width: 36px; height: 36px;
+            background: var(--s-secondary);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: var(--s-primary);
+        }
+        .s-header-title { font-weight: 800; font-size: 1rem; color: #fff; }
+        .s-header-user {
+            margin-right: auto;
+            color: #fff;
+            font-size: .85rem;
+            font-weight: 600;
+        }
+        .s-sidebar {
+            position: fixed;
+            top: 60px; right: 0;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background: var(--s-card);
+            border-left: 1px solid var(--s-border);
+            overflow-y: auto;
+            z-index: 999;
+            padding: 14px 10px;
+        }
+        .s-sidebar-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: var(--s-text);
+            text-decoration: none;
+            font-size: .87rem; font-weight: 600;
+            transition: all .2s;
+            margin-bottom: 2px;
+        }
+        .s-sidebar-item i { font-size: 1.05rem; width: 20px; text-align: center; color: var(--s-muted); }
+        .s-sidebar-item:hover { background: rgba(26,35,126,.05); color: var(--s-primary); }
+        .s-sidebar-item:hover i { color: var(--s-primary); }
+        .s-sidebar-item.active { background: var(--s-primary); color: #fff; }
+        .s-sidebar-item.active i { color: var(--s-secondary); }
+        .s-sidebar-label {
+            font-size: .7rem; font-weight: 800; color: var(--s-muted);
+            padding: 8px 12px 4px; letter-spacing: .5px;
+        }
+        .s-main {
+            margin-top: 60px;
+            margin-right: 250px;
+            padding: 22px;
+            min-height: calc(100vh - 60px);
+        }
+        .s-card {
+            background: var(--s-card);
+            border-radius: var(--s-radius);
+            border: 1px solid var(--s-border);
+            box-shadow: var(--s-shadow);
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .s-card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--s-border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(180deg, #fff, #fbfcfe);
+        }
+        .s-card-title {
+            font-size: .93rem; font-weight: 800; color: var(--s-text);
+            display: flex; align-items: center; gap: 8px; margin: 0;
+        }
+        .s-card-title i { color: var(--s-secondary); }
+        .s-card-body { padding: 18px; }
+        .s-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .s-kpi {
+            background: var(--s-card);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--s-border);
+            box-shadow: var(--s-shadow);
+            position: relative; overflow: hidden;
+        }
+        .s-kpi::before {
+            content: '';
+            position: absolute; top: 0; bottom: 0; right: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--s-primary), var(--s-secondary));
+        }
+        .s-kpi.success::before { background: var(--s-success); }
+        .s-kpi.danger::before { background: var(--s-danger); }
+        .s-kpi.warning::before { background: var(--s-warning); }
+        .s-kpi.info::before { background: var(--s-info); }
+        .s-kpi-value { font-size: 1.6rem; font-weight: 950; }
+        .s-kpi-label { font-size: .75rem; color: var(--s-muted); font-weight: 700; }
+        .s-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: .72rem; font-weight: 800;
+        }
+        .s-badge.success { background: rgba(22,163,74,.1); color: #15803d; }
+        .s-badge.danger { background: rgba(220,38,38,.1); color: #b91c1c; }
+        .s-badge.warning { background: rgba(217,119,6,.1); color: #b45309; }
+        .s-badge.info { background: rgba(2,132,199,.1); color: #0369a1; }
+        .s-badge.purple { background: rgba(124,58,237,.1); color: #6d28d9; }
+        .s-badge.secondary { background: rgba(148,163,184,.15); color: #64748b; }
+        .s-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 10px;
+            font-weight: 700; font-size: .83rem;
+            border: none; cursor: pointer;
+            transition: all .2s; text-decoration: none;
+        }
+        .s-btn-primary { background: var(--s-primary); color: #fff; }
+        .s-btn-primary:hover { background: var(--s-primary-light); color: #fff; }
+        .s-btn-success { background: var(--s-success); color: #fff; }
+        .s-btn-outline { background: transparent; color: var(--s-primary); border: 1.5px solid #dfe6f2; }
+        .s-btn-outline:hover { background: var(--s-primary); color: #fff; }
+        .s-btn-sm { padding: 5px 10px; font-size: .78rem; }
+        .s-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .s-table thead th {
+            background: #f8fafd; color: var(--s-muted);
+            font-size: .73rem; font-weight: 800;
+            padding: 10px 12px; border-bottom: 1px solid var(--s-border);
+            text-align: right; white-space: nowrap;
+        }
+        .s-table tbody td {
+            padding: 10px 12px; border-bottom: 1px solid #f3f6fa;
+            font-size: .85rem; vertical-align: middle;
+        }
+        .s-table tbody tr:hover { background: #fbfcff; }
+        .s-empty {
+            text-align: center; padding: 40px 20px; color: var(--s-muted);
+        }
+        .s-empty-icon {
+            width: 64px; height: 64px;
+            background: #f2f5fa; color: #94a3b8;
+            border-radius: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin-bottom: 12px;
+        }
+        .s-page-title {
+            font-size: 1.2rem; font-weight: 900; color: var(--s-primary);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 20px;
+        }
+        .s-page-title i { color: var(--s-secondary); }
+        .s-progress { height: 8px; background: #f2f5fa; border-radius: 999px; overflow: hidden; }
+        .s-progress-fill { height: 100%; border-radius: 999px; }
+        .s-progress-fill.success { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .s-progress-fill.warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .s-progress-fill.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .s-progress-fill.info { background: linear-gradient(90deg, #38bdf8, #0284c7); }
+        .s-msg {
+            padding: 10px 14px; border-radius: 10px;
+            font-size: .85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .s-msg.success { background: rgba(22,163,74,.08); color: #15803d; border: 1px solid rgba(22,163,74,.2); }
+        .s-msg.error { background: rgba(220,38,38,.08); color: #b91c1c; border: 1px solid rgba(220,38,38,.2); }
+        .s-msg.warning { background: rgba(217,119,6,.08); color: #b45309; border: 1px solid rgba(217,119,6,.2); }
+        @media (max-width: 991px) {
+            .s-sidebar { display: none; }
+            .s-main { margin-right: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="s-header">
+        <a href="{% url 'student:dashboard' %}" class="s-header-brand">
+            <div class="s-header-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <span class="s-header-title">پنل دانش‌آموز</span>
+        </a>
+        <div class="s-header-user">
+            {{ user.get_full_name|default:user.username }}
+            <a href="{% url 'accounts:logout' %}" style="color:var(--s-secondary);margin-right:10px;font-size:.8rem;">خروج</a>
+        </div>
+    </header>
+
+    <aside class="s-sidebar">
+        <div class="s-sidebar-label">اصلی</div>
+        <a href="{% url 'student:dashboard' %}" class="s-sidebar-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i> داشبورد
+        </a>
+        <a href="{% url 'student:schedule' %}" class="s-sidebar-item {% if request.resolver_match.url_name == 'schedule' %}active{% endif %}">
+            <i class="bi bi-calendar-week-fill"></i> برنامه هفتگی
+        </a>
+        <a href="{% url 'student:classes' %}" class="s-sidebar-item {% if 'class' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-journal-bookmark-fill"></i> کلاس‌های من
+        </a>
+        <a href="{% url 'student:sessions' %}" class="s-sidebar-item {% if 'session' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-calendar-event-fill"></i> جلسات
+        </a>
+
+        <div class="s-sidebar-label">آموزشی</div>
+        <a href="{% url 'student:attendance' %}" class="s-sidebar-item {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-person-check-fill"></i> حضور و غیاب
+        </a>
+        <a href="{% url 'student:questions' %}" class="s-sidebar-item {% if 'question' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-question-circle-fill"></i> سوالات
+        </a>
+        <a href="{% url 'student:assessments' %}" class="s-sidebar-item {% if 'assessment' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-clipboard-check-fill"></i> ارزیابی‌ها
+        </a>
+        <a href="{% url 'student:homeworks' %}" class="s-sidebar-item {% if 'homework' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-journal-text-fill"></i> تکالیف
+        </a>
+        <a href="{% url 'student:feedback' %}" class="s-sidebar-item {% if 'feedback' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-chat-heart-fill"></i> بازخوردها
+        </a>
+
+        <div class="s-sidebar-label">وضعیت و درخواست‌ها</div>
+        <a href="{% url 'student:status' %}" class="s-sidebar-item {% if 'status' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-graph-up"></i> وضعیت آموزشی
+        </a>
+        <a href="{% url 'student:requests' %}" class="s-sidebar-item {% if 'request' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-envelope-paper-fill"></i> درخواست‌های من
+        </a>
+
+        <div class="s-sidebar-label">حساب کاربری</div>
+        <a href="{% url 'student:face' %}" class="s-sidebar-item {% if 'face' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-person-badge-fill"></i> احراز هویت چهره
+        </a>
+        <a href="{% url 'student:virtual_classes' %}" class="s-sidebar-item {% if 'virtual' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-camera-video-fill"></i> کلاس‌های مجازی
+        </a>
+        <a href="{% url 'student:profile' %}" class="s-sidebar-item {% if 'profile' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-person-fill"></i> پروفایل من
+        </a>
+    </aside>
+
+    <main class="s-main">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="s-msg {{ message.tags }}">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

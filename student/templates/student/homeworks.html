@@ -1,0 +1,46 @@
+{% extends 'student/base_student.html' %}
+{% block title %}تکالیف من{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-journal-text-fill"></i> تکالیف من</div>
+
+<div class="s-card">
+    <div class="s-card-body">
+        {% if homeworks %}
+        <div class="table-responsive">
+            <table class="s-table">
+                <thead><tr><th>عنوان</th><th>کلاس</th><th>مهلت</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                <tbody>
+                    {% for item in homeworks %}
+                    <tr>
+                        <td><strong>{{ item.homework.title }}</strong></td>
+                        <td>{{ item.homework.classroom.name }}</td>
+                        <td><small>{{ item.homework.deadline|date:"Y/m/d - H:i" }}</small></td>
+                        <td>
+                            {% if item.submission and item.submission.status == 'SUBMITTED' %}
+                                <span class="s-badge success">ارسال شده</span>
+                            {% elif item.submission and item.submission.status == 'LATE' %}
+                                <span class="s-badge warning">ارسال با تأخیر</span>
+                            {% elif item.submission and item.submission.status == 'REVIEWED' %}
+                                <span class="s-badge info">بررسی شده</span>
+                            {% elif item.is_late %}
+                                <span class="s-badge danger">مهلت تمام شده</span>
+                            {% else %}
+                                <span class="s-badge secondary">ارسال نشده</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'student:homework_detail' item.homework.id %}" class="s-btn s-btn-outline s-btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-journal-x" title="تکلیفی ندارید" message="هنوز تکلیفی برای شما ثبت نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

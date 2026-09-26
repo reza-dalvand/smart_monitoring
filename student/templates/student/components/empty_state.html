@@ -1,0 +1,10 @@
+<div class="s-empty">
+    <div class="s-empty-icon"><i class="bi {{ icon|default:'bi-inbox' }}"></i></div>
+    <h6 style="font-weight:800;">{{ title|default:"داده‌ای وجود ندارد" }}</h6>
+    <p style="font-size:.85rem;">{{ message|default:"هنوز اطلاعاتی ثبت نشده است." }}</p>
+    {% if cta_text and cta_url %}
+        <a href="{{ cta_url }}" class="s-btn s-btn-primary" style="margin-top:8px;">
+            <i class="bi bi-plus-circle"></i> {{ cta_text }}
+        </a>
+    {% endif %}
+</div>

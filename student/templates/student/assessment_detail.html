@@ -1,0 +1,64 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="s-page-title mb-0">
+        <i class="bi bi-clipboard-check-fill"></i> {{ assessment.title }}
+    </div>
+    <a href="{% url 'student:assessments' %}" class="s-btn s-btn-outline">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-info-circle-fill"></i> اطلاعات آزمون</h6>
+    </div>
+    <div class="s-card-body">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ assessment.classroom.subject }} — {{ assessment.classroom.name }}</strong>
+            </div>
+            {% if assessment.topic %}
+            <div class="col-md-4">
+                <small class="text-muted d-block">موضوع</small>
+                <strong>{{ assessment.topic }}</strong>
+            </div>
+            {% endif %}
+            <div class="col-md-4">
+                <small class="text-muted d-block">تعداد سوالات</small>
+                <strong>{{ questions_count }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">مدت آزمون</small>
+                <strong>{{ assessment.duration_minutes }} دقیقه</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">نمره کل</small>
+                <strong>{{ assessment.total_score }}</strong>
+            </div>
+            {% if assessment.start_time %}
+            <div class="col-md-4">
+                <small class="text-muted d-block">زمان شروع</small>
+                <strong>{{ assessment.start_time|date:"Y/m/d — H:i" }}</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if has_responded %}
+        <div class="alert alert-light border text-center">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            شما قبلاً در این آزمون شرکت کرده‌اید.
+        </div>
+        <a href="{% url 'student:assessment_result' assessment.id %}" class="s-btn s-btn-success w-100 justify-content-center">
+            <i class="bi bi-eye-fill"></i> مشاهده نتیجه
+        </a>
+        {% else %}
+        <a href="{% url 'student:assessment_take' assessment.id %}" class="s-btn s-btn-primary w-100 justify-content-center" style="padding:14px;">
+            <i class="bi bi-play-fill"></i> شروع آزمون
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

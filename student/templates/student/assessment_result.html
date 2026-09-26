@@ -1,0 +1,74 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-trophy-fill"></i> نتیجه: {{ assessment.title }}
+</div>
+
+<!-- Result Card -->
+<div class="s-card mb-3">
+    <div class="s-card-body text-center py-4">
+        {% if result.percentage >= 75 %}
+        <div style="font-size:3.5rem;color:var(--s-success);"><i class="bi bi-emoji-smile-fill"></i></div>
+        <h5 class="fw-bold mt-2" style="color:var(--s-success);">عالی بود! 🎉</h5>
+        {% elif result.percentage >= 50 %}
+        <div style="font-size:3.5rem;color:var(--s-warning);"><i class="bi bi-emoji-neutral-fill"></i></div>
+        <h5 class="fw-bold mt-2" style="color:var(--s-warning);">خوب بود!</h5>
+        {% else %}
+        <div style="font-size:3.5rem;color:var(--s-danger);"><i class="bi bi-emoji-frown-fill"></i></div>
+        <h5 class="fw-bold mt-2" style="color:var(--s-danger);">نیاز به تلاش بیشتر دارید</h5>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="s-kpi-grid mb-3">
+    <div class="s-kpi">
+        <div class="s-kpi-value">{{ result.total_questions }}</div>
+        <div class="s-kpi-label">کل سوالات</div>
+    </div>
+    <div class="s-kpi success">
+        <div class="s-kpi-value">{{ result.correct }}</div>
+        <div class="s-kpi-label">پاسخ صحیح</div>
+    </div>
+    <div class="s-kpi danger">
+        <div class="s-kpi-value">{{ result.wrong }}</div>
+        <div class="s-kpi-label">پاسخ غلط</div>
+    </div>
+    <div class="s-kpi info">
+        <div class="s-kpi-value">{{ result.percentage }}٪</div>
+        <div class="s-kpi-label">درصد موفقیت</div>
+    </div>
+</div>
+
+<!-- Score -->
+<div class="s-card mb-3">
+    <div class="s-card-body text-center">
+        <small class="text-muted d-block mb-1">نمره شما</small>
+        <span style="font-size:2rem;font-weight:950;color:var(--s-primary);">{{ result.total_score }}</span>
+        <span class="text-muted"> از {{ result.max_score }}</span>
+    </div>
+</div>
+
+<!-- Feedback -->
+{% if feedback %}
+<div class="s-card mb-3" style="border-right:4px solid var(--s-info);">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-chat-heart-fill"></i> بازخورد معلم</h6>
+    </div>
+    <div class="s-card-body">
+        <p class="mb-0" style="font-size:.9rem;">{{ feedback.content }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div class="d-flex gap-2">
+    <a href="{% url 'student:assessments' %}" class="s-btn s-btn-outline flex-grow-1 justify-content-center">
+        <i class="bi bi-arrow-right"></i> بازگشت به ارزیابی‌ها
+    </a>
+    <a href="{% url 'student:request_create' %}?type=GRADE_APPEAL&assessment={{ assessment.id }}" class="s-btn s-btn-outline flex-grow-1 justify-content-center">
+        <i class="bi bi-flag"></i> اعتراض به نمره
+    </a>
+</div>
+{% endblock %}

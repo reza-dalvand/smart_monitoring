@@ -1,0 +1,61 @@
+{% extends 'student/base_student.html' %}
+{% block title %}احراز هویت چهره{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-person-badge-fill"></i> احراز هویت چهره</div>
+
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-camera-fill"></i> وضعیت ثبت چهره</h6>
+    </div>
+    <div class="s-card-body">
+        {% if is_enrolled %}
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="s-badge success" style="font-size:.85rem;padding:8px 14px;">
+                    <i class="bi bi-check-circle-fill"></i> چهره شما ثبت شده است
+                </span>
+            </div>
+            <p style="font-size:.85rem;">تعداد تصاویر مرجع: {{ embeddings_count }} از {{ min_reference }}</p>
+        {% else %}
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="s-badge warning" style="font-size:.85rem;padding:8px 14px;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> ثبت چهره کامل نشده
+                </span>
+            </div>
+            <p style="font-size:.85rem;">تعداد تصاویر مرجع: {{ embeddings_count }} از {{ min_reference }}</p>
+            <a href="{% url 'face:enrollment' %}" class="s-btn s-btn-primary">
+                <i class="bi bi-camera-fill"></i> ثبت چهره
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-arrow-repeat"></i> درخواست تغییر چهره</h6>
+        <a href="{% url 'student:face_change_request' %}" class="s-btn s-btn-outline s-btn-sm">
+            <i class="bi bi-plus"></i> درخواست جدید
+        </a>
+    </div>
+    <div class="s-card-body">
+        {% if change_requests %}
+            {% for req in change_requests %}
+            <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <div>
+                    <span style="font-size:.85rem;">{{ req.reason|truncatechars:50 }}</span>
+                    <small class="text-muted d-block">{{ req.created_at|date:"Y/m/d" }}</small>
+                </div>
+                {% if req.status == 'PENDING' %}
+                    <span class="s-badge warning">در انتظار بررسی</span>
+                {% elif req.status == 'APPROVED' %}
+                    <span class="s-badge success">تأیید شده</span>
+                {% else %}
+                    <span class="s-badge danger">رد شده</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted" style="font-size:.85rem;">درخواستی ثبت نشده است.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

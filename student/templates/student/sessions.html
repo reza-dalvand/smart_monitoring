@@ -1,0 +1,44 @@
+{% extends 'student/base_student.html' %}
+{% block title %}جلسات{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-calendar-event-fill"></i> جلسات کلاس‌ها
+</div>
+
+<div class="s-card">
+    <div class="s-card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="s-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>کلاس</th>
+                        <th>موضوع</th>
+                        <th>تاریخ</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><strong>{{ session.id }}</strong></td>
+                        <td>{{ session.classroom.subject }} — {{ session.classroom.name }}</td>
+                        <td>{{ session.topic|default:"بدون موضوع" }}</td>
+                        <td><small>{{ session.session_date|date:"Y/m/d — H:i" }}</small></td>
+                        <td>
+                            <a href="{% url 'student:session_detail' session.id %}" class="s-btn s-btn-outline s-btn-sm">
+                                <i class="bi bi-eye"></i> جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-calendar-x" title="جلسه‌ای ندارید" message="هنوز جلسه‌ای برای کلاس‌های شما ثبت نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

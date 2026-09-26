@@ -1,0 +1,55 @@
+{% extends 'student/base_student.html' %}
+{% block title %}درخواست‌های من{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="s-page-title mb-0"><i class="bi bi-envelope-paper-fill"></i> درخواست‌های من</div>
+    <a href="{% url 'student:request_create' %}" class="s-btn s-btn-primary s-btn-sm">
+        <i class="bi bi-plus-circle"></i> درخواست جدید
+    </a>
+</div>
+
+<div class="s-card">
+    <div class="s-card-body">
+        {% if requests %}
+        <div class="table-responsive">
+            <table class="s-table">
+                <thead>
+                    <tr><th>عنوان</th><th>نوع</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td><strong>{{ req.title }}</strong></td>
+                        <td><span class="s-badge info">{{ req.get_request_type_display }}</span></td>
+                        <td>
+                            {% if req.status == 'OPEN' %}
+                                <span class="s-badge warning">{{ req.get_status_display }}</span>
+                            {% elif req.status == 'IN_REVIEW' %}
+                                <span class="s-badge info">{{ req.get_status_display }}</span>
+                            {% elif req.status == 'RESOLVED' or req.status == 'APPROVED' %}
+                                <span class="s-badge success">{{ req.get_status_display }}</span>
+                            {% elif req.status == 'REJECTED' %}
+                                <span class="s-badge danger">{{ req.get_status_display }}</span>
+                            {% elif req.status == 'CANCELLED' %}
+                                <span class="s-badge secondary">{{ req.get_status_display }}</span>
+                            {% else %}
+                                <span class="s-badge secondary">{{ req.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ req.created_at|date:"Y/m/d" }}</small></td>
+                        <td>
+                            <a href="{% url 'student:request_detail' req.id %}" class="s-btn s-btn-outline s-btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-envelope-paper" title="درخواستی ندارید" message="هنوز درخواستی ثبت نکرده‌اید." cta_text="ثبت درخواست" cta_url="/student/requests/create/" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

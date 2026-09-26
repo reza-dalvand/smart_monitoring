@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'district.apps.DistrictConfig',
     'school.apps.SchoolConfig',
     'teacher.apps.TeacherConfig',
+    'student.apps.StudentConfig',
 ]
 
 MIDDLEWARE = [

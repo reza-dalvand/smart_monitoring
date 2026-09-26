@@ -1,0 +1,71 @@
+{% extends 'student/base_student.html' %}
+{% block title %}سوالات و فعالیت‌ها{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-question-circle-fill"></i> سوالات و فعالیت‌های کلاسی
+</div>
+
+{% if question_items %}
+{% for item in question_items %}
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title">
+            <i class="bi bi-journal-text-fill"></i>
+            {{ item.request.classroom.subject }} — {{ item.request.classroom.name }}
+        </h6>
+        {% if item.all_answered %}
+            <span class="s-badge success"><i class="bi bi-check-circle-fill"></i> تکمیل شده</span>
+        {% elif item.can_answer %}
+            <span class="s-badge warning"><i class="bi bi-hourglass-split"></i> در انتظار پاسخ</span>
+        {% else %}
+            <span class="s-badge info"><i class="bi bi-lock-fill"></i> نیاز به احراز هویت</span>
+        {% endif %}
+    </div>
+    <div class="s-card-body">
+        <div class="row g-2 mb-3" style="font-size:.85rem;">
+            <div class="col-4">
+                <small class="text-muted d-block">پاسخ داده شده</small>
+                <strong>{{ item.answered_count }} از {{ item.total_questions }}</strong>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block">معلم</small>
+                <strong>{{ item.request.teacher.get_full_name|default:item.request.teacher.username }}</strong>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block">جلسه</small>
+                <strong>{{ item.request.session_id }}</strong>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        {% if item.total_questions > 0 %}
+        <div class="s-progress mb-3">
+            <div class="s-progress-fill info" style="width:{% widthratio item.answered_count item.total_questions 100 %}%"></div>
+        </div>
+        {% endif %}
+
+        {% if item.all_answered %}
+        <a href="{% url 'student:assessment_result' item.request.id %}" class="s-btn s-btn-success w-100 justify-content-center">
+            <i class="bi bi-eye-fill"></i> مشاهده نتیجه
+        </a>
+        {% elif item.can_answer %}
+        <a href="{% url 'dashboard:student_answer_questions' item.request.id %}" class="s-btn s-btn-primary w-100 justify-content-center">
+            <i class="bi bi-pencil-square"></i>
+            {% if item.answered_count > 0 %}ادامه پاسخ‌دهی{% else %}شروع پاسخ‌دهی{% endif %}
+        </a>
+        {% else %}
+        <button class="s-btn s-btn-outline w-100 justify-content-center" disabled>
+            <i class="bi bi-lock-fill"></i> ابتدا احراز هویت چهره را انجام دهید
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="s-card">
+    <div class="s-card-body">
+        {% include "student/components/empty_state.html" with icon="bi-question-circle" title="سوال فعالی ندارید" message="در حال حاضر سوال فعالی برای شما وجود ندارد." %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

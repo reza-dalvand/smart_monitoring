@@ -1,0 +1,52 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ req.title }}{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-envelope-paper-fill"></i> {{ req.title }}</div>
+
+<div class="s-card">
+    <div class="s-card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">نوع درخواست</small>
+                <span class="s-badge info">{{ req.get_request_type_display }}</span>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">وضعیت</small>
+                {% if req.status == 'OPEN' %}<span class="s-badge warning">{{ req.get_status_display }}</span>
+                {% elif req.status == 'RESOLVED' or req.status == 'APPROVED' %}<span class="s-badge success">{{ req.get_status_display }}</span>
+                {% elif req.status == 'REJECTED' %}<span class="s-badge danger">{{ req.get_status_display }}</span>
+                {% else %}<span class="s-badge info">{{ req.get_status_display }}</span>{% endif %}
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">تاریخ ثبت</small>
+                <strong>{{ req.created_at|date:"Y/m/d - H:i" }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">اولویت</small>
+                <strong>{{ req.get_priority_display }}</strong>
+            </div>
+        </div>
+        <hr>
+        <p style="font-size:.9rem;">{{ req.description|linebreaksbr }}</p>
+
+        {% if req.resolution_note %}
+        <hr>
+        <div class="p-3 rounded-3" style="background:rgba(22,163,74,.05);border:1px solid rgba(22,163,74,.2);">
+            <small class="fw-bold d-block mb-1" style="color:var(--s-success);">نتیجه بررسی:</small>
+            <span style="font-size:.87rem;">{{ req.resolution_note }}</span>
+        </div>
+        {% endif %}
+
+        {% if req.is_cancellable %}
+        <hr>
+        <form method="post" action="{% url 'student:request_cancel' req.id %}"
+              onsubmit="return confirm('آیا از لغو این درخواست مطمئن هستید؟');">
+            {% csrf_token %}
+            <button type="submit" class="s-btn" style="background:var(--s-danger);color:#fff;">
+                <i class="bi bi-x-circle"></i> لغو درخواست
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

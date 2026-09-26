@@ -1,0 +1,68 @@
+{% extends 'student/base_student.html' %}
+{% block title %}پروفایل من{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-person-fill"></i> پروفایل من</div>
+
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-person-circle"></i> اطلاعات شخصی</h6>
+        <span class="s-badge info"><i class="bi bi-lock-fill"></i> فقط مشاهده</span>
+    </div>
+    <div class="s-card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <small class="text-muted d-block">نام و نام خانوادگی</small>
+                <strong>{{ student.get_full_name|default:student.username }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">نام کاربری</small>
+                <strong>{{ student.username }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">کد ملی</small>
+                <strong>{{ student.national_id|default:"-" }}</strong>
+            </div>
+            {% if profile %}
+            <div class="col-md-4">
+                <small class="text-muted d-block">نام پدر</small>
+                <strong>{{ profile.father_name|default:"-" }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">شماره تماس والدین</small>
+                <strong>{{ profile.parent_phone|default:"-" }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">شهر</small>
+                <strong>{{ profile.city|default:"-" }}</strong>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-journal-bookmark"></i> کلاس‌های من</h6>
+    </div>
+    <div class="s-card-body">
+        {% if classes %}
+            <div class="table-responsive">
+                <table class="s-table">
+                    <thead><tr><th>کلاس</th><th>درس</th><th>مدرسه</th></tr></thead>
+                    <tbody>
+                        {% for c in classes %}
+                        <tr>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.subject }}</td>
+                            <td>{{ c.school.name|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-journal-x" title="کلاسی ندارید" %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

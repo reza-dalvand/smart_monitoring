@@ -147,7 +147,7 @@ def get_teacher_classrooms(user):
 def dashboard_home(request):
     user = request.user
     if user.role == 'student':
-        return student_dashboard(request)
+        return redirect('student:dashboard')
     elif user.role == 'teacher':
         return teacher_dashboard(request)
     elif user.role == 'assistant':

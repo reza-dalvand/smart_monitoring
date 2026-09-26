@@ -1,0 +1,120 @@
+{% extends 'student/base_student.html' %}
+{% block title %}حضور و غیاب{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-person-check-fill"></i> حضور و غیاب
+</div>
+
+<!-- KPIs -->
+<div class="s-kpi-grid">
+    <div class="s-kpi success">
+        <div class="s-kpi-value">{{ present|default:"0" }}</div>
+        <div class="s-kpi-label">حضور</div>
+    </div>
+    <div class="s-kpi danger">
+        <div class="s-kpi-value">{{ absent|default:"0" }}</div>
+        <div class="s-kpi-label">غیبت</div>
+    </div>
+    <div class="s-kpi warning">
+        <div class="s-kpi-value">{{ pending|default:"0" }}</div>
+        <div class="s-kpi-label">در انتظار</div>
+    </div>
+    <div class="s-kpi info">
+        <div class="s-kpi-value">
+            {% if attendance_rate is not None %}{{ attendance_rate }}٪{% else %}-{% endif %}
+        </div>
+        <div class="s-kpi-label">نرخ حضور</div>
+    </div>
+</div>
+
+<!-- Attendance Rate Progress -->
+{% if attendance_rate is not None %}
+<div class="s-card mb-3">
+    <div class="s-card-body">
+        <div class="d-flex justify-content-between mb-2" style="font-size:.85rem;">
+            <span class="fw-bold">نرخ حضور کلی</span>
+            <span class="fw-bold">{{ attendance_rate }}٪</span>
+        </div>
+        <div class="s-progress">
+            {% if attendance_rate >= 75 %}
+            <div class="s-progress-fill success" style="width:{{ attendance_rate }}%"></div>
+            {% elif attendance_rate >= 50 %}
+            <div class="s-progress-fill warning" style="width:{{ attendance_rate }}%"></div>
+            {% else %}
+            <div class="s-progress-fill danger" style="width:{{ attendance_rate }}%"></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Active Requests -->
+{% if active_requests %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-success);">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-broadcast"></i> درخواست حضور فعال</h6>
+    </div>
+    <div class="s-card-body">
+        {% for req in active_requests %}
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div>
+                <strong style="font-size:.9rem;">{{ req.classroom.subject }} — {{ req.classroom.name }}</strong>
+                <small class="text-muted d-block">
+                    جلسه {{ req.session.id }}
+                    {% if req.face_deadline_at %}
+                    | مهلت: {{ req.face_deadline_at|date:"H:i" }}
+                    {% endif %}
+                </small>
+            </div>
+            <span class="s-badge warning"><i class="bi bi-hourglass-split"></i> در انتظار ثبت حضور</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- History -->
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-clock-history"></i> تاریخچه حضور</h6>
+    </div>
+    <div class="s-card-body">
+        {% if responses %}
+        <div class="table-responsive">
+            <table class="s-table">
+                <thead>
+                    <tr>
+                        <th>کلاس</th>
+                        <th>جلسه</th>
+                        <th>تاریخ</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resp in responses %}
+                    <tr>
+                        <td>{{ resp.attendance_request.classroom.subject }}</td>
+                        <td>جلسه {{ resp.attendance_request.session_id }}</td>
+                        <td><small>{{ resp.created_at|date:"Y/m/d — H:i" }}</small></td>
+                        <td>
+                            {% if resp.final_status == 'present' %}
+                                <span class="s-badge success"><i class="bi bi-check-circle-fill"></i> حاضر</span>
+                            {% elif resp.final_status == 'absent' %}
+                                <span class="s-badge danger"><i class="bi bi-x-circle-fill"></i> غایب</span>
+                            {% elif resp.final_status == 'pending' %}
+                                <span class="s-badge warning"><i class="bi bi-hourglass-split"></i> در انتظار</span>
+                            {% else %}
+                                <span class="s-badge secondary">{{ resp.get_final_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-person-check" title="سابقه‌ای ندارید" message="هنوز رکورد حضوری برای شما ثبت نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

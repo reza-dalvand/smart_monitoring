@@ -1,0 +1,51 @@
+{% extends 'student/base_student.html' %}
+{% block title %}ارزیابی‌های من{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-clipboard-check-fill"></i> ارزیابی‌های من</div>
+
+{% if active %}
+<div class="s-card mb-3">
+    <div class="s-card-header"><h6 class="s-card-title"><i class="bi bi-play-circle"></i> آزمون‌های فعال</h6></div>
+    <div class="s-card-body">
+        {% for a in active %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div>
+                <strong style="font-size:.9rem;">{{ a.title }}</strong>
+                <small class="text-muted d-block">{{ a.classroom.name }} - {{ a.classroom.subject }}</small>
+            </div>
+            <a href="{% url 'student:assessment_take' a.id %}" class="s-btn s-btn-success s-btn-sm">
+                <i class="bi bi-play-fill"></i> شروع آزمون
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if completed %}
+<div class="s-card mb-3">
+    <div class="s-card-header"><h6 class="s-card-title"><i class="bi bi-check-circle"></i> انجام شده</h6></div>
+    <div class="s-card-body">
+        {% for a in completed %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div>
+                <strong style="font-size:.9rem;">{{ a.title }}</strong>
+                <small class="text-muted d-block">{{ a.classroom.name }}</small>
+            </div>
+            <a href="{% url 'student:assessment_result' a.id %}" class="s-btn s-btn-outline s-btn-sm">
+                <i class="bi bi-eye"></i> نتیجه
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if not active and not completed and not upcoming %}
+<div class="s-card">
+    <div class="s-card-body">
+        {% include "student/components/empty_state.html" with icon="bi-clipboard-x" title="آزمونی ثبت نشده" message="هنوز آزمون یا ارزیابی‌ای برای شما ثبت نشده است." %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

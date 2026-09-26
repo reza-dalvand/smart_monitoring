@@ -1,0 +1,192 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="s-page-title mb-0">
+        <i class="bi bi-calendar-check-fill"></i>
+        جلسه {{ session.id }} — {{ session.classroom.subject }}
+    </div>
+    <a href="{% url 'student:sessions' %}" class="s-btn s-btn-outline">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<!-- Session Info -->
+<div class="s-card mb-3">
+    <div class="s-card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <small class="text-muted d-block">کلاس</small>
+                <strong>{{ session.classroom.name }}</strong>
+            </div>
+            <div class="col-md-4">
+                <small class="text-muted d-block">تاریخ</small>
+                <strong>{{ session.session_date|date:"Y/m/d — H:i" }}</strong>
+            </div>
+            {% if session.topic %}
+            <div class="col-md-4">
+                <small class="text-muted d-block">موضوع</small>
+                <strong>{{ session.topic }}</strong>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Status -->
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-person-check-fill"></i> وضعیت حضور شما</h6>
+    </div>
+    <div class="s-card-body">
+        {% if attendance_status == 'present' %}
+            <span class="s-badge success" style="font-size:.9rem;padding:8px 16px;">
+                <i class="bi bi-check-circle-fill"></i> حاضر
+            </span>
+        {% elif attendance_status == 'absent' %}
+            <span class="s-badge danger" style="font-size:.9rem;padding:8px 16px;">
+                <i class="bi bi-x-circle-fill"></i> غایب
+            </span>
+        {% elif attendance_status == 'pending' %}
+            <span class="s-badge warning" style="font-size:.9rem;padding:8px 16px;">
+                <i class="bi bi-hourglass-split"></i> در انتظار بررسی
+            </span>
+        {% else %}
+            <span class="s-badge secondary" style="font-size:.9rem;padding:8px 16px;">حضور ثبت نشده</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Virtual Session -->
+{% if virtual_info and virtual_info.meeting_url %}
+<div class="s-card mb-3" style="border-right: 4px solid var(--s-info);">
+    <div class="s-card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <span class="s-badge info mb-2"><i class="bi bi-camera-video-fill"></i> جلسه مجازی</span>
+            {% if virtual_info.meeting_provider %}
+            <div class="small text-muted">{{ virtual_info.meeting_provider }}</div>
+            {% endif %}
+        </div>
+        {% if virtual_info.is_active %}
+        <a href="{{ virtual_info.meeting_url }}" target="_blank" rel="noopener" class="s-btn s-btn-success">
+            <i class="bi bi-camera-video-fill"></i> ورود به کلاس
+        </a>
+        {% else %}
+        <span class="s-badge secondary">شروع نشده / پایان یافته</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Session Extension -->
+{% if extension %}
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-info-circle-fill"></i> اطلاعات تکمیلی جلسه</h6>
+    </div>
+    <div class="s-card-body">
+        {% if extension.learning_objectives %}
+        <div class="mb-2">
+            <small class="text-muted d-block">اهداف یادگیری</small>
+            <p class="mb-0" style="font-size:.88rem;">{{ extension.learning_objectives }}</p>
+        </div>
+        {% endif %}
+        {% if extension.description %}
+        <div>
+            <small class="text-muted d-block">توضیحات</small>
+            <p class="mb-0" style="font-size:.88rem;">{{ extension.description }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Materials -->
+{% if materials %}
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-file-earmark-fill"></i> محتوای آموزشی</h6>
+    </div>
+    <div class="s-card-body">
+        {% for material in materials %}
+        <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div>
+                <i class="bi bi-file-earmark-text" style="color:var(--s-secondary);"></i>
+                <strong style="font-size:.88rem;">{{ material.title }}</strong>
+                {% if material.description %}
+                <small class="text-muted d-block">{{ material.description }}</small>
+                {% endif %}
+            </div>
+            {% if material.file %}
+            <a href="{{ material.file.url }}" class="s-btn s-btn-outline s-btn-sm" download>
+                <i class="bi bi-download"></i> دانلود
+            </a>
+            {% elif material.external_url %}
+            <a href="{{ material.external_url }}" target="_blank" rel="noopener" class="s-btn s-btn-outline s-btn-sm">
+                <i class="bi bi-link-45deg"></i> مشاهده
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Questions -->
+{% if questions %}
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-question-circle-fill"></i> سوالات این جلسه</h6>
+    </div>
+    <div class="s-card-body">
+        {% for question in questions %}
+        <div class="p-2 mb-2 rounded-3" style="background:#f8fafc;border:1px solid var(--s-border);">
+            <p class="mb-1" style="font-size:.88rem;"><strong>{{ question.text|truncatechars:100 }}</strong></p>
+            <small class="text-muted">موضوع: {{ question.topic|default:"-" }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Assessments -->
+{% if assessments %}
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-clipboard-check-fill"></i> ارزیابی‌های این جلسه</h6>
+    </div>
+    <div class="s-card-body">
+        {% for assessment in assessments %}
+        <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <strong style="font-size:.88rem;">{{ assessment.title }}</strong>
+            <a href="{% url 'student:assessment_detail' assessment.id %}" class="s-btn s-btn-outline s-btn-sm">
+                <i class="bi bi-eye"></i> مشاهده
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Homeworks -->
+{% if homeworks %}
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-journal-text-fill"></i> تکالیف این جلسه</h6>
+    </div>
+    <div class="s-card-body">
+        {% for homework in homeworks %}
+        <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div>
+                <strong style="font-size:.88rem;">{{ homework.title }}</strong>
+                <small class="text-muted d-block">مهلت: {{ homework.deadline|date:"Y/m/d — H:i" }}</small>
+            </div>
+            <a href="{% url 'student:homework_detail' homework.id %}" class="s-btn s-btn-outline s-btn-sm">
+                <i class="bi bi-eye"></i> مشاهده
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

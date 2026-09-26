@@ -1,0 +1,36 @@
+{% extends 'student/base_student.html' %}
+{% block title %}کلاس‌های مجازی{% endblock %}
+{% block content %}
+<div class="s-page-title"><i class="bi bi-camera-video-fill"></i> کلاس‌های مجازی</div>
+
+<div class="s-card">
+    <div class="s-card-body">
+        {% if sessions %}
+            {% for session in sessions %}
+            <div class="d-flex justify-content-between align-items-center py-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <div>
+                    <strong style="font-size:.9rem;">{{ session.classroom.subject }} - {{ session.classroom.name }}</strong>
+                    <small class="text-muted d-block">
+                        {{ session.session_date|date:"Y/m/d - H:i" }}
+                        {% if session.virtual_info.meeting_provider %} | {{ session.virtual_info.meeting_provider }}{% endif %}
+                    </small>
+                </div>
+                {% if session.virtual_info.meeting_url %}
+                    {% if session.virtual_info.is_active %}
+                        <a href="{{ session.virtual_info.meeting_url }}" target="_blank" class="s-btn s-btn-success s-btn-sm">
+                            <i class="bi bi-camera-video-fill"></i> ورود به کلاس
+                        </a>
+                    {% else %}
+                        <span class="s-badge secondary">شروع نشده / پایان یافته</span>
+                    {% endif %}
+                {% else %}
+                    <span class="s-badge secondary">لینک ثبت نشده</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-camera-video-off" title="کلاس مجازی ندارید" message="هنوز جلسه مجازی‌ای برای شما ثبت نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

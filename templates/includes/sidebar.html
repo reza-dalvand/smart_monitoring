@@ -112,39 +112,54 @@
 
     {% elif user.role == 'student' %}
     <div class="menu-section">
-        <div class="menu-section-title">فعالیت‌های من</div>
-        <a href="{% url 'dashboard:home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' and not request.GET.start_face_scan %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-speedometer2"></i>
-            </div>
+        <div class="menu-section-title">پنل دانش‌آموز</div>
+        <a href="{% url 'student:dashboard' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-speedometer2"></i></div>
             <span class="menu-item-text">داشبورد</span>
         </a>
-        <a href="{% url 'dashboard:weekly_schedule' %}" class="menu-item {% if request.resolver_match.url_name == 'weekly_schedule' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-calendar-week-fill"></i>
-            </div>
+        <a href="{% url 'student:schedule' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-calendar-week-fill"></i></div>
             <span class="menu-item-text">برنامه هفتگی</span>
         </a>
-        <a
-            href="{% url 'dashboard:home' %}?start_face_scan=1#attendance-face-scan"
-            class="menu-item {% if request.resolver_match.url_name == 'home' and request.GET.start_face_scan == '1' %}active{% endif %}"
-        >
-            <div class="menu-item-icon">
-                <i class="bi bi-person-check-fill"></i>
-            </div>
-            <span class="menu-item-text">اسکن حضور و غیاب</span>
+        <a href="{% url 'student:classes' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <span class="menu-item-text">کلاس‌های من</span>
         </a>
-        <a href="{% url 'dashboard:student_active_questions' %}" class="menu-item {% if 'student_active_questions' in request.resolver_match.url_name or 'student_answer_questions' in request.resolver_match.url_name or 'student_question_result' in request.resolver_match.url_name %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-question-circle-fill"></i>
-            </div>
-            <span class="menu-item-text">سوالات فعال</span>
+        <a href="{% url 'student:attendance' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-person-check-fill"></i></div>
+            <span class="menu-item-text">حضور و غیاب</span>
         </a>
-        <a href="{% url 'face:enrollment' %}" class="menu-item {% if request.resolver_match.url_name == 'enrollment' %}active{% endif %}">
-            <div class="menu-item-icon">
-                <i class="bi bi-person-badge-fill"></i>
-            </div>
-            <span class="menu-item-text">ثبت چهره</span>
+        <a href="{% url 'student:questions' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-question-circle-fill"></i></div>
+            <span class="menu-item-text">سوالات</span>
+        </a>
+        <a href="{% url 'student:assessments' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+            <span class="menu-item-text">ارزیابی‌ها</span>
+        </a>
+        <a href="{% url 'student:homeworks' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-journal-text-fill"></i></div>
+            <span class="menu-item-text">تکالیف</span>
+        </a>
+        <a href="{% url 'student:feedback' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-chat-heart-fill"></i></div>
+            <span class="menu-item-text">بازخوردها</span>
+        </a>
+        <a href="{% url 'student:status' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-graph-up"></i></div>
+            <span class="menu-item-text">وضعیت آموزشی</span>
+        </a>
+        <a href="{% url 'student:requests' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-envelope-paper-fill"></i></div>
+            <span class="menu-item-text">درخواست‌های من</span>
+        </a>
+        <a href="{% url 'student:face' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-person-badge-fill"></i></div>
+            <span class="menu-item-text">احراز هویت چهره</span>
+        </a>
+        <a href="{% url 'student:profile' %}" class="menu-item">
+            <div class="menu-item-icon"><i class="bi bi-person-fill"></i></div>
+            <span class="menu-item-text">پروفایل من</span>
         </a>
     </div>
 

@@ -1,0 +1,101 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="s-page-title mb-0">
+        <i class="bi bi-journal-bookmark-fill"></i> {{ classroom.subject }} — {{ classroom.name }}
+    </div>
+    <a href="{% url 'student:classes' %}" class="s-btn s-btn-outline">
+        <i class="bi bi-arrow-right"></i> بازگشت
+    </a>
+</div>
+
+<!-- Class Info -->
+<div class="s-card mb-3">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-info-circle-fill"></i> اطلاعات کلاس</h6>
+    </div>
+    <div class="s-card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted d-block">درس</small>
+                <strong>{{ classroom.subject }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">پایه / رشته</small>
+                <strong>{{ classroom.get_grade_display }} — {{ classroom.get_field_display }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">معلم</small>
+                <strong>
+                    {% if classroom.teacher %}
+                        {{ classroom.teacher.get_full_name|default:classroom.teacher.username }}
+                    {% else %}
+                        {{ classroom.teacher_name }}
+                    {% endif %}
+                </strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">مدرسه</small>
+                <strong>{{ classroom.school.name|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sessions -->
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-calendar-event-fill"></i> جلسات کلاس</h6>
+        <span class="s-badge info">{{ sessions|length }} جلسه</span>
+    </div>
+    <div class="s-card-body">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="s-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>موضوع</th>
+                        <th>تاریخ</th>
+                        <th>وضعیت حضور</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td><strong>{{ session.id }}</strong></td>
+                        <td>{{ session.topic|default:"بدون موضوع" }}</td>
+                        <td><small>{{ session.session_date|date:"Y/m/d — H:i" }}</small></td>
+                        <td>
+                            {% with att_status=attendance_map|default_if_none:"" %}
+                            {% if session.id in attendance_map %}
+                                {% if attendance_map.session.id == 'present' %}
+                                    <span class="s-badge success"><i class="bi bi-check-circle-fill"></i> حاضر</span>
+                                {% elif attendance_map.session.id == 'absent' %}
+                                    <span class="s-badge danger"><i class="bi bi-x-circle-fill"></i> غایب</span>
+                                {% elif attendance_map.session.id == 'pending' %}
+                                    <span class="s-badge warning"><i class="bi bi-hourglass-split"></i> در انتظار</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="s-badge secondary">-</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <a href="{% url 'student:session_detail' session.id %}" class="s-btn s-btn-outline s-btn-sm">
+                                <i class="bi bi-eye"></i> جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            {% include "student/components/empty_state.html" with icon="bi-calendar-x" title="جلسه‌ای ثبت نشده" message="هنوز جلسه‌ای برای این کلاس برگزار نشده است." %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

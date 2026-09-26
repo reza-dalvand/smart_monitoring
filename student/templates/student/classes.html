@@ -1,0 +1,62 @@
+{% extends 'student/base_student.html' %}
+{% block title %}کلاس‌های من{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-journal-bookmark-fill"></i> کلاس‌های من
+</div>
+
+{% if classes %}
+<div class="row g-3">
+    {% for classroom in classes %}
+    <div class="col-lg-4 col-md-6">
+        <div class="s-card h-100">
+            <div class="s-card-body">
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1" style="font-size:.95rem;">{{ classroom.subject }}</h6>
+                        <small class="text-muted">{{ classroom.name }}</small>
+                    </div>
+                    <span class="s-badge primary">{{ classroom.get_grade_display }}</span>
+                </div>
+
+                <div class="row g-2 mb-3" style="font-size:.82rem;">
+                    <div class="col-6">
+                        <small class="text-muted d-block">رشته</small>
+                        <strong>{{ classroom.get_field_display }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">معلم</small>
+                        <strong>
+                            {% if classroom.teacher %}
+                                {{ classroom.teacher.get_full_name|default:classroom.teacher.username }}
+                            {% else %}
+                                {{ classroom.teacher_name }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">تعداد جلسات</small>
+                        <strong>{{ classroom.sessions_count|default:"0" }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">وضعیت</small>
+                        <span class="s-badge success">فعال</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'student:class_detail' classroom.id %}" class="s-btn s-btn-primary w-100 justify-content-center">
+                    <i class="bi bi-arrow-left"></i> مشاهده جزئیات
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="s-card">
+    <div class="s-card-body">
+        {% include "student/components/empty_state.html" with icon="bi-journal-x" title="کلاسی ندارید" message="هنوز در کلاسی ثبت‌نام نشده‌اید." %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

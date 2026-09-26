@@ -1,0 +1,112 @@
+{% extends 'student/base_student.html' %}
+{% block title %}داشبورد من{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-speedometer2"></i>
+    سلام، {{ user.get_full_name|default:user.username }} 👋
+</div>
+
+<!-- KPI Cards -->
+<div class="s-kpi-grid">
+    <div class="s-kpi success">
+        <div class="s-kpi-value">{{ attendance_rate|default:"-" }}{% if attendance_rate is not None %}٪{% endif %}</div>
+        <div class="s-kpi-label">نرخ حضور</div>
+    </div>
+    <div class="s-kpi info">
+        <div class="s-kpi-value">{{ participation_rate|default:"-" }}</div>
+        <div class="s-kpi-label">مشارکت</div>
+    </div>
+    <div class="s-kpi">
+        <div class="s-kpi-value">{{ performance_rate|default:"-" }}{% if performance_rate is not None %}٪{% endif %}</div>
+        <div class="s-kpi-label">عملکرد</div>
+    </div>
+    <div class="s-kpi warning">
+        <div class="s-kpi-value">{{ homework_completion_rate|default:"-" }}{% if homework_completion_rate is not None %}٪{% endif %}</div>
+        <div class="s-kpi-label">انجام تکالیف</div>
+    </div>
+</div>
+
+<!-- Status Card -->
+<div class="s-card">
+    <div class="s-card-header">
+        <h6 class="s-card-title"><i class="bi bi-heart-pulse-fill"></i> وضعیت آموزشی من</h6>
+        {% if educational_status == 'NEEDS_ATTENTION' %}
+            <span class="s-badge danger"><i class="bi bi-exclamation-circle-fill"></i> نیازمند توجه</span>
+        {% elif educational_status == 'UNDER_OBSERVATION' %}
+            <span class="s-badge warning"><i class="bi bi-eye-fill"></i> زیر نظر</span>
+        {% else %}
+            <span class="s-badge success"><i class="bi bi-check-circle-fill"></i> عادی</span>
+        {% endif %}
+    </div>
+    <div class="s-card-body">
+        {% if status_reasons %}
+            <p class="mb-2" style="font-size:.85rem;">دلایل وضعیت فعلی:</p>
+            <ul style="font-size:.83rem;padding-right:18px;">
+                {% for reason in status_reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="font-size:.85rem;color:var(--s-muted);">وضعیت آموزشی شما مناسب است. 🎉</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="s-card h-100">
+            <div class="s-card-header">
+                <h6 class="s-card-title"><i class="bi bi-lightning-fill"></i> فعالیت‌های پیش رو</h6>
+            </div>
+            <div class="s-card-body">
+                {% if next_session %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-calendar-event text-primary"></i>
+                        <span style="font-size:.85rem;">جلسه بعدی: {{ next_session.classroom.name }} - {{ next_session.session_date|date:"Y/m/d" }}</span>
+                    </div>
+                {% endif %}
+                {% if active_assessments_count > 0 %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-clipboard-check text-success"></i>
+                        <span style="font-size:.85rem;">{{ active_assessments_count }} آزمون فعال</span>
+                    </div>
+                {% endif %}
+                {% if active_homeworks_count > 0 %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-journal-text text-warning"></i>
+                        <span style="font-size:.85rem;">{{ active_homeworks_count }} تکلیف فعال</span>
+                    </div>
+                {% endif %}
+                {% if active_requests_count > 0 %}
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-envelope-paper text-info"></i>
+                        <span style="font-size:.85rem;">{{ active_requests_count }} درخواست در جریان</span>
+                    </div>
+                {% endif %}
+                {% if not next_session and active_assessments_count == 0 and active_homeworks_count == 0 and active_requests_count == 0 %}
+                    <div class="s-empty">
+                        <div class="s-empty-icon"><i class="bi bi-check-circle"></i></div>
+                        <p>فعالیت نزدیکی ندارید.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="s-card h-100">
+            <div class="s-card-header">
+                <h6 class="s-card-title"><i class="bi bi-grid-fill"></i> دسترسی سریع</h6>
+            </div>
+            <div class="s-card-body">
+                <div class="row g-2">
+                    <div class="col-6"><a href="{% url 'student:classes' %}" class="s-btn s-btn-outline w-100 justify-content-center"><i class="bi bi-journal-bookmark"></i> کلاس‌ها</a></div>
+                    <div class="col-6"><a href="{% url 'student:assessments' %}" class="s-btn s-btn-outline w-100 justify-content-center"><i class="bi bi-clipboard-check"></i> آزمون‌ها</a></div>
+                    <div class="col-6"><a href="{% url 'student:homeworks' %}" class="s-btn s-btn-outline w-100 justify-content-center"><i class="bi bi-journal-text"></i> تکالیف</a></div>
+                    <div class="col-6"><a href="{% url 'student:requests' %}" class="s-btn s-btn-outline w-100 justify-content-center"><i class="bi bi-envelope-paper"></i> درخواست‌ها</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

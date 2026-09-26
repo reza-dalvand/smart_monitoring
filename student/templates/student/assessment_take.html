@@ -1,0 +1,52 @@
+{% extends 'student/base_student.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="s-page-title">
+    <i class="bi bi-pencil-square-fill"></i> {{ assessment.title }}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {% for aq in questions %}
+    <div class="s-card mb-3">
+        <div class="s-card-header">
+            <h6 class="s-card-title">
+                <span class="s-badge primary me-2">{{ forloop.counter }}</span>
+                سوال {{ forloop.counter }} از {{ questions|length }}
+            </h6>
+        </div>
+        <div class="s-card-body">
+            <p class="fw-bold mb-3" style="font-size:.95rem;">{{ aq.question.text }}</p>
+
+            <div class="d-flex flex-column gap-2">
+                <label class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#f8fafc;border:2px solid var(--s-border);cursor:pointer;transition:all .2s;">
+                    <input type="radio" name="question_{{ aq.question_id }}" value="a" required style="width:18px;height:18px;">
+                    <span><strong>الف)</strong> {{ aq.question.choice_a }}</span>
+                </label>
+                <label class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#f8fafc;border:2px solid var(--s-border);cursor:pointer;">
+                    <input type="radio" name="question_{{ aq.question_id }}" value="b" style="width:18px;height:18px;">
+                    <span><strong>ب)</strong> {{ aq.question.choice_b }}</span>
+                </label>
+                <label class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#f8fafc;border:2px solid var(--s-border);cursor:pointer;">
+                    <input type="radio" name="question_{{ aq.question_id }}" value="c" style="width:18px;height:18px;">
+                    <span><strong>ج)</strong> {{ aq.question.choice_c }}</span>
+                </label>
+                <label class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#f8fafc;border:2px solid var(--s-border);cursor:pointer;">
+                    <input type="radio" name="question_{{ aq.question_id }}" value="d" style="width:18px;height:18px;">
+                    <span><strong>د)</strong> {{ aq.question.choice_d }}</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if questions %}
+    <button type="submit" class="s-btn s-btn-success w-100 justify-content-center" style="padding:14px;"
+            onclick="return confirm('آیا از ثبت پاسخ‌ها مطمئن هستید؟ پس از ثبت، امکان تغییر نیست.');">
+        <i class="bi bi-check-circle-fill"></i> ثبت پاسخ‌ها
+    </button>
+    {% else %}
+        {% include "student/components/empty_state.html" with icon="bi-question-circle" title="سوالی وجود ندارد" message="این آزمون هنوز سوالی ندارد." %}
+    {% endif %}
+</form>
+{% endblock %}

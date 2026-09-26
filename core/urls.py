@@ -13,6 +13,7 @@ urlpatterns = [
     path('district/', include('district.urls', namespace='district')),
     path('school/', include('school.urls', namespace='school')),
     path('teacher/', include('teacher.urls', namespace='teacher')),
+    path('student/', include('student.urls', namespace='student')),
 ]
 
 if settings.DEBUG:
